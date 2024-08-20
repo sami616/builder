@@ -1,0 +1,9 @@
+@scope ([data-component="BlockList"]) to ([data-component]) {
+  & {
+    display: grid;
+    gap: 1rem;
+    margin: 0;
+    padding: 1rem;
+    background: #efefef;
+  }
+}

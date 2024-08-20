@@ -1,0 +1,10 @@
+@scope ([data-component="experiences.$id"]) to ([data-component]) {
+  main {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 300px 1fr;
+    &:has(> :nth-child(3):last-child) {
+      grid-template-columns: 300px 1fr 300px;
+    }
+  }
+}

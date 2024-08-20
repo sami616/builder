@@ -1,0 +1,7 @@
+@scope ([data-component="BlockItem"]) to ([data-component]) {
+  & {
+    padding: 1rem;
+    list-style: none;
+    background: #cccccc;
+  }
+}
