@@ -4,12 +4,12 @@ import {
   queryOptions,
   useMutation,
 } from '@tanstack/react-query'
-import { isBlockItemSource } from '../components/BlockItem'
-import * as blocks from '../blocks'
+import { isComponentItemSource } from '../editor-components/ComponentItem'
+import * as components from '../components'
 import { type Context } from '../main'
 import { type Experience } from '../db'
-import { Canvas, isCanvasTarget } from '../components/Canvas'
-import { useEffect, useState } from 'react'
+import { Canvas, isCanvasTarget } from '../editor-components//Canvas'
+import { Suspense, useEffect, useState } from 'react'
 import { monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import {
   Edge,
@@ -19,15 +19,17 @@ import { reorderWithEdge } from '@atlaskit/pragmatic-drag-and-drop-hitbox/util/r
 import {
   isCanvasItemSource,
   isCanvasItemTarget,
-} from '../components/CanvasItem'
-import { BlockList } from '../components/BlockList'
+} from '../editor-components/CanvasItem'
+import { ComponentPanel } from '../editor-components/ComponentPanel'
 import './experiences.$id.css'
-import { Blocks, generateUniqueId } from '../utils'
+import { type Block } from '../db'
+import { PropsPanel } from '../editor-components/PropsPanel'
 
 export const Route = createFileRoute('/experiences/$id')({
   component: Experience,
   loader: ({ params, context }) =>
     context.queryClient.ensureQueryData(
+      // Todo: how can i start to prefetch all the blocks assosiated with this experience?
       queryOpts(params.id, context.getExperience),
     ),
   pendingComponent: () => <p>Loading..</p>,
@@ -38,45 +40,11 @@ function Experience() {
   const { id } = Route.useParams()
   const context = Route.useRouteContext()
 
-  const [activeBlockId, setActiveBlockId] = useState<string | undefined>()
+  const [activeBlockId, setActiveBlockId] = useState<Block['id'] | undefined>()
 
   const { data: experience } = useSuspenseQuery(
     queryOpts(id, context.getExperience),
   )
-
-  const updateExperienceBlockProps = useMutation({
-    mutationFn: context.updateExperience,
-    onMutate: async ({ experience: newExperience }) => {
-      await context.queryClient.cancelQueries({
-        queryKey: ['experiences', String(newExperience.id)],
-      })
-
-      const previousExperience = context.queryClient.getQueryData<Experience>([
-        'experiences',
-        String(newExperience.id),
-      ])
-
-      context.queryClient.setQueryData(
-        ['experiences', String(newExperience.id)],
-        newExperience,
-      )
-
-      return { newExperience, previousExperience }
-    },
-    onError: (error, _newExperience, errContext) => {
-      context.queryClient.setQueryData(
-        ['experiences', String(errContext?.newExperience.id)],
-        errContext?.previousExperience,
-      )
-      // Todo notify user via toast or something similar
-      console.log(error)
-    },
-    onSettled: (newExperienceId) => {
-      context.queryClient.invalidateQueries({
-        queryKey: ['experiences', String(newExperienceId)],
-      })
-    },
-  })
 
   const updateExperienceMeta = useMutation({
     mutationFn: (args: { name: string; slug: string }) => {
@@ -115,25 +83,34 @@ function Experience() {
     },
   })
 
-  const addExperienceBlock = useMutation({
+  // Todo: this should do both the adding of the block and updating the exerience in one promise / promise.all
+  const addBlock = useMutation({
+    mutationFn: (args: { type: Block['type'] }) => {
+      return context.addBlock({
+        type: args.type,
+        props: components[args.type].initialProps,
+      })
+    },
+    onSuccess: () => {
+      context.queryClient.invalidateQueries({
+        queryKey: ['blocks', String(experience.id)],
+      })
+    },
+  })
+
+  const addBlockToExperience = useMutation({
     mutationFn: (args: {
-      type: Blocks
+      blockId: Block['id']
       index?: number
       edge?: Edge | null
     }) => {
       const clonedExperience = structuredClone(experience)
-      const newBlock = {
-        id: generateUniqueId(),
-        type: args.type,
-        props: blocks[args.type].initialProps,
-      }
       if (args.index === undefined) {
-        clonedExperience.blocks.push(newBlock)
+        clonedExperience.blocks.push(args.blockId)
       } else {
         const atIndex = args.edge === 'top' ? args.index : args.index + 1
-        clonedExperience.blocks.splice(atIndex, 0, newBlock)
+        clonedExperience.blocks.splice(atIndex, 0, args.blockId)
       }
-
       return context.updateExperience({ experience: clonedExperience })
     },
     onSuccess: () => {
@@ -149,16 +126,22 @@ function Experience() {
         const target = location.current.dropTargets[0]
 
         if (isCanvasTarget(target.data)) {
-          if (isBlockItemSource(source.data)) {
-            addExperienceBlock.mutate({ type: source.data.type })
+          if (isComponentItemSource(source.data)) {
+            const blockId = await addBlock.mutateAsync({
+              type: source.data.type,
+            })
+            addBlockToExperience.mutate({ blockId })
           }
         }
 
         if (isCanvasItemTarget(target.data)) {
           const closestEdge = extractClosestEdge(target.data)
-          if (isBlockItemSource(source.data)) {
-            addExperienceBlock.mutate({
+          if (isComponentItemSource(source.data)) {
+            const blockId = await addBlock.mutateAsync({
               type: source.data.type,
+            })
+            addBlockToExperience.mutate({
+              blockId,
               index: target.data.index,
               edge: closestEdge,
             })
@@ -176,7 +159,7 @@ function Experience() {
   }, [experience])
 
   const isCanvasUpdatePending =
-    moveExperienceBlock.isPending || addExperienceBlock.isPending
+    moveExperienceBlock.isPending || addBlock.isPending
 
   return (
     <div data-component="experiences.$id">
@@ -207,46 +190,32 @@ function Experience() {
         <p>{updateExperienceMeta.error.message}</p>
       )}
 
-      <main>
-        <aside>
-          <BlockList
+      <Suspense fallback={<p>Loading...</p>}>
+        <main>
+          <aside>
+            <ComponentPanel
+              isCanvasUpdatePending={isCanvasUpdatePending}
+              experience={experience}
+            />
+          </aside>
+
+          <Canvas
+            activeBlockId={activeBlockId}
+            setActiveBlockId={setActiveBlockId}
             isCanvasUpdatePending={isCanvasUpdatePending}
             experience={experience}
           />
-        </aside>
 
-        <Canvas
-          activeBlockId={activeBlockId}
-          setActiveBlockId={setActiveBlockId}
-          isCanvasUpdatePending={isCanvasUpdatePending}
-          experience={experience}
-        />
-
-        {activeBlockId && (
-          <aside>
-            <button onClick={() => setActiveBlockId(undefined)}>❌</button>
-            <input
-              type="text"
-              value={
-                experience.blocks.find((block) => block.id === activeBlockId)
-                  ?.props?.children
-              }
-              // Prop panel - i think i need to use optimistic updates or debouncing here incase indexdb is slow this will feel very sluggish
-              onChange={(e) => {
-                const clonedExperience = structuredClone(experience)
-                const editedBlock = clonedExperience.blocks.find(
-                  (block) => block.id === activeBlockId,
-                )
-                if (!editedBlock) return
-                editedBlock.props.children = e.target.value
-                updateExperienceBlockProps.mutate({
-                  experience: clonedExperience,
-                })
-              }}
-            />
-          </aside>
-        )}
-      </main>
+          {activeBlockId !== undefined && (
+            <aside>
+              <PropsPanel
+                activeBlockId={activeBlockId}
+                setActiveBlockId={setActiveBlockId}
+              />
+            </aside>
+          )}
+        </main>
+      </Suspense>
     </div>
   )
 }

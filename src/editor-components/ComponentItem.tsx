@@ -1,12 +1,13 @@
 import { Experience } from '../db'
 import { useEffect, useRef, useState } from 'react'
 import { draggable } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
-import { Blocks, isBlock } from '../utils'
-import './BlockItem.css'
+import { isBlock } from '../utils'
+import { type Block } from '../db'
+import './ComponentItem.css'
 
-export function BlockItem(props: {
+export function ComponentItem(props: {
   experience: Experience
-  type: Experience['blocks'][number]['type']
+  type: Block['type']
   isCanvasUpdatePending: boolean
 }) {
   const ref = useRef<HTMLLIElement>(null)
@@ -16,7 +17,7 @@ export function BlockItem(props: {
     if (!ref.current) return
     return draggable({
       element: ref.current,
-      getInitialData: (): BlockItemSource => ({
+      getInitialData: (): ComponentItemSource => ({
         type: props.type,
         id: 'blockItem',
       }),
@@ -31,19 +32,19 @@ export function BlockItem(props: {
   }
 
   return (
-    <li data-component="BlockItem" ref={ref} style={style} key={props.type}>
+    <li data-component="ComponentItem" ref={ref} style={style} key={props.type}>
       {props.type}
     </li>
   )
 }
 
-type BlockItemSource = {
-  type: Blocks
+type ComponentItemSource = {
+  type: Block['type']
   id: 'blockItem'
 }
 
-export function isBlockItemSource(
+export function isComponentItemSource(
   args: Record<string, unknown>,
-): args is BlockItemSource {
+): args is ComponentItemSource {
   return isBlock(args.type) && args.id === 'blockItem'
 }

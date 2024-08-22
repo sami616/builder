@@ -4,8 +4,7 @@
     --highlightColor: #ff004c;
     --activeColor: blue;
     --deleteButtonHeight: 50px;
-
-    position: relative;
+    position:relative;
     &:hover {
       [data-context] {
         display: flex;

@@ -1,48 +1,75 @@
-import { ReactNode, useEffect, useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
+import { createPortal } from 'react-dom'
 import {
   draggable,
   dropTargetForElements,
 } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine'
 import { setCustomNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview'
-import './CanvasItem.css'
-
 import {
   extractClosestEdge,
   attachClosestEdge,
   type Edge,
 } from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge'
 import { DropIndicator } from './DropIndicator'
-import { useMutation } from '@tanstack/react-query'
+import { type Block, type Experience } from '../db'
+import {
+  useMutation,
+  useMutationState,
+  useSuspenseQuery,
+} from '@tanstack/react-query'
 import { useRouteContext } from '@tanstack/react-router'
-import { type Experience } from '../db'
-import { createPortal } from 'react-dom'
+import * as components from '../components'
+import './CanvasItem.css'
 
 export function CanvasItem(props: {
-  children: ReactNode
   index: number
   experience: Experience
   isCanvasUpdatePending: boolean
-  block: Experience['blocks'][number]
-  activeBlockId?: string
-  setActiveBlockId: (id: string | undefined) => void
+  blockId: Block['id']
+  activeBlockId?: Block['id']
+  setActiveBlockId: (id: Block['id'] | undefined) => void
 }) {
   const dropRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<HTMLDivElement>(null)
   const [isDragging, setDragging] = useState(false)
   const [closestEdge, setClosestEdge] = useState<Edge | null>(null)
   const context = useRouteContext({ from: '/experiences/$id' })
+
+  const query = useSuspenseQuery({
+    queryKey: ['blocks', String(props.blockId)],
+    queryFn: () => context.getBlock({ blockId: props.blockId }),
+  })
+
+  const mutationState = useMutationState<Block>({
+    filters: {
+      mutationKey: ['updateBlock', String(props.blockId)],
+      status: 'pending',
+    },
+    // Todo: how do i type variables here
+    select: (data) => data.state.variables.block,
+  })?.at(-1)
+
   const [dragPreviewContainer, setDragPreviewContainer] =
     useState<HTMLElement | null>(null)
 
-  const deleteExperienceBlock = useMutation({
+  // Todo: this mutation should do both the delete and update of experience in one promise/promsise.all
+  const deleteBlock = useMutation({
+    mutationFn: context.deleteBlock,
+    onSuccess: () => {
+      context.queryClient.invalidateQueries({
+        queryKey: ['blocks', String(props.blockId)],
+      })
+    },
+  })
+
+  const removeBlockFromExperience = useMutation({
     mutationFn: () => {
       const clonedExperience = structuredClone(props.experience)
       const filteredBlocks = props.experience.blocks.filter(
-        (b) => b.id !== props.block.id,
+        (b) => b !== props.blockId,
       )
       clonedExperience.blocks = filteredBlocks
-
       return context.updateExperience({ experience: clonedExperience })
     },
     onSuccess: () => {
@@ -51,6 +78,7 @@ export function CanvasItem(props: {
       })
     },
   })
+
   useEffect(() => {
     const dragElement = dragRef.current
     const dropElement = dropRef.current
@@ -104,7 +132,12 @@ export function CanvasItem(props: {
     )
   }, [props.index, props.isCanvasUpdatePending])
 
-  const isActiveBlock = props.activeBlockId === props.block.id
+  const isActiveBlock = props.activeBlockId === props.blockId
+
+  const block = mutationState ?? query.data
+  const componentProps = block.props
+  const Component = components[block.type]
+
   return (
     <>
       <div
@@ -115,25 +148,25 @@ export function CanvasItem(props: {
         <div
           data-context
           onDoubleClick={() => {
-            props.setActiveBlockId(props.block.id)
+            props.setActiveBlockId(props.blockId)
           }}
         >
           <div>
             <span ref={dragRef}>↕️</span>
             <button
-              disabled={
-                deleteExperienceBlock.isPending || props.isCanvasUpdatePending
-              }
               onClick={async () => {
-                deleteExperienceBlock.mutate()
+                deleteBlock.mutate(props.blockId)
+                removeBlockFromExperience.mutate()
+                props.setActiveBlockId(undefined)
               }}
             >
-              ❌
+              X
             </button>
           </div>
         </div>
-        {isActiveBlock && <div data-active></div>}
-        {props.children}
+        {isActiveBlock && <div data-active />}
+        { /* Todo: Fix typing error */ }
+        <Component {...componentProps} />
         <DropIndicator closestEdge={closestEdge} variant="horizontal" />
       </div>
 
