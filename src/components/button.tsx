@@ -2,8 +2,8 @@
 
 import { type ReactNode } from '@tanstack/react-router'
 
-function Button({
-  children = initialProps.children,
+export function Button({
+  children = 'Button',
   icon,
 }: {
   children?: ReactNode
@@ -16,11 +16,3 @@ function Button({
     </button>
   )
 }
-
-const initialProps = { children: 'Button' }
-
-Button.initialProps = {
-  children: 'Button',
-}
-
-export { Button }

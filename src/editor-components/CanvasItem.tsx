@@ -1,5 +1,4 @@
 import { useEffect, useRef, useState } from 'react'
-import { createPortal } from 'react-dom'
 import {
   draggable,
   dropTargetForElements,
@@ -19,8 +18,9 @@ import {
   useSuspenseQuery,
 } from '@tanstack/react-query'
 import { useRouteContext } from '@tanstack/react-router'
-import * as components from '../components'
+
 import './CanvasItem.css'
+import { DragPreview } from './DragPreview'
 
 export function CanvasItem(props: {
   index: number
@@ -40,14 +40,12 @@ export function CanvasItem(props: {
     queryKey: ['blocks', String(props.blockId)],
     queryFn: () => context.getBlock({ blockId: props.blockId }),
   })
-
   const mutationState = useMutationState<Block>({
     filters: {
       mutationKey: ['updateBlock', String(props.blockId)],
       status: 'pending',
     },
-    // Todo: how do i type variables here
-    select: (data) => data.state.variables.block,
+    select: (data) => (data.state.variables as Record<'block', Block>).block,
   })?.at(-1)
 
   const [dragPreviewContainer, setDragPreviewContainer] =
@@ -136,57 +134,46 @@ export function CanvasItem(props: {
 
   const block = mutationState ?? query.data
   const componentProps = block.props
-  const Component = components[block.type]
+  const Component = context.config[block.type].component
+
+  /*
+    children={[]} => <Component {...props} children={<CanvasItem blockId={undefined} />} />
+    children={[1]} => <Component {...props} children={<CanvasItem blockId={1}/>}/>
+    children={[1,2,3]} => <Component {...props} children={[<CanvasItem blockId={1}/>,<CanvasItem blockId={2}/>,<CanvasItem blockId={3}/>]}/>
+  */
 
   return (
-    <>
+    <div
+      style={{ opacity: isDragging || props.isCanvasUpdatePending ? 0.5 : 1 }}
+      data-component="CanvasItem"
+      ref={dropRef}
+    >
       <div
-        style={{ opacity: isDragging || props.isCanvasUpdatePending ? 0.5 : 1 }}
-        data-component="CanvasItem"
-        ref={dropRef}
+        data-context
+        onDoubleClick={() => {
+          props.setActiveBlockId(props.blockId)
+        }}
       >
-        <div
-          data-context
-          onDoubleClick={() => {
-            props.setActiveBlockId(props.blockId)
-          }}
-        >
-          <div>
-            <span ref={dragRef}>↕️</span>
-            <button
-              onClick={async () => {
-                deleteBlock.mutate(props.blockId)
-                removeBlockFromExperience.mutate()
-                props.setActiveBlockId(undefined)
-              }}
-            >
-              X
-            </button>
-          </div>
+        <div>
+          <span ref={dragRef}>↕️</span>
+          <button
+            onClick={async () => {
+              deleteBlock.mutate(props.blockId)
+              removeBlockFromExperience.mutate()
+              props.setActiveBlockId(undefined)
+            }}
+          >
+            X
+          </button>
         </div>
-        {isActiveBlock && <div data-active />}
-        { /* Todo: Fix typing error */ }
-        <Component {...componentProps} />
-        <DropIndicator closestEdge={closestEdge} variant="horizontal" />
       </div>
-
-      {dragPreviewContainer
-        ? createPortal(
-            <div
-              style={{
-                opacity: 1,
-                background: '#efefef',
-                borderRadius: '1rem',
-                fontFamily: 'sans-serif',
-                padding: '10px',
-              }}
-            >
-              Move block ↕️
-            </div>,
-            dragPreviewContainer,
-          )
-        : null}
-    </>
+      {isActiveBlock && <div data-active />}
+      <Component {...componentProps} children={<div>DROPZONE</div>} />
+      <DropIndicator closestEdge={closestEdge} variant="horizontal" />
+      <DragPreview dragPreviewContainer={dragPreviewContainer}>
+        Move {block.name} ↕
+      </DragPreview>
+    </div>
   )
 }
 

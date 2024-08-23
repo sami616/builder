@@ -1,6 +1,6 @@
 import { openDB, type DBSchema } from 'idb'
 import { type ComponentProps } from 'react'
-import * as components from './components'
+import { config } from './main'
 
 export const db = await openDB<MyDB>('experienceManager', 1, {
   upgrade(db) {
@@ -58,11 +58,14 @@ export type Experience = {
 }
 
 export type Block = {
-  [K in keyof typeof components]: {
+  [K in keyof typeof config]: {
     id: number
     createdAt: Date
     updatedAt: Date
     type: K
-    props: ComponentProps<(typeof components)[K]>
+    name: string
+    blocks: Record<string, Array<Block['id']>>
+    props: any
+    // props: ComponentProps<(typeof config)[K]['component']>
   }
-}[keyof typeof components]
+}[keyof typeof config]

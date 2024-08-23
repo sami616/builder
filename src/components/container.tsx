@@ -1,21 +1,10 @@
 import { type ReactNode } from '@tanstack/react-router'
 
-function Container({
-  children = initialProps.children,
-}: {
-  children?: ReactNode
-}) {
+export function Container(props: { children?: ReactNode; title?: string }) {
   return (
     <div style={{ width: '100%', height: 500, background: 'orange' }}>
-      {children}
+      <h1>{props.title}</h1>
+      {props.children}
     </div>
   )
 }
-
-const initialProps = { children: 'Button' }
-
-Container.initialProps = {
-  children: 'Container',
-}
-
-export { Container }

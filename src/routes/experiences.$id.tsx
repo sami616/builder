@@ -5,7 +5,6 @@ import {
   useMutation,
 } from '@tanstack/react-query'
 import { isComponentItemSource } from '../editor-components/ComponentItem'
-import * as components from '../components'
 import { type Context } from '../main'
 import { type Experience } from '../db'
 import { Canvas, isCanvasTarget } from '../editor-components//Canvas'
@@ -86,11 +85,27 @@ function Experience() {
   // Todo: this should do both the adding of the block and updating the exerience in one promise / promise.all
   const addBlock = useMutation({
     mutationFn: (args: { type: Block['type'] }) => {
+      const configItem = context.config[args.type]
+
+      const propKeys = Object.keys(configItem.props)
+      const blockKeys = Object.keys(configItem.blocks)
+
+      const initialProps = propKeys.reduce((acc, curr) => {
+        return { ...acc, [curr]: configItem.props[curr].default }
+      }, {})
+
+      const initialBlocks = blockKeys.reduce((acc, curr) => {
+        return { ...acc, [curr]: configItem.blocks[curr].default }
+      }, {})
+
       return context.addBlock({
         type: args.type,
-        props: components[args.type].initialProps,
+        name: configItem.name,
+        props: initialProps,
+        blocks: initialBlocks,
       })
     },
+
     onSuccess: () => {
       context.queryClient.invalidateQueries({
         queryKey: ['blocks', String(experience.id)],

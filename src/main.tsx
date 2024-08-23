@@ -20,27 +20,35 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 
 const queryClient = new QueryClient()
 
-const config = [
-  {
+export const config = {
+  Button: {
     component: components.Button,
-    definition: {
-      id: 'button',
-      name: 'Button',
-      props: [
-        { name: 'Icon', type: 'string' },
-        { name: 'Children', type: 'string', defaultValue: 'Button' },
-      ],
+    name: 'Button',
+    blocks: {},
+    props: {
+      children: { default: 'Button', type: 'string' },
+      icon: { default: undefined, type: 'string' },
     },
   },
-  {
+  Heading: {
     component: components.Heading,
-    definition: {
-      id: 'heading',
-      name: 'Heading',
-      props: [{ name: 'Children', type: 'string', defaultValue: 'Heading' }],
+    name: 'Heading',
+    blocks: {},
+    props: {
+      children: { default: 'Heading', type: 'string' },
     },
   },
-] as const
+  Container: {
+    component: components.Container,
+    name: 'Container',
+    blocks: {
+      children: { default: [] },
+    },
+    props: {
+      title: { default: 'Container Title', type: 'string' },
+    },
+  },
+} as const
 
 export type Context = {
   queryClient: QueryClient

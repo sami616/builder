@@ -1,0 +1,9 @@
+@scope ([data-component="DragPreview"]) to ([data-component]) {
+  & {
+    opacity: 1;
+    background: #efefef;
+    border-radius: 1rem;
+    font-family: sans-serif;
+    padding: 10px;
+  }
+}
