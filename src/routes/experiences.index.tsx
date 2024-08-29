@@ -80,7 +80,7 @@ export function Experiences() {
             </p>
             <button
               disabled={deleteExperience.isPending}
-              onClick={() => deleteExperience.mutate(experience?.id)}
+              onClick={() => deleteExperience.mutate({ id: experience.id })}
             >
               delete
             </button>

@@ -61,7 +61,7 @@ export function ComponentItem(props: {
   )
 }
 
-type ComponentItemSource = {
+export type ComponentItemSource = {
   type: Block['type']
   id: 'blockItem'
 }

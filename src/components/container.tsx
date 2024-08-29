@@ -1,10 +1,15 @@
 import { type ReactNode } from '@tanstack/react-router'
 
-export function Container(props: { children?: ReactNode; title?: string }) {
+export function Container(props: {
+  left?: ReactNode
+  right?: ReactNode
+  title?: string
+}) {
   return (
-    <div style={{ width: '100%', height: 500, background: 'orange' }}>
+    <div style={{ padding: '1rem', background: 'orange' }}>
       <h1>{props.title}</h1>
-      {props.children}
+      <div>{props.left}</div>
+      <div>{props.right}</div>
     </div>
   )
 }

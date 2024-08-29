@@ -1,10 +1,10 @@
 import { Block, db, type Experience } from './db'
 
-function slow(n: number | 'random') {
-  const duration =
-    n === 'random' ? Math.floor(Math.random() * (5000 - 1000 + 1) + 1000) : n
-  return new Promise((resolve) => setTimeout(resolve, duration))
-}
+// function slow(n: number | 'random') {
+//   const duration =
+//     n === 'random' ? Math.floor(Math.random() * (5000 - 1000 + 1) + 1000) : n
+//   return new Promise((resolve) => setTimeout(resolve, duration))
+// }
 
 // DB Queries
 export async function getExperiences(args: { sortBy: 'latest' | 'oldest' }) {
@@ -49,6 +49,8 @@ export async function getExperience(args: { experienceId: number }) {
 
 // DB Mutations
 
+export const experienceBlocksKey = 'experienceRoot'
+
 export async function addExperience(
   experience: Omit<
     Experience,
@@ -62,7 +64,7 @@ export async function addExperience(
       ...experience,
       createdAt: new Date(),
       updatedAt: new Date(),
-      blocks: [],
+      blocks: { [experienceBlocksKey]: [] },
       status: 'draft',
     } as unknown as Experience),
     tx.done,
@@ -106,14 +108,52 @@ export async function updateExperience(args: { experience: Experience }) {
   return updatedExperience
 }
 
-export async function deleteExperience(id: Experience['id']) {
+export async function deleteExperience(args: { id: Experience['id'] }) {
+  const experience = await getExperience({ experienceId: args.id })
+
+  let deletedBlockIds: Array<Block['id']> = []
+
+  for (const blockId of Object.values(experience.blocks[experienceBlocksKey])) {
+    // Recursively delete all blocks
+    deletedBlockIds = await deleteBlocksRecursivley(blockId)
+  }
+
   const tx = db.transaction('experiences', 'readwrite')
-  await Promise.all([tx.store.delete(id), tx.done])
-  return id
+  await Promise.all([tx.store.delete(args.id), tx.done])
+  return { experience: args.id, blocks: deletedBlockIds }
 }
 
-export async function deleteBlock(id: Block['id']) {
+export async function getBlocksRecursively(
+  id: Block['id'],
+  deletedIds: Block['id'][] = [],
+) {
+  const block = await getBlock({ blockId: id })
+  const blockKeys = Object.keys(block.blocks)
+
+  // Recursively accumulate all child block IDs
+  for (const key of blockKeys) {
+    for (const childId of block.blocks[key]) {
+      await getBlocksRecursively(childId, deletedIds)
+    }
+  }
+
+  // Add the current block's ID to the deletedIds array
+  deletedIds.push(id)
+  return deletedIds
+}
+
+export async function deleteBlocksRecursivley(id: Block['id']) {
+  const blockIdsToDelete = await getBlocksRecursively(id)
   const tx = db.transaction('blocks', 'readwrite')
-  await Promise.all([tx.store.delete(id), tx.done])
-  return id
+  let cursor = await tx.store.openCursor()
+
+  while (cursor) {
+    if (blockIdsToDelete.includes(cursor.primaryKey)) {
+      await cursor.delete()
+    }
+    cursor = await cursor.continue() // Move to the next entry
+  }
+
+  await tx.done
+  return blockIdsToDelete
 }

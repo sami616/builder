@@ -1,0 +1,11 @@
+@scope ([data-component="DropZone"]) to ([data-component]) {
+  & {
+    border-radius: 1rem;
+    margin: 1rem;
+    background: rgba(255, 255, 255, 0.5);
+    text-align: center;
+    padding: 1rem;
+    border: 1px solid white;
+    flex: 1 1 100%;
+  }
+}

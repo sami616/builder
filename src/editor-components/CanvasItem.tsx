@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { ComponentProps, useEffect, useRef, useState } from 'react'
 import {
   draggable,
   dropTargetForElements,
@@ -11,7 +11,7 @@ import {
   type Edge,
 } from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge'
 import { DropIndicator } from './DropIndicator'
-import { type Block, type Experience } from '../db'
+import { isBlock, type Block, type Experience } from '../db'
 import {
   useMutation,
   useMutationState,
@@ -21,11 +21,15 @@ import { useRouteContext } from '@tanstack/react-router'
 
 import './CanvasItem.css'
 import { DragPreview } from './DragPreview'
+import { DropZone } from './DropZone'
 
 export function CanvasItem(props: {
   index: number
   experience: Experience
   isCanvasUpdatePending: boolean
+  parent:
+    | { slotKey: string; node: Block }
+    | { slotKey: string; node: Experience }
   blockId: Block['id']
   activeBlockId?: Block['id']
   setActiveBlockId: (id: Block['id'] | undefined) => void
@@ -35,14 +39,15 @@ export function CanvasItem(props: {
   const [isDragging, setDragging] = useState(false)
   const [closestEdge, setClosestEdge] = useState<Edge | null>(null)
   const context = useRouteContext({ from: '/experiences/$id' })
-
+  const [isHovered, setIsHovered] = useState(false)
   const query = useSuspenseQuery({
-    queryKey: ['blocks', String(props.blockId)],
+    queryKey: ['blocks', props.blockId],
     queryFn: () => context.getBlock({ blockId: props.blockId }),
   })
+
   const mutationState = useMutationState<Block>({
     filters: {
-      mutationKey: ['updateBlock', String(props.blockId)],
+      mutationKey: ['updateBlock', props.blockId],
       status: 'pending',
     },
     select: (data) => (data.state.variables as Record<'block', Block>).block,
@@ -51,31 +56,40 @@ export function CanvasItem(props: {
   const [dragPreviewContainer, setDragPreviewContainer] =
     useState<HTMLElement | null>(null)
 
-  // Todo: this mutation should do both the delete and update of experience in one promise/promsise.all
   const deleteBlock = useMutation({
-    mutationFn: context.deleteBlock,
-    onSuccess: () => {
+    mutationFn: async (args: {
+      blockId: Block['id']
+      parent: ComponentProps<typeof CanvasItem>['parent']
+    }) => {
+      await context.deleteBlocksRecursivley(args.blockId)
+      const clonedParentNode = structuredClone(args.parent.node)
+      clonedParentNode.blocks[args.parent.slotKey] = args.parent.node.blocks[
+        args.parent.slotKey
+      ].filter((id) => id !== args.blockId)
+
+      let parentType = ''
+
+      if (isBlock(clonedParentNode)) {
+        context.updateBlock({ block: clonedParentNode })
+        parentType = 'blocks'
+      } else {
+        context.updateExperience({ experience: clonedParentNode })
+        parentType = 'experiences'
+      }
+      return { type: parentType, id: args.parent.node.id }
+    },
+
+    onSuccess: async ({ type, id }) => {
       context.queryClient.invalidateQueries({
-        queryKey: ['blocks', String(props.blockId)],
+        queryKey: [type, id],
       })
     },
   })
 
-  const removeBlockFromExperience = useMutation({
-    mutationFn: () => {
-      const clonedExperience = structuredClone(props.experience)
-      const filteredBlocks = props.experience.blocks.filter(
-        (b) => b !== props.blockId,
-      )
-      clonedExperience.blocks = filteredBlocks
-      return context.updateExperience({ experience: clonedExperience })
-    },
-    onSuccess: () => {
-      context.queryClient.invalidateQueries({
-        queryKey: ['experiences', String(props.experience.id)],
-      })
-    },
-  })
+  const isActiveBlock = props.activeBlockId === props.blockId
+
+  const block = mutationState ?? query.data
+  const componentProps = block.props
 
   useEffect(() => {
     const dragElement = dragRef.current
@@ -84,9 +98,11 @@ export function CanvasItem(props: {
     return combine(
       draggable({
         element: dragElement,
-        getInitialData: (): CanvasSource => ({
+        getInitialData: (): CanvasItemSource => ({
           index: props.index,
+          block: block,
           id: 'canvasItem',
+          parent: props.parent,
         }),
         onGenerateDragPreview: ({ nativeSetDragImage }) => {
           setCustomNativeDragPreview({
@@ -107,16 +123,23 @@ export function CanvasItem(props: {
         },
         onDrag: ({ self, location }) => {
           const target = location.current.dropTargets[0]
-          if (target.data.id === 'canvasItem') {
+          if (target.element === dropElement) {
             const extractedEdge = extractClosestEdge(self.data)
             setClosestEdge((currEdge) => {
               if (currEdge === extractedEdge) return currEdge
               return extractedEdge
             })
+          } else {
+            setClosestEdge(null)
           }
         },
         getData: ({ input }) => {
-          const data: CanvasTarget = { id: 'canvasItem', index: props.index }
+          const data: CanvasItemTarget = {
+            id: 'canvasItem',
+            index: props.index,
+            block: block,
+            parent: props.parent,
+          }
           return attachClosestEdge(data, {
             element: dropElement,
             input,
@@ -128,47 +151,81 @@ export function CanvasItem(props: {
         },
       }),
     )
-  }, [props.index, props.isCanvasUpdatePending])
+  }, [props.index, props.isCanvasUpdatePending, block, props.parent])
 
-  const isActiveBlock = props.activeBlockId === props.blockId
+  const componentBlocks = Object.keys(block.blocks).reduce<{
+    [key: string]: JSX.Element[] | JSX.Element
+  }>((acc, slotKey) => {
+    if (block.blocks[slotKey].length === 0) {
+      acc[slotKey] = (
+        <DropZone
+          blockKey={context.config[block.type].blocks[slotKey].name}
+          parent={{ slotKey, node: block }}
+        />
+      )
+    } else {
+      acc[slotKey] = block.blocks[slotKey].map((blockId, index) => {
+        return (
+          <CanvasItem
+            index={index}
+            parent={{ slotKey, node: block }}
+            experience={props.experience}
+            activeBlockId={props.activeBlockId}
+            setActiveBlockId={props.setActiveBlockId}
+            key={blockId}
+            isCanvasUpdatePending={props.isCanvasUpdatePending}
+            blockId={blockId}
+          />
+        )
+      })
+    }
 
-  const block = mutationState ?? query.data
-  const componentProps = block.props
+    return acc
+  }, {})
+
   const Component = context.config[block.type].component
-
-  /*
-    children={[]} => <Component {...props} children={<CanvasItem blockId={undefined} />} />
-    children={[1]} => <Component {...props} children={<CanvasItem blockId={1}/>}/>
-    children={[1,2,3]} => <Component {...props} children={[<CanvasItem blockId={1}/>,<CanvasItem blockId={2}/>,<CanvasItem blockId={3}/>]}/>
-  */
 
   return (
     <div
-      style={{ opacity: isDragging || props.isCanvasUpdatePending ? 0.5 : 1 }}
+      style={{
+        zIndex: isHovered ? 1 : 0, // allows outline to sit above other CanvasItems
+        outline: isActiveBlock
+          ? '2px solid blue'
+          : isHovered
+            ? '2px solid red'
+            : 'none',
+        opacity: isDragging || props.isCanvasUpdatePending ? 0.5 : 1,
+      }}
       data-component="CanvasItem"
+      onDoubleClick={(e) => {
+        e.stopPropagation()
+        props.setActiveBlockId(props.blockId)
+      }}
+      onMouseOver={(e) => {
+        e.stopPropagation()
+        setIsHovered(true)
+      }}
+      onMouseOut={(e) => {
+        e.stopPropagation()
+        setIsHovered(false)
+      }}
       ref={dropRef}
     >
-      <div
-        data-context
-        onDoubleClick={() => {
-          props.setActiveBlockId(props.blockId)
-        }}
-      >
-        <div>
-          <span ref={dragRef}>↕️</span>
-          <button
-            onClick={async () => {
-              deleteBlock.mutate(props.blockId)
-              removeBlockFromExperience.mutate()
-              props.setActiveBlockId(undefined)
-            }}
-          >
-            X
-          </button>
-        </div>
+      <div style={{ display: isHovered ? 'flex' : 'none' }} data-context>
+        <span ref={dragRef}>Move</span>
+        <button
+          onClick={() => {
+            deleteBlock.mutate({
+              blockId: props.blockId,
+              parent: props.parent,
+            })
+            props.setActiveBlockId(undefined)
+          }}
+        >
+          Delete
+        </button>
       </div>
-      {isActiveBlock && <div data-active />}
-      <Component {...componentProps} children={<div>DROPZONE</div>} />
+      <Component {...componentProps} {...componentBlocks} />
       <DropIndicator closestEdge={closestEdge} variant="horizontal" />
       <DragPreview dragPreviewContainer={dragPreviewContainer}>
         Move {block.name} ↕
@@ -179,22 +236,26 @@ export function CanvasItem(props: {
 
 export function isCanvasItemSource(
   args: Record<string, unknown>,
-): args is CanvasSource {
-  return typeof args.index === 'number' && args.id === 'canvasItem'
+): args is CanvasItemSource {
+  return args.id === 'canvasItem'
 }
 
-type CanvasSource = {
+export type CanvasItemSource = {
   index: number
   id: 'canvasItem'
+  block: Block
+  parent: ComponentProps<typeof CanvasItem>['parent']
 }
 
 export function isCanvasItemTarget(
   args: Record<string, unknown>,
-): args is CanvasTarget {
-  return typeof args.index === 'number' && args.id === 'canvasItem'
+): args is CanvasItemTarget {
+  return args.id === 'canvasItem'
 }
 
-type CanvasTarget = {
+export type CanvasItemTarget = {
   id: 'canvasItem'
   index: number
+  block: Block
+  parent: ComponentProps<typeof CanvasItem>['parent']
 }

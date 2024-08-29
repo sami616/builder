@@ -1,6 +1,7 @@
 @scope ([data-component="DropIndicator"]) to ([data-component]) {
   & {
-    background: #ff004c;
+    /* background: #ff004c; */
+    background: green;
     position: absolute;
     z-index: 2;
   }

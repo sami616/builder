@@ -1,0 +1,4 @@
+@scope ([data-component="LayerPanel"]) to ([data-component]) {
+  & {
+  }
+}

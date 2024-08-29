@@ -4,52 +4,30 @@
     --highlightColor: #ff004c;
     --activeColor: blue;
     --deleteButtonHeight: 50px;
-    position:relative;
-    &:hover {
-      [data-context] {
-        display: flex;
-      }
-    }
-  }
-
-  [data-active] {
-    position: absolute;
-    z-index: 1;
-    inset: 0;
-    border: var(--borderThickness) solid var(--activeColor);
+    position: relative;
   }
 
   [data-context] {
-    display: none;
+    height: var(--deleteButtonHeight);
+    background: var(--highlightColor);
     position: absolute;
-    z-index: 1;
-    justify-content: end;
-    align-items: start;
-    inset: 0;
-    border: var(--borderThickness) solid var(--highlightColor);
-    & > div {
-      height: var(--deleteButtonHeight);
-      background: var(--highlightColor);
-      position: absolute;
-      padding-inline: 10px;
-      top: calc(var(--deleteButtonHeight) * -1);
-      right: calc(var(--borderThickness) * -1);
+    padding-inline: 10px;
+    top: calc(var(--deleteButtonHeight) * -1);
+    right: calc(var(--borderThickness) * -1);
+    gap: 10px;
+    button,
+    span {
       display: flex;
-      gap: 10px;
-      button,
-      span {
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        appearance: none;
-        background: none;
-        padding: 0;
-        margin: 0;
-        border: none;
-        color: white;
-        &:disabled {
-          opacity: 0.5;
-        }
+      align-items: center;
+      justify-content: center;
+      appearance: none;
+      background: none;
+      padding: 0;
+      margin: 0;
+      border: none;
+      color: white;
+      &:disabled {
+        opacity: 0.5;
       }
     }
   }

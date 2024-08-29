@@ -3,7 +3,7 @@ import { StrictMode } from 'react'
 import {
   addBlock,
   addExperience,
-  deleteBlock,
+  deleteBlocksRecursivley,
   deleteExperience,
   getBlock,
   getExperience,
@@ -17,10 +17,24 @@ import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 import { routeTree } from './routeTree.gen'
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { Context } from '@dnd-kit/sortable/dist/components'
+import { Block } from './db'
 
 const queryClient = new QueryClient()
 
-export const config = {
+type Config = {
+  [key: string]: {
+    component: (props: any) => JSX.Element
+    name: string
+    blocks: Record<string, { default: Array<Block['id']>; name: string }>
+    props: Record<
+      string,
+      { default: any | undefined; type: 'string' | 'number' }
+    >
+  }
+}
+
+export const config: Config = {
   Button: {
     component: components.Button,
     name: 'Button',
@@ -42,13 +56,14 @@ export const config = {
     component: components.Container,
     name: 'Container',
     blocks: {
-      children: { default: [] },
+      left: { default: [], name: 'Left' },
+      right: { default: [], name: 'Right' },
     },
     props: {
       title: { default: 'Container Title', type: 'string' },
     },
   },
-} as const
+}
 
 export type Context = {
   queryClient: QueryClient
@@ -59,7 +74,7 @@ export type Context = {
   deleteExperience: typeof deleteExperience
   addExperience: typeof addExperience
   addBlock: typeof addBlock
-  deleteBlock: typeof deleteBlock
+  deleteBlocksRecursivley: typeof deleteBlocksRecursivley
   updateExperience: typeof updateExperience
   config: typeof config
 }
@@ -76,7 +91,7 @@ export const router = createRouter({
     getBlock,
     getExperience,
     deleteExperience,
-    deleteBlock,
+    deleteBlocksRecursivley,
     config,
   },
 })
