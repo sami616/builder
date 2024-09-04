@@ -10,15 +10,15 @@ export function Canvas(props: {
   activeBlockId?: Block['id']
   setActiveBlockId: (id: Block['id'] | undefined) => void
 }) {
-  const blocks = Object.values(props.experience.blocks)[0]
+  const blocks = Object.values(props.experience.slots)[0]
 
   return (
     <div data-component="Canvas">
       {blocks.length === 0 && (
         <DropZone
-          blockKey="Root"
+          label="Root"
           parent={{
-            slotKey: experienceBlocksKey,
+            slot: experienceBlocksKey,
             node: props.experience,
           }}
         />
@@ -29,7 +29,7 @@ export function Canvas(props: {
             blockId={blockId}
             parent={{
               node: props.experience,
-              slotKey: experienceBlocksKey,
+              slot: experienceBlocksKey,
             }}
             index={index}
             experience={props.experience}

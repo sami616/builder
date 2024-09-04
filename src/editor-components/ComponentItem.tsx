@@ -24,7 +24,7 @@ export function ComponentItem(props: {
       element: ref.current,
       getInitialData: (): ComponentItemSource => ({
         type: props.type,
-        id: 'blockItem',
+        id: 'componentItem',
       }),
       onGenerateDragPreview: ({ nativeSetDragImage }) => {
         setCustomNativeDragPreview({
@@ -63,7 +63,7 @@ export function ComponentItem(props: {
 
 export type ComponentItemSource = {
   type: Block['type']
-  id: 'blockItem'
+  id: 'componentItem'
 }
 
 export function isComponentItemSource(

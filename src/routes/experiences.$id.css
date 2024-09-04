@@ -1,5 +1,6 @@
 @scope ([data-component="experiences.$id"]) to ([data-component]) {
   main {
+    font-family: sans-serif;
     display: grid;
     gap: 1rem;
     grid-template-columns: 300px 1fr;

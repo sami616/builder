@@ -64,7 +64,7 @@ export async function addExperience(
       ...experience,
       createdAt: new Date(),
       updatedAt: new Date(),
-      blocks: { [experienceBlocksKey]: [] },
+      slots: { [experienceBlocksKey]: [] },
       status: 'draft',
     } as unknown as Experience),
     tx.done,
@@ -113,7 +113,7 @@ export async function deleteExperience(args: { id: Experience['id'] }) {
 
   let deletedBlockIds: Array<Block['id']> = []
 
-  for (const blockId of Object.values(experience.blocks[experienceBlocksKey])) {
+  for (const blockId of Object.values(experience.slots[experienceBlocksKey])) {
     // Recursively delete all blocks
     deletedBlockIds = await deleteBlocksRecursivley(blockId)
   }
@@ -123,27 +123,9 @@ export async function deleteExperience(args: { id: Experience['id'] }) {
   return { experience: args.id, blocks: deletedBlockIds }
 }
 
-export async function getBlocksRecursively(
-  id: Block['id'],
-  deletedIds: Block['id'][] = [],
-) {
-  const block = await getBlock({ blockId: id })
-  const blockKeys = Object.keys(block.blocks)
-
-  // Recursively accumulate all child block IDs
-  for (const key of blockKeys) {
-    for (const childId of block.blocks[key]) {
-      await getBlocksRecursively(childId, deletedIds)
-    }
-  }
-
-  // Add the current block's ID to the deletedIds array
-  deletedIds.push(id)
-  return deletedIds
-}
-
 export async function deleteBlocksRecursivley(id: Block['id']) {
-  const blockIdsToDelete = await getBlocksRecursively(id)
+  const blocksToDelete = await getBlocksRecursively(id)
+  const blockIdsToDelete = blocksToDelete.map((block) => block.id)
   const tx = db.transaction('blocks', 'readwrite')
   let cursor = await tx.store.openCursor()
 
@@ -156,4 +138,46 @@ export async function deleteBlocksRecursivley(id: Block['id']) {
 
   await tx.done
   return blockIdsToDelete
+}
+
+export const duplicateBlocksRecursivley = async (id: Block['id']) => {
+  const idMap = new Map()
+  const blocks = await getBlocksRecursively(id)
+  let newRootId = null
+
+  for (const block of blocks) {
+    const copiedBlock = {
+      type: block.type,
+      name: block.name,
+      props: block.props,
+      slots: structuredClone(block.slots),
+    }
+
+    for (var slot in block.slots) {
+      copiedBlock.slots[slot] = block.slots[slot].map((id) => idMap.get(id))
+    }
+
+    const clonedId = await addBlock(copiedBlock)
+    newRootId = clonedId
+    idMap.set(block.id, clonedId)
+  }
+  if (!newRootId) throw new Error('no op')
+  return newRootId
+}
+
+export async function getBlocksRecursively(
+  id: Block['id'],
+  blocks: Block[] = [],
+) {
+  const block = await getBlock({ blockId: id })
+  const slots = Object.keys(block.slots)
+
+  for (const key of slots) {
+    for (const childId of block.slots[key]) {
+      await getBlocksRecursively(childId, blocks)
+    }
+  }
+
+  blocks.push(block)
+  return blocks
 }

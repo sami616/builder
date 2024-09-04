@@ -52,7 +52,7 @@ export type Experience = {
   createdAt: Date
   updatedAt: Date
   status: 'published' | 'draft' | 'changed'
-  blocks: { [index: string]: Array<Block['id']> }
+  slots: { [index: string]: Array<Block['id']> }
 }
 
 export type Block = {
@@ -61,7 +61,7 @@ export type Block = {
   updatedAt: Date
   type: string
   name: string
-  blocks: { [index: string]: Array<Block['id']> }
+  slots: { [index: string]: Array<Block['id']> }
   props: { [index: string]: any }
 }
 

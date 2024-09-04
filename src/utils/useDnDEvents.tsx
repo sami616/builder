@@ -1,46 +1,42 @@
 import { useEffect } from 'react'
-import { DropZoneTarget, isDropZoneTarget } from '../editor-components/DropZone'
+import { type SlotTarget, isSlotTarget } from '../utils/useSlot'
 import {
   ComponentItemSource,
   isComponentItemSource,
 } from '../editor-components/ComponentItem'
 import {
-  isCanvasItemSource,
-  isCanvasItemTarget,
-  type CanvasItemSource,
-  type CanvasItemTarget,
-} from '../editor-components/CanvasItem'
+  isSlotItemSource,
+  isSlotItemTarget,
+  type SlotItemSource,
+  type SlotItemTarget,
+} from '../utils/useSlotItem'
 import { isBlock, isExperience, type Experience, type Block } from '../db'
-import {
-  Edge,
-  extractClosestEdge,
-} from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge'
 import { useMutation } from '@tanstack/react-query'
 import { useRouteContext } from '@tanstack/react-router'
 import { monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { reorderWithEdge } from '@atlaskit/pragmatic-drag-and-drop-hitbox/util/reorder-with-edge'
 
-export function useDnD() {
+export function useDnDEvents() {
   const context = useRouteContext({ from: '/experiences/$id' })
 
   // Move a canvasItem from a block to a canvasItem in a different block
   const moveBlockItemToOtherBlockItem = useMutation({
     mutationFn: (args: {
-      source: CanvasItemSource
-      target: CanvasItemTarget
+      source: SlotItemSource
+      target: SlotItemTarget
       sourceParentNode: Block
       targetParentNode: Block
-      edge: Edge | null
+      edge: Exclude<SlotItemTarget['edge'], null>
     }) => {
       const clonedSourceParentNode = structuredClone(args.sourceParentNode)
       const clonedTargetParentNode = structuredClone(args.targetParentNode)
 
-      clonedSourceParentNode.blocks[args.source.parent.slotKey] =
-        args.source.parent.node.blocks[args.source.parent.slotKey].filter(
+      clonedSourceParentNode.slots[args.source.parent.slot] =
+        args.source.parent.node.slots[args.source.parent.slot].filter(
           (b) => b !== args.source.block.id,
         )
 
-      clonedTargetParentNode.blocks[args.target.parent.slotKey].splice(
+      clonedTargetParentNode.slots[args.target.parent.slot].splice(
         args.edge === 'top' ? args.target.index : args.target.index + 1,
         0,
         args.source.block.id,
@@ -64,19 +60,19 @@ export function useDnD() {
   // Move a canvasItem from a block to a canvasItem the same block
   const moveBlockItemToSameBlockItem = useMutation({
     mutationFn: (args: {
-      source: CanvasItemSource
-      target: CanvasItemSource
+      source: SlotItemSource
+      target: SlotItemTarget
       targetParentNode: Block
-      edge: Edge | null
+      edge: Exclude<SlotItemTarget['edge'], null>
     }) => {
       const clonedTargetParentNode = structuredClone(args.targetParentNode)
 
-      clonedTargetParentNode.blocks[args.source.parent.slotKey] =
-        args.source.parent.node.blocks[args.source.parent.slotKey].filter(
+      clonedTargetParentNode.slots[args.source.parent.slot] =
+        args.source.parent.node.slots[args.source.parent.slot].filter(
           (b) => b !== args.source.block.id,
         )
 
-      clonedTargetParentNode.blocks[args.target.parent.slotKey].splice(
+      clonedTargetParentNode.slots[args.target.parent.slot].splice(
         args.edge === 'top' ? args.target.index : args.target.index + 1,
         0,
         args.source.block.id,
@@ -94,21 +90,21 @@ export function useDnD() {
   // Move a canvasItem from a block to a canvasItem in an experience
   const moveBlockItemToExperienceItem = useMutation({
     mutationFn: (args: {
-      source: CanvasItemSource
-      target: CanvasItemTarget
+      source: SlotItemSource
+      target: SlotItemTarget
       sourceParentNode: Block
       targetParentNode: Experience
-      edge: Edge | null
+      edge: Exclude<SlotItemTarget['edge'], null>
     }) => {
       const clonedSourceParentNode = structuredClone(args.sourceParentNode)
       const clonedTargetParentNode = structuredClone(args.targetParentNode)
 
-      clonedSourceParentNode.blocks[args.source.parent.slotKey] =
-        args.source.parent.node.blocks[args.source.parent.slotKey].filter(
+      clonedSourceParentNode.slots[args.source.parent.slot] =
+        args.source.parent.node.slots[args.source.parent.slot].filter(
           (b) => b !== args.source.block.id,
         )
 
-      clonedTargetParentNode.blocks[args.target.parent.slotKey].splice(
+      clonedTargetParentNode.slots[args.target.parent.slot].splice(
         args.edge === 'top' ? args.target.index : args.target.index + 1,
         0,
         args.source.block.id,
@@ -132,21 +128,20 @@ export function useDnD() {
   // Move a canvasItem from an experience to a canvasItem in an experience
   const moveExperienceItemToExperienceItem = useMutation({
     mutationFn: (args: {
-      source: CanvasItemSource
-      target: CanvasItemSource
+      source: SlotItemSource
+      target: SlotItemTarget
       targetParentNode: Experience
-      edge: Edge | null
+      edge: Exclude<SlotItemTarget['edge'], null>
     }) => {
       const clonedTargetParentNode = structuredClone(args.targetParentNode)
 
-      clonedTargetParentNode.blocks[args.target.parent.slotKey] =
-        reorderWithEdge({
-          list: args.target.parent.node.blocks[args.target.parent.slotKey],
-          startIndex: args.source.index,
-          indexOfTarget: args.target.index,
-          closestEdgeOfTarget: args.edge,
-          axis: 'vertical',
-        })
+      clonedTargetParentNode.slots[args.target.parent.slot] = reorderWithEdge({
+        list: args.target.parent.node.slots[args.target.parent.slot],
+        startIndex: args.source.index,
+        indexOfTarget: args.target.index,
+        closestEdgeOfTarget: args.edge,
+        axis: 'vertical',
+      })
       return context.updateExperience({ experience: clonedTargetParentNode })
     },
     onSuccess: (targetId) => {
@@ -159,21 +154,21 @@ export function useDnD() {
   // Move a canvasItem from an experience to a block canvasItem
   const moveExperienceItemToBlockItem = useMutation({
     mutationFn: (args: {
-      source: CanvasItemSource
-      target: CanvasItemTarget
+      source: SlotItemSource
+      target: SlotItemTarget
       sourceParentNode: Experience
       targetParentNode: Block
-      edge: Edge | null
+      edge: Exclude<SlotItemTarget['edge'], null>
     }) => {
       const clonedSourceParentNode = structuredClone(args.sourceParentNode)
       const clonedTargetParentNode = structuredClone(args.targetParentNode)
 
-      clonedSourceParentNode.blocks[args.source.parent.slotKey] =
-        args.source.parent.node.blocks[args.source.parent.slotKey].filter(
+      clonedSourceParentNode.slots[args.source.parent.slot] =
+        args.source.parent.node.slots[args.source.parent.slot].filter(
           (b) => b !== args.source.block.id,
         )
 
-      clonedTargetParentNode.blocks[args.target.parent.slotKey].splice(
+      clonedTargetParentNode.slots[args.target.parent.slot].splice(
         args.edge === 'top' ? args.target.index : args.target.index + 1,
         0,
         args.source.block.id,
@@ -196,22 +191,22 @@ export function useDnD() {
   // Move a canvasItem from an experience to a block dropzone
   const moveExperienceItemToBlockDropZone = useMutation({
     mutationFn: (args: {
-      source: CanvasItemSource
-      target: DropZoneTarget
+      source: SlotItemSource
+      target: SlotTarget
       sourceParentNode: Experience
       targetParentNode: Block
     }) => {
       const clonedSourceParentNode = structuredClone(args.sourceParentNode)
       const clonedTargetParentNode = structuredClone(args.targetParentNode)
 
-      clonedSourceParentNode.blocks[args.source.parent.slotKey] =
-        args.source.parent.node.blocks[args.source.parent.slotKey].filter(
+      clonedSourceParentNode.slots[args.source.parent.slot] =
+        args.source.parent.node.slots[args.source.parent.slot].filter(
           (b) => b !== args.source.block.id,
         )
 
-      clonedTargetParentNode.blocks[args.target.parent.slotKey] = [
+      clonedTargetParentNode.slots[args.target.parent.slot].push(
         args.source.block.id,
-      ]
+      )
 
       return Promise.all([
         context.updateExperience({ experience: clonedSourceParentNode }),
@@ -231,22 +226,22 @@ export function useDnD() {
   // Move a canvasItem from a block to a dropzone in a different block
   const moveBlockItemToOtherBlockDropZone = useMutation({
     mutationFn: (args: {
-      source: CanvasItemSource
-      target: DropZoneTarget
+      source: SlotItemSource
+      target: SlotTarget
       targetParentNode: Block
       sourceParentNode: Block
     }) => {
       const clonedTargetParentNode = structuredClone(args.targetParentNode)
       const clonedSourceParentNode = structuredClone(args.sourceParentNode)
 
-      clonedSourceParentNode.blocks[args.source.parent.slotKey] =
-        args.source.parent.node.blocks[args.source.parent.slotKey].filter(
+      clonedSourceParentNode.slots[args.source.parent.slot] =
+        args.source.parent.node.slots[args.source.parent.slot].filter(
           (b) => b !== args.source.block.id,
         )
 
-      clonedTargetParentNode.blocks[args.target.parent.slotKey] = [
+      clonedTargetParentNode.slots[args.target.parent.slot].push(
         args.source.block.id,
-      ]
+      )
 
       return Promise.all([
         context.updateBlock({ block: clonedSourceParentNode }),
@@ -266,20 +261,20 @@ export function useDnD() {
   // Move a canvasItem from a block to a dropzone in the same block
   const moveBlockItemtoSameBlockDropZone = useMutation({
     mutationFn: (args: {
-      source: CanvasItemSource
-      target: DropZoneTarget
+      source: SlotItemSource
+      target: SlotTarget
       targetParentNode: Block
     }) => {
       if (!isBlock(args.target.parent.node)) throw new Error('no op')
 
       const clonedTargetParentNode = structuredClone(args.targetParentNode)
 
-      clonedTargetParentNode.blocks[args.target.parent.slotKey] = [
+      clonedTargetParentNode.slots[args.target.parent.slot].push(
         args.source.block.id,
-      ]
+      )
 
-      clonedTargetParentNode.blocks[args.source.parent.slotKey] =
-        args.source.parent.node.blocks[args.source.parent.slotKey].filter(
+      clonedTargetParentNode.slots[args.source.parent.slot] =
+        args.source.parent.node.slots[args.source.parent.slot].filter(
           (b) => b !== args.source.block.id,
         )
 
@@ -295,29 +290,29 @@ export function useDnD() {
   const addComponentItemToDropZone = useMutation({
     mutationFn: async (args: {
       source: ComponentItemSource
-      target: DropZoneTarget
+      target: SlotTarget
     }) => {
       const configItem = context.config[args.source.type]
       const propKeys = Object.keys(configItem.props)
-      const blockKeys = Object.keys(configItem.blocks)
+      const slotKeys = Object.keys(configItem.slots)
 
       const defaultProps = propKeys.reduce((props, propKey) => {
         return { ...props, [propKey]: configItem.props[propKey].default }
       }, {})
 
-      const defaultBlocks = blockKeys.reduce((blocks, blockKey) => {
-        return { ...blocks, [blockKey]: configItem.blocks[blockKey].default }
+      const defaultSlots = slotKeys.reduce((blocks, slot) => {
+        return { ...blocks, [slot]: configItem.slots[slot].default }
       }, {})
 
       const blockId = await context.addBlock({
         type: args.source.type,
         name: configItem.name,
         props: defaultProps,
-        blocks: defaultBlocks,
+        slots: defaultSlots,
       })
 
       const clonedTargetParentNode = structuredClone(args.target.parent.node)
-      clonedTargetParentNode.blocks[args.target.parent.slotKey] = [blockId]
+      clonedTargetParentNode.slots[args.target.parent.slot].push(blockId)
 
       if (isExperience(clonedTargetParentNode)) {
         return context.updateExperience({ experience: clonedTargetParentNode })
@@ -344,30 +339,30 @@ export function useDnD() {
   const addComponentItemToBlockItem = useMutation({
     mutationFn: async (args: {
       source: ComponentItemSource
-      target: CanvasItemTarget
-      edge: Edge | null
+      target: SlotItemTarget
+      edge: Exclude<SlotItemTarget['edge'], null>
     }) => {
       const configItem = context.config[args.source.type]
       const propKeys = Object.keys(configItem.props)
-      const blockKeys = Object.keys(configItem.blocks)
+      const slotKeys = Object.keys(configItem.slots)
 
       const defaultProps = propKeys.reduce((props, propKey) => {
         return { ...props, [propKey]: configItem.props[propKey].default }
       }, {})
 
-      const defaultBlocks = blockKeys.reduce((blocks, blockKey) => {
-        return { ...blocks, [blockKey]: configItem.blocks[blockKey].default }
+      const defaultSlots = slotKeys.reduce((blocks, slot) => {
+        return { ...blocks, [slot]: configItem.slots[slot].default }
       }, {})
 
       const blockId = await context.addBlock({
         type: args.source.type,
         name: configItem.name,
         props: defaultProps,
-        blocks: defaultBlocks,
+        slots: defaultSlots,
       })
 
       const clonedTargetParentNode = structuredClone(args.target.parent.node)
-      clonedTargetParentNode.blocks[args.target.parent.slotKey].splice(
+      clonedTargetParentNode.slots[args.target.parent.slot].splice(
         args.edge === 'top' ? args.target.index : args.target.index + 1,
         0,
         blockId,
@@ -400,14 +395,14 @@ export function useDnD() {
       onDrop: async ({ source, location }) => {
         const target = location.current.dropTargets[0]
 
-        if (isDropZoneTarget(target.data)) {
+        if (isSlotTarget(target.data)) {
           if (isComponentItemSource(source.data)) {
             addComponentItemToDropZone.mutate({
               target: target.data,
               source: source.data,
             })
           }
-          if (isCanvasItemSource(source.data)) {
+          if (isSlotItemSource(source.data)) {
             if (isBlock(source.data.parent.node)) {
               if (isBlock(target.data.parent.node)) {
                 if (source.data.parent.node.id === target.data.parent.node.id) {
@@ -442,8 +437,10 @@ export function useDnD() {
             }
           }
         }
-        if (isCanvasItemTarget(target.data)) {
-          const closestEdge = extractClosestEdge(target.data)
+
+        if (isSlotItemTarget(target.data)) {
+          const closestEdge = target.data.edge
+          if (!closestEdge) return
           if (isComponentItemSource(source.data)) {
             addComponentItemToBlockItem.mutate({
               source: source.data,
@@ -451,7 +448,8 @@ export function useDnD() {
               edge: closestEdge,
             })
           }
-          if (isCanvasItemSource(source.data)) {
+
+          if (isSlotItemSource(source.data)) {
             if (isExperience(source.data.parent.node)) {
               if (isBlock(target.data.parent.node)) {
                 // Move a canvasItem from an experience to a block canvasItem

@@ -6,7 +6,7 @@ export function Container(props: {
   title?: string
 }) {
   return (
-    <div style={{ padding: '1rem', background: 'orange' }}>
+    <div style={{ padding: '1rem', background: '#efefef' }}>
       <h1>{props.title}</h1>
       <div>{props.left}</div>
       <div>{props.right}</div>

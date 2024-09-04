@@ -1,33 +1,36 @@
 @scope ([data-component="CanvasItem"]) to ([data-component]) {
   & {
-    --borderThickness: 2px;
     --highlightColor: #ff004c;
-    --activeColor: blue;
-    --deleteButtonHeight: 50px;
     position: relative;
   }
 
-  [data-context] {
-    height: var(--deleteButtonHeight);
-    background: var(--highlightColor);
-    position: absolute;
-    padding-inline: 10px;
-    top: calc(var(--deleteButtonHeight) * -1);
-    right: calc(var(--borderThickness) * -1);
-    gap: 10px;
-    button,
-    span {
+  [data-context][popover] {
+    margin: 0;
+    padding: 0;
+    border: none;
+    inset: auto;
+    bottom: anchor(top);
+    right: calc(anchor(right) - 2px);
+    div {
       display: flex;
-      align-items: center;
-      justify-content: center;
-      appearance: none;
-      background: none;
-      padding: 0;
-      margin: 0;
-      border: none;
-      color: white;
-      &:disabled {
-        opacity: 0.5;
+      button,
+      span {
+        &:hover {
+          background: black;
+        }
+        display: flex;
+        align-items: center;
+        background: var(--highlightColor);
+        padding: 1rem;
+        justify-content: center;
+        appearance: none;
+        margin: 0;
+        font-size: 14px;
+        border: none;
+        color: white;
+        &:disabled {
+          opacity: 0.5;
+        }
       }
     }
   }

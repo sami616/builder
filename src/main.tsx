@@ -4,6 +4,7 @@ import {
   addBlock,
   addExperience,
   deleteBlocksRecursivley,
+  duplicateBlocksRecursivley,
   deleteExperience,
   getBlock,
   getExperience,
@@ -26,7 +27,7 @@ type Config = {
   [key: string]: {
     component: (props: any) => JSX.Element
     name: string
-    blocks: Record<string, { default: Array<Block['id']>; name: string }>
+    slots: Record<string, { default: Array<Block['id']>; name: string }>
     props: Record<
       string,
       { default: any | undefined; type: 'string' | 'number' }
@@ -38,7 +39,7 @@ export const config: Config = {
   Button: {
     component: components.Button,
     name: 'Button',
-    blocks: {},
+    slots: {},
     props: {
       children: { default: 'Button', type: 'string' },
       icon: { default: undefined, type: 'string' },
@@ -47,7 +48,7 @@ export const config: Config = {
   Heading: {
     component: components.Heading,
     name: 'Heading',
-    blocks: {},
+    slots: {},
     props: {
       children: { default: 'Heading', type: 'string' },
     },
@@ -55,7 +56,7 @@ export const config: Config = {
   Container: {
     component: components.Container,
     name: 'Container',
-    blocks: {
+    slots: {
       left: { default: [], name: 'Left' },
       right: { default: [], name: 'Right' },
     },
@@ -75,6 +76,7 @@ export type Context = {
   addExperience: typeof addExperience
   addBlock: typeof addBlock
   deleteBlocksRecursivley: typeof deleteBlocksRecursivley
+  duplicateBlocksRecursivley: typeof duplicateBlocksRecursivley
   updateExperience: typeof updateExperience
   config: typeof config
 }
@@ -92,6 +94,7 @@ export const router = createRouter({
     getExperience,
     deleteExperience,
     deleteBlocksRecursivley,
+    duplicateBlocksRecursivley,
     config,
   },
 })

@@ -11,7 +11,7 @@ import { Suspense, useState } from 'react'
 import { ComponentPanel } from '../editor-components/ComponentPanel'
 import './experiences.$id.css'
 import { PropsPanel } from '../editor-components/PropsPanel'
-import { useDnD } from '../utils/useDnD'
+import { useDnDEvents } from '../utils/useDnDEvents'
 import { LayerPanel } from '../editor-components/LayerPanel'
 
 export const Route = createFileRoute('/experiences/$id')({
@@ -49,7 +49,7 @@ function Experience() {
     },
   })
 
-  const { pending } = useDnD()
+  const { pending } = useDnDEvents()
 
   return (
     <div data-component="experiences.$id">
@@ -90,9 +90,12 @@ function Experience() {
                 experience={experience}
               />
             </details>
-            <details name="layers">
+            <details open name="layers">
               <summary>Layers</summary>
-              <LayerPanel experience={experience} />
+              <LayerPanel
+                isCanvasUpdatePending={pending}
+                experience={experience}
+              />
             </details>
           </aside>
 

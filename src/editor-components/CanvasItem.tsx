@@ -1,15 +1,4 @@
-import { ComponentProps, useEffect, useRef, useState } from 'react'
-import {
-  draggable,
-  dropTargetForElements,
-} from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
-import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine'
-import { setCustomNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview'
-import {
-  extractClosestEdge,
-  attachClosestEdge,
-  type Edge,
-} from '@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge'
+import { ComponentProps, useRef, useState } from 'react'
 import { DropIndicator } from './DropIndicator'
 import { isBlock, type Block, type Experience } from '../db'
 import {
@@ -22,24 +11,24 @@ import { useRouteContext } from '@tanstack/react-router'
 import './CanvasItem.css'
 import { DragPreview } from './DragPreview'
 import { DropZone } from './DropZone'
+import { useSlotItem } from '../utils/useSlotItem'
 
 export function CanvasItem(props: {
   index: number
   experience: Experience
   isCanvasUpdatePending: boolean
-  parent:
-    | { slotKey: string; node: Block }
-    | { slotKey: string; node: Experience }
+  parent: { slot: string; node: Block } | { slot: string; node: Experience }
   blockId: Block['id']
   activeBlockId?: Block['id']
   setActiveBlockId: (id: Block['id'] | undefined) => void
 }) {
-  const dropRef = useRef<HTMLDivElement>(null)
-  const dragRef = useRef<HTMLDivElement>(null)
-  const [isDragging, setDragging] = useState(false)
-  const [closestEdge, setClosestEdge] = useState<Edge | null>(null)
+  const slotItemTargetRef = useRef<HTMLDivElement>(null)
+  const slotItemSourceRef = useRef<HTMLDivElement>(null)
+  const popoverRef = useRef<HTMLDivElement>(null)
+
   const context = useRouteContext({ from: '/experiences/$id' })
   const [isHovered, setIsHovered] = useState(false)
+
   const query = useSuspenseQuery({
     queryKey: ['blocks', props.blockId],
     queryFn: () => context.getBlock({ blockId: props.blockId }),
@@ -53,8 +42,34 @@ export function CanvasItem(props: {
     select: (data) => (data.state.variables as Record<'block', Block>).block,
   })?.at(-1)
 
-  const [dragPreviewContainer, setDragPreviewContainer] =
-    useState<HTMLElement | null>(null)
+  const duplicateBlock = useMutation({
+    mutationFn: async (args: {
+      index: number
+      blockId: Block['id']
+      parent: ComponentProps<typeof CanvasItem>['parent']
+    }) => {
+      const rootId = await context.duplicateBlocksRecursivley(args.blockId)
+
+      const clonedParentNode = structuredClone(args.parent.node)
+      clonedParentNode.slots[args.parent.slot].splice(args.index, 0, rootId)
+
+      let parentType = ''
+
+      if (isBlock(clonedParentNode)) {
+        await context.updateBlock({ block: clonedParentNode })
+        parentType = 'blocks'
+      } else {
+        await context.updateExperience({ experience: clonedParentNode })
+        parentType = 'experiences'
+      }
+      return { type: parentType, id: args.parent.node.id }
+    },
+    onSuccess: async ({ type, id }) => {
+      context.queryClient.invalidateQueries({
+        queryKey: [type, id],
+      })
+    },
+  })
 
   const deleteBlock = useMutation({
     mutationFn: async (args: {
@@ -63,17 +78,17 @@ export function CanvasItem(props: {
     }) => {
       await context.deleteBlocksRecursivley(args.blockId)
       const clonedParentNode = structuredClone(args.parent.node)
-      clonedParentNode.blocks[args.parent.slotKey] = args.parent.node.blocks[
-        args.parent.slotKey
+      clonedParentNode.slots[args.parent.slot] = args.parent.node.slots[
+        args.parent.slot
       ].filter((id) => id !== args.blockId)
 
       let parentType = ''
 
       if (isBlock(clonedParentNode)) {
-        context.updateBlock({ block: clonedParentNode })
+        await context.updateBlock({ block: clonedParentNode })
         parentType = 'blocks'
       } else {
-        context.updateExperience({ experience: clonedParentNode })
+        await context.updateExperience({ experience: clonedParentNode })
         parentType = 'experiences'
       }
       return { type: parentType, id: args.parent.node.id }
@@ -91,84 +106,31 @@ export function CanvasItem(props: {
   const block = mutationState ?? query.data
   const componentProps = block.props
 
-  useEffect(() => {
-    const dragElement = dragRef.current
-    const dropElement = dropRef.current
-    if (!dragElement || !dropElement) return
-    return combine(
-      draggable({
-        element: dragElement,
-        getInitialData: (): CanvasItemSource => ({
-          index: props.index,
-          block: block,
-          id: 'canvasItem',
-          parent: props.parent,
-        }),
-        onGenerateDragPreview: ({ nativeSetDragImage }) => {
-          setCustomNativeDragPreview({
-            nativeSetDragImage,
-            render({ container }) {
-              setDragPreviewContainer(container)
-            },
-          })
-        },
-        onDragStart: () => setDragging(true),
-        onDrop: () => setDragging(false),
-        canDrag: () => !props.isCanvasUpdatePending,
-      }),
-      dropTargetForElements({
-        element: dropElement,
-        onDrop: () => {
-          setClosestEdge(null)
-        },
-        onDrag: ({ self, location }) => {
-          const target = location.current.dropTargets[0]
-          if (target.element === dropElement) {
-            const extractedEdge = extractClosestEdge(self.data)
-            setClosestEdge((currEdge) => {
-              if (currEdge === extractedEdge) return currEdge
-              return extractedEdge
-            })
-          } else {
-            setClosestEdge(null)
-          }
-        },
-        getData: ({ input }) => {
-          const data: CanvasItemTarget = {
-            id: 'canvasItem',
-            index: props.index,
-            block: block,
-            parent: props.parent,
-          }
-          return attachClosestEdge(data, {
-            element: dropElement,
-            input,
-            allowedEdges: ['top', 'bottom'],
-          })
-        },
-        onDragLeave: () => {
-          setClosestEdge(null)
-        },
-      }),
-    )
-  }, [props.index, props.isCanvasUpdatePending, block, props.parent])
+  const { isDraggingSource, closestEdge, dragPreviewContainer } = useSlotItem({
+    slotItemSourceRef,
+    slotItemTargetRef,
+    parent: props.parent,
+    index: props.index,
+    block: block,
+    disableDrag: props.isCanvasUpdatePending,
+  })
 
-  const componentBlocks = Object.keys(block.blocks).reduce<{
+  const componentBlocks = Object.keys(block.slots).reduce<{
     [key: string]: JSX.Element[] | JSX.Element
-  }>((acc, slotKey) => {
-    if (block.blocks[slotKey].length === 0) {
-      acc[slotKey] = (
+  }>((acc, slot) => {
+    if (block.slots[slot].length === 0) {
+      acc[slot] = (
         <DropZone
-          blockKey={context.config[block.type].blocks[slotKey].name}
-          parent={{ slotKey, node: block }}
+          label={context.config[block.type].slots[slot].name}
+          parent={{ slot, node: block }}
         />
       )
     } else {
-      acc[slotKey] = block.blocks[slotKey].map((blockId, index) => {
+      acc[slot] = block.slots[slot].map((blockId, index) => {
         return (
           <CanvasItem
             index={index}
-            parent={{ slotKey, node: block }}
+            parent={{ slot, node: block }}
             experience={props.experience}
             activeBlockId={props.activeBlockId}
             setActiveBlockId={props.setActiveBlockId}
@@ -188,13 +150,15 @@ export function CanvasItem(props: {
   return (
     <div
       style={{
+        // @ts-ignore
+        anchorName: `--${block.id}`,
         zIndex: isHovered ? 1 : 0, // allows outline to sit above other CanvasItems
         outline: isActiveBlock
           ? '2px solid blue'
           : isHovered
             ? '2px solid red'
             : 'none',
-        opacity: isDragging || props.isCanvasUpdatePending ? 0.5 : 1,
+        opacity: isDraggingSource || props.isCanvasUpdatePending ? 0.5 : 1,
       }}
       data-component="CanvasItem"
       onDoubleClick={(e) => {
@@ -204,27 +168,49 @@ export function CanvasItem(props: {
       onMouseOver={(e) => {
         e.stopPropagation()
         setIsHovered(true)
+        popoverRef.current?.showPopover()
       }}
       onMouseOut={(e) => {
         e.stopPropagation()
         setIsHovered(false)
+        popoverRef.current?.hidePopover()
       }}
-      ref={dropRef}
+      ref={slotItemTargetRef}
     >
-      <div style={{ display: isHovered ? 'flex' : 'none' }} data-context>
-        <span ref={dragRef}>Move</span>
-        <button
-          onClick={() => {
-            deleteBlock.mutate({
-              blockId: props.blockId,
-              parent: props.parent,
-            })
-            props.setActiveBlockId(undefined)
-          }}
-        >
-          Delete
-        </button>
+      <div
+        // @ts-ignore
+        style={{ positionAnchor: `--${block.id}` }}
+        popover="true"
+        ref={popoverRef}
+        data-context
+      >
+        <div>
+          <span ref={slotItemSourceRef}>Move</span>
+          <button
+            onClick={() => {
+              duplicateBlock.mutate({
+                index: props.index,
+                blockId: props.blockId,
+                parent: props.parent,
+              })
+            }}
+          >
+            Duplicate
+          </button>
+          <button
+            onClick={() => {
+              deleteBlock.mutate({
+                blockId: props.blockId,
+                parent: props.parent,
+              })
+              props.setActiveBlockId(undefined)
+            }}
+          >
+            Delete
+          </button>
+        </div>
       </div>
+      {block.id}
       <Component {...componentProps} {...componentBlocks} />
       <DropIndicator closestEdge={closestEdge} variant="horizontal" />
       <DragPreview dragPreviewContainer={dragPreviewContainer}>
@@ -232,30 +218,4 @@ export function CanvasItem(props: {
       </DragPreview>
     </div>
   )
-}
-
-export function isCanvasItemSource(
-  args: Record<string, unknown>,
-): args is CanvasItemSource {
-  return args.id === 'canvasItem'
-}
-
-export type CanvasItemSource = {
-  index: number
-  id: 'canvasItem'
-  block: Block
-  parent: ComponentProps<typeof CanvasItem>['parent']
-}
-
-export function isCanvasItemTarget(
-  args: Record<string, unknown>,
-): args is CanvasItemTarget {
-  return args.id === 'canvasItem'
-}
-
-export type CanvasItemTarget = {
-  id: 'canvasItem'
-  index: number
-  block: Block
-  parent: ComponentProps<typeof CanvasItem>['parent']
 }
