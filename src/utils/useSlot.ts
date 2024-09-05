@@ -1,6 +1,6 @@
 import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { useState, useEffect, type RefObject } from 'react'
-import { Block, Experience } from '../db'
+import { type Block, type Experience } from '../db'
 
 export function useSlot(props: {
   slotTargetRef: RefObject<HTMLDivElement | HTMLDetailsElement>
@@ -27,9 +27,7 @@ export function useSlot(props: {
         setIsDraggingOverSlot(false)
       },
       canDrop: ({ source, element }) => {
-        const sourceEl = source.element.closest(
-          '[data-drop-target-for-element="true"]',
-        )
+        const sourceEl = source.element.closest('[data-drop-target-for-element="true"]')
 
         // stop dragging inside child droppables
         if (sourceEl?.contains(element)) return false
@@ -49,8 +47,6 @@ export type SlotTarget = {
   parent: Parameters<typeof useSlot>[0]['parent']
 }
 
-export function isSlotTarget(
-  args: Record<string, unknown>,
-): args is SlotTarget {
+export function isSlotTarget(args: Record<string, unknown>): args is SlotTarget {
   return args.id === 'slotTarget'
 }

@@ -8,18 +8,13 @@ import { useSlotItem } from '../utils/useSlotItem'
 import { useSlot } from '../utils/useSlot'
 import { DragPreview } from './DragPreview'
 
-export function LayerItem(props: {
-  blockId: Block['id']
-  index: number
-  isCanvasUpdatePending: boolean
-  parent: { slot: string; node: Block } | { slot: string; node: Experience }
-}) {
+export function LayerItem(props: { blockId: Block['id']; index: number; isCanvasUpdatePending: boolean; parent: { slot: string; node: Block } | { slot: string; node: Experience } }) {
   const context = useRouteContext({ from: '/experiences/$id' })
   const slotItemSourceRef = useRef<HTMLLIElement>(null)
   const slotItemTargetRef = useRef<HTMLLIElement>(null)
   const query = useSuspenseQuery({
     queryKey: ['blocks', props.blockId],
-    queryFn: () => context.getBlock({ blockId: props.blockId }),
+    queryFn: () => context.get({ id: props.blockId, type: 'blocks' }),
   })
 
   const mutationState = useMutationState<Block>({
@@ -55,30 +50,15 @@ export function LayerItem(props: {
       <span ref={slotItemSourceRef}>m</span>
       {query.data.name}
       {Object.keys(block.slots).map((slot) => (
-        <LayerItemSlot
-          slot={slot}
-          block={block}
-          isCanvasUpdatePending={props.isCanvasUpdatePending}
-          parent={props.parent}
-          key={slot}
-        />
+        <LayerItemSlot slot={slot} block={block} isCanvasUpdatePending={props.isCanvasUpdatePending} parent={props.parent} key={slot} />
       ))}
       <DropIndicator closestEdge={closestEdge} variant="horizontal" />
-      <DragPreview dragPreviewContainer={dragPreviewContainer}>
-        Move {block.name} ↕
-      </DragPreview>
+      <DragPreview dragPreviewContainer={dragPreviewContainer}>Move {block.name} ↕</DragPreview>
     </li>
   )
 }
 
-function LayerItemSlot(props: {
-  block: Block
-  slot: string
-  isCanvasUpdatePending: ComponentProps<
-    typeof LayerItem
-  >['isCanvasUpdatePending']
-  parent: ComponentProps<typeof LayerItem>['parent']
-}) {
+function LayerItemSlot(props: { block: Block; slot: string; isCanvasUpdatePending: ComponentProps<typeof LayerItem>['isCanvasUpdatePending']; parent: ComponentProps<typeof LayerItem>['parent'] }) {
   const slotTargetRef = useRef<HTMLDetailsElement>(null)
 
   const { isDraggingOverSlot } = useSlot({
@@ -96,18 +76,10 @@ function LayerItemSlot(props: {
       style={{ color: isDraggingOverSlot ? 'red' : 'black' }}
       ref={slotTargetRef}
     >
-      <summary>
-        {context.config[props.block.type].slots[props.slot].name}
-      </summary>
+      <summary>{context.config[props.block.type].slots[props.slot].name}</summary>
       <ul>
         {props.block.slots[props.slot].map((blockId, index) => (
-          <LayerItem
-            isCanvasUpdatePending={props.isCanvasUpdatePending}
-            index={index}
-            parent={{ slot: props.slot, node: props.block }}
-            blockId={blockId}
-            key={blockId}
-          />
+          <LayerItem isCanvasUpdatePending={props.isCanvasUpdatePending} index={index} parent={{ slot: props.slot, node: props.block }} blockId={blockId} key={blockId} />
         ))}
       </ul>
     </details>

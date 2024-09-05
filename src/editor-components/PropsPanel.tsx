@@ -2,50 +2,44 @@ import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
 import { useRouteContext } from '@tanstack/react-router'
 import './PropsPanel.css'
 
-export function PropsPanel(props: {
-  activeBlockId: number
-  setActiveBlockId: (id: number | undefined) => void
-}) {
+export function PropsPanel(props: { activeBlockId: number; setActiveBlockId: (id: number | undefined) => void }) {
   const context = useRouteContext({ from: '/experiences/$id' })
 
   const { data: activeBlock } = useSuspenseQuery({
     queryKey: ['blocks', props.activeBlockId],
-    queryFn: () => context.getBlock({ blockId: props.activeBlockId }),
+    queryFn: () => context.get({ id: props.activeBlockId, type: 'blocks' }),
   })
 
   const updateBlock = useMutation({
-    mutationFn: context.updateBlock,
+    mutationFn: context.update,
     mutationKey: ['updateBlock', activeBlock.id],
     onError: (err, _data) => {
       // Todo: show some kind of notification error
       console.error(err)
     },
-    onSettled: async () => {
+    onSettled: async (id) => {
       await context.queryClient.invalidateQueries({
-        queryKey: ['blocks', activeBlock.id],
+        queryKey: ['blocks', id],
       })
     },
   })
 
-  // const activeBlockCopy = useMemo(
-  //   () => structuredClone(activeBlock),
-  //   [activeBlock],
-  // )
-
-  const AB = updateBlock.isPending ? updateBlock.variables.block : activeBlock
+  const AB = updateBlock.isPending ? updateBlock.variables.entry : activeBlock
 
   return (
     <div data-component="PropsPanel">
       <button onClick={() => props.setActiveBlockId(undefined)}>Close</button>
       {<pre>{JSON.stringify(AB, null, 2)}</pre>}
-      {/* <input
+      {/*
+        <input
         type="text"
         onChange={(e) => {
-          activeBlockCopy.props.children = e.target.value
+          activeBlock.props.children = e.target.value
           updateBlock.mutate({ block: activeBlockCopy })
         }}
         value={AB?.props.children}
-      /> */}
+      />
+          */}
     </div>
   )
 }

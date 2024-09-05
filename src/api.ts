@@ -1,183 +1,112 @@
-import { Block, db, type Experience } from './db'
+import { type Block, type Experience, db } from './db'
+export const experienceBlocksKey = 'experienceRoot'
 
-// function slow(n: number | 'random') {
-//   const duration =
-//     n === 'random' ? Math.floor(Math.random() * (5000 - 1000 + 1) + 1000) : n
-//   return new Promise((resolve) => setTimeout(resolve, duration))
-// }
+// get
+export async function get(args: { id: Experience['id']; type: 'experiences' }): Promise<Experience>
+export async function get(args: { id: Block['id']; type: 'blocks' }): Promise<Block>
 
-// DB Queries
-export async function getExperiences(args: { sortBy: 'latest' | 'oldest' }) {
-  const tx = db.transaction('experiences', 'readonly')
+export async function get(args: { id: Experience['id'] | Block['id']; type: 'experiences' | 'blocks' }) {
+  const tx = db.transaction(args.type, 'readonly')
+  const [entry] = await Promise.all([tx.store.get(args.id), tx.done])
+  if (!entry) throw new Error('Entry not found')
+  return entry
+}
 
+// getMany
+export async function getMany(args: { type: 'experiences'; sortBy: 'latest' | 'oldest' }): Promise<Experience[]>
+export async function getMany(args: { type: 'blocks'; sortBy: 'latest' | 'oldest' }): Promise<Block[]>
+
+export async function getMany(args: { type: 'experiences' | 'blocks'; sortBy: 'latest' | 'oldest' }) {
+  const tx = db.transaction(args.type, 'readonly')
   const map = new Map([
     ['latest', 'prev'],
     ['oldest', 'next'],
   ] as const)
-
-  // Get them in date order
   const index = tx.store.index('createdAt')
-
-  const experiences = []
-
+  const entries = []
   let cursor = await index.openCursor(null, map.get(args.sortBy))
-
   while (cursor) {
-    experiences.push(cursor.value)
-    cursor = await cursor.continue()
+    entries.push(cursor.value), (cursor = await cursor.continue())
   }
-
-  return experiences
+  return entries
 }
 
-export async function getBlock(args: { blockId: number }) {
-  const tx = db.transaction('blocks', 'readonly')
-  const [block] = await Promise.all([tx.store.get(args.blockId), tx.done])
-  if (!block) throw new Error('Block not found')
-  return block
-}
-
-export async function getExperience(args: { experienceId: number }) {
-  const tx = db.transaction('experiences', 'readonly')
-  const [experience] = await Promise.all([
-    tx.store.get(args.experienceId),
-    tx.done,
-  ])
-  if (!experience) throw new Error('Experience not found')
-  return experience
-}
-
-// DB Mutations
-
-export const experienceBlocksKey = 'experienceRoot'
-
-export async function addExperience(
-  experience: Omit<
-    Experience,
-    'id' | 'updatedAt' | 'createdAt' | 'status' | 'blocks'
-  >,
-) {
-  const tx = db.transaction('experiences', 'readwrite')
-
-  const [id] = await Promise.all([
-    tx.store.add({
-      ...experience,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-      slots: { [experienceBlocksKey]: [] },
-      status: 'draft',
-    } as unknown as Experience),
-    tx.done,
-  ])
-  return id
-}
-
-export async function addBlock(
-  block: Omit<Block, 'id' | 'updatedAt' | 'createdAt'>,
-) {
-  const tx = db.transaction('blocks', 'readwrite')
-
-  const [id] = await Promise.all([
-    tx.store.add({
-      ...block,
-      createdAt: new Date(),
-      updatedAt: new Date(),
-    } as unknown as Block),
-    tx.done,
-  ])
-  return id
-}
-
-export async function updateBlock(args: { block: Block }) {
-  const tx = db.transaction('blocks', 'readwrite')
-
-  const [updatedBlock] = await Promise.all([
-    tx.store.put({ ...args.block, updatedAt: new Date() }),
-    tx.done,
-  ])
-  return updatedBlock
-}
-
-export async function updateExperience(args: { experience: Experience }) {
-  const tx = db.transaction('experiences', 'readwrite')
-
-  const [updatedExperience] = await Promise.all([
-    tx.store.put({ ...args.experience, updatedAt: new Date() }),
-    tx.done,
-  ])
-  return updatedExperience
-}
-
-export async function deleteExperience(args: { id: Experience['id'] }) {
-  const experience = await getExperience({ experienceId: args.id })
-
-  let deletedBlockIds: Array<Block['id']> = []
-
-  for (const blockId of Object.values(experience.slots[experienceBlocksKey])) {
-    // Recursively delete all blocks
-    deletedBlockIds = await deleteBlocksRecursivley(blockId)
-  }
-
-  const tx = db.transaction('experiences', 'readwrite')
-  await Promise.all([tx.store.delete(args.id), tx.done])
-  return { experience: args.id, blocks: deletedBlockIds }
-}
-
-export async function deleteBlocksRecursivley(id: Block['id']) {
-  const blocksToDelete = await getBlocksRecursively(id)
-  const blockIdsToDelete = blocksToDelete.map((block) => block.id)
-  const tx = db.transaction('blocks', 'readwrite')
-  let cursor = await tx.store.openCursor()
-
-  while (cursor) {
-    if (blockIdsToDelete.includes(cursor.primaryKey)) {
-      await cursor.delete()
-    }
-    cursor = await cursor.continue() // Move to the next entry
-  }
-
-  await tx.done
-  return blockIdsToDelete
-}
-
-export const duplicateBlocksRecursivley = async (id: Block['id']) => {
-  const idMap = new Map()
-  const blocks = await getBlocksRecursively(id)
-  let newRootId = null
-
-  for (const block of blocks) {
-    const copiedBlock = {
-      type: block.type,
-      name: block.name,
-      props: block.props,
-      slots: structuredClone(block.slots),
-    }
-
-    for (var slot in block.slots) {
-      copiedBlock.slots[slot] = block.slots[slot].map((id) => idMap.get(id))
-    }
-
-    const clonedId = await addBlock(copiedBlock)
-    newRootId = clonedId
-    idMap.set(block.id, clonedId)
-  }
-  if (!newRootId) throw new Error('no op')
-  return newRootId
-}
-
-export async function getBlocksRecursively(
-  id: Block['id'],
-  blocks: Block[] = [],
-) {
-  const block = await getBlock({ blockId: id })
-  const slots = Object.keys(block.slots)
-
+// getTree
+export async function getTree({
+  entries = [],
+  ...args
+}: {
+  root: { type: 'block'; id: Block['id'] } | { type: 'experience'; id: Experience['id'] }
+  entries?: Array<Block | Experience>
+}) {
+  const entry = args.root.type === 'block' ? await get({ id: args.root.id, type: 'blocks' }) : await get({ id: args.root.id, type: 'experiences' })
+  const slots = Object.keys(entry.slots)
   for (const key of slots) {
-    for (const childId of block.slots[key]) {
-      await getBlocksRecursively(childId, blocks)
+    for (const id of entry.slots[key]) {
+      await getTree({ root: { type: 'block', id }, entries })
     }
   }
+  entries.push(entry)
+  return entries
+}
 
-  blocks.push(block)
-  return blocks
+// add
+export async function add(args: { entry: Omit<Experience, 'id'> | Omit<Block, 'id'> }) {
+  const tx = db.transaction(getStore(args.entry), 'readwrite')
+  const [id] = await Promise.all([tx.store.add(args.entry as Block | Experience), tx.done])
+  return id
+}
+
+// addMany
+export async function addMany(args: { entries: Array<Experience | Block> }) {
+  const expTx = db.transaction('experiences', 'readwrite')
+  const bloTx = db.transaction('blocks', 'readwrite')
+  const promises = args.entries.map((entry) => (isBlock(entry) ? bloTx.store.add(entry) : expTx.store.add(entry)))
+  const ids = await Promise.all([...promises, expTx.done, bloTx.done])
+  return ids.filter(Boolean)
+}
+
+// update
+export async function update(args: { entry: Experience | Block }) {
+  if (isBlock(args.entry)) {
+    args.entry
+  }
+  const tx = db.transaction(getStore(args.entry), 'readwrite')
+  const [id] = await Promise.all([tx.store.put(args.entry), tx.done])
+  return id
+}
+
+// updateMany
+export async function updateMany(args: { entries: Array<Experience | Block> }) {
+  const expTx = db.transaction('experiences', 'readwrite')
+  const bloTx = db.transaction('blocks', 'readwrite')
+  const promises = args.entries.map((entry) => (isBlock(entry) ? bloTx.store.put(entry) : expTx.store.put(entry)))
+  const ids = await Promise.all([...promises, expTx.done, bloTx.done])
+  return ids.filter(Boolean)
+}
+
+// remove
+export async function remove(args: { entry: Experience | Block }) {
+  const tx = db.transaction(getStore(args.entry), 'readwrite')
+  await Promise.all([tx.store.delete(args.entry.id), tx.done])
+}
+
+// removeMany
+export async function removeMany(args: { entries: Array<Experience | Block> }) {
+  const expTx = db.transaction('experiences', 'readwrite')
+  const bloTx = db.transaction('blocks', 'readwrite')
+  const promises = args.entries.map((entry) => (isBlock(entry) ? bloTx.store.delete(entry.id) : expTx.store.delete(entry.id)))
+  await Promise.all([...promises, expTx.done, bloTx.done])
+}
+
+export function isBlock(args: Omit<Block | Experience, 'id'>): args is Block {
+  return 'props' in args
+}
+
+export function isExperience(args: Block | Experience): args is Experience {
+  return !('props' in args)
+}
+
+export function getStore(arg: Omit<Experience, 'id'> | Omit<Block, 'id'>) {
+  return isBlock(arg) ? 'blocks' : 'experiences'
 }

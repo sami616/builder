@@ -9,7 +9,6 @@ export const db = await openDB<MyDB>('experienceManager', 1, {
         autoIncrement: true,
       })
 
-      store.createIndex('slug', 'slug', { unique: true })
       store.createIndex('createdAt', 'createdAt', { unique: false })
       store.createIndex('updatedAt', 'updatedAt', { unique: false })
     }
@@ -31,7 +30,6 @@ export interface MyDB extends DBSchema {
     value: Experience
     indexes: {
       createdAt: Experience['createdAt']
-      slug: Experience['slug']
       updatedAt: Experience['updatedAt']
     }
   }
@@ -48,7 +46,6 @@ export interface MyDB extends DBSchema {
 export type Experience = {
   id: number
   name: string
-  slug: string
   createdAt: Date
   updatedAt: Date
   status: 'published' | 'draft' | 'changed'
@@ -63,12 +60,4 @@ export type Block = {
   name: string
   slots: { [index: string]: Array<Block['id']> }
   props: { [index: string]: any }
-}
-
-export function isBlock(args: Block | Experience): args is Block {
-  return 'props' in args
-}
-
-export function isExperience(args: Block | Experience): args is Experience {
-  return !('props' in args)
 }

@@ -1,19 +1,15 @@
 import { ComponentProps, useRef, useState } from 'react'
 import { DropIndicator } from './DropIndicator'
-import { isBlock, type Block, type Experience } from '../db'
-import {
-  useMutation,
-  useMutationState,
-  useSuspenseQuery,
-} from '@tanstack/react-query'
+import { type Block, type Experience } from '../db'
+import { useMutation, useMutationState, useSuspenseQuery } from '@tanstack/react-query'
 import { useRouteContext } from '@tanstack/react-router'
 
-import './CanvasItem.css'
+import './BlockItem.css'
 import { DragPreview } from './DragPreview'
 import { DropZone } from './DropZone'
 import { useSlotItem } from '../utils/useSlotItem'
 
-export function CanvasItem(props: {
+export function BlockItem(props: {
   index: number
   experience: Experience
   isCanvasUpdatePending: boolean
@@ -31,7 +27,7 @@ export function CanvasItem(props: {
 
   const query = useSuspenseQuery({
     queryKey: ['blocks', props.blockId],
-    queryFn: () => context.getBlock({ blockId: props.blockId }),
+    queryFn: () => context.get({ id: props.blockId, type: 'blocks' }),
   })
 
   const mutationState = useMutationState<Block>({
@@ -45,59 +41,52 @@ export function CanvasItem(props: {
   const duplicateBlock = useMutation({
     mutationFn: async (args: {
       index: number
-      blockId: Block['id']
-      parent: ComponentProps<typeof CanvasItem>['parent']
+      root: Parameters<typeof context.getTree>[0]['root']
+      parent: ComponentProps<typeof BlockItem>['parent']
     }) => {
-      const rootId = await context.duplicateBlocksRecursivley(args.blockId)
+      const idMap = new Map()
+      let rootId = null
+      const entries = await context.getTree({ root: args.root })
 
-      const clonedParentNode = structuredClone(args.parent.node)
-      clonedParentNode.slots[args.parent.slot].splice(args.index, 0, rootId)
+      for (const entry of entries) {
+        const clonedEntry = structuredClone(entry)
 
-      let parentType = ''
+        const date = new Date()
+        clonedEntry.createdAt = date
+        clonedEntry.updatedAt = date
 
-      if (isBlock(clonedParentNode)) {
-        await context.updateBlock({ block: clonedParentNode })
-        parentType = 'blocks'
-      } else {
-        await context.updateExperience({ experience: clonedParentNode })
-        parentType = 'experiences'
+        for (var slot in entry.slots) {
+          clonedEntry.slots[slot] = entry.slots[slot].map((id) => idMap.get(id))
+        }
+
+        const { id, ...clonedEntryWithoutId } = clonedEntry
+        rootId = await context.add({ entry: clonedEntryWithoutId })
+        idMap.set(entry.id, rootId)
       }
-      return { type: parentType, id: args.parent.node.id }
+
+      if (!rootId) throw new Error('no op')
+
+      const clonedParent = structuredClone(args.parent.node)
+      clonedParent.slots[args.parent.slot].splice(args.index + 1, 0, rootId)
+      await context.update({ entry: clonedParent })
+      return { store: context.getStore(clonedParent), id: args.parent.node.id }
     },
-    onSuccess: async ({ type, id }) => {
-      context.queryClient.invalidateQueries({
-        queryKey: [type, id],
-      })
+    onSuccess: async ({ store, id }) => {
+      context.queryClient.invalidateQueries({ queryKey: [store, id] })
     },
   })
 
-  const deleteBlock = useMutation({
-    mutationFn: async (args: {
-      blockId: Block['id']
-      parent: ComponentProps<typeof CanvasItem>['parent']
-    }) => {
-      await context.deleteBlocksRecursivley(args.blockId)
+  const removeBlock = useMutation({
+    mutationFn: async (args: { blockId: Block['id']; parent: ComponentProps<typeof BlockItem>['parent'] }) => {
+      const entries = await context.getTree({ root: { id: args.blockId, type: 'block' } })
+      await context.removeMany({ entries })
       const clonedParentNode = structuredClone(args.parent.node)
-      clonedParentNode.slots[args.parent.slot] = args.parent.node.slots[
-        args.parent.slot
-      ].filter((id) => id !== args.blockId)
-
-      let parentType = ''
-
-      if (isBlock(clonedParentNode)) {
-        await context.updateBlock({ block: clonedParentNode })
-        parentType = 'blocks'
-      } else {
-        await context.updateExperience({ experience: clonedParentNode })
-        parentType = 'experiences'
-      }
-      return { type: parentType, id: args.parent.node.id }
+      clonedParentNode.slots[args.parent.slot] = args.parent.node.slots[args.parent.slot].filter((id) => id !== args.blockId)
+      await context.update({ entry: clonedParentNode })
+      return { store: context.getStore(clonedParentNode), id: args.parent.node.id }
     },
-
-    onSuccess: async ({ type, id }) => {
-      context.queryClient.invalidateQueries({
-        queryKey: [type, id],
-      })
+    onSuccess: async ({ store, id }) => {
+      context.queryClient.invalidateQueries({ queryKey: [store, id] })
     },
   })
 
@@ -119,16 +108,11 @@ export function CanvasItem(props: {
     [key: string]: JSX.Element[] | JSX.Element
   }>((acc, slot) => {
     if (block.slots[slot].length === 0) {
-      acc[slot] = (
-        <DropZone
-          label={context.config[block.type].slots[slot].name}
-          parent={{ slot, node: block }}
-        />
-      )
+      acc[slot] = <DropZone label={context.config[block.type].slots[slot].name} parent={{ slot, node: block }} />
     } else {
       acc[slot] = block.slots[slot].map((blockId, index) => {
         return (
-          <CanvasItem
+          <BlockItem
             index={index}
             parent={{ slot, node: block }}
             experience={props.experience}
@@ -152,15 +136,11 @@ export function CanvasItem(props: {
       style={{
         // @ts-ignore
         anchorName: `--${block.id}`,
-        zIndex: isHovered ? 1 : 0, // allows outline to sit above other CanvasItems
-        outline: isActiveBlock
-          ? '2px solid blue'
-          : isHovered
-            ? '2px solid red'
-            : 'none',
+        zIndex: isHovered ? 1 : 0, // allows outline to sit above other BlockItems
+        outline: isActiveBlock ? '2px solid blue' : isHovered ? '2px solid red' : 'none',
         opacity: isDraggingSource || props.isCanvasUpdatePending ? 0.5 : 1,
       }}
-      data-component="CanvasItem"
+      data-component="BlockItem"
       onDoubleClick={(e) => {
         e.stopPropagation()
         props.setActiveBlockId(props.blockId)
@@ -190,7 +170,7 @@ export function CanvasItem(props: {
             onClick={() => {
               duplicateBlock.mutate({
                 index: props.index,
-                blockId: props.blockId,
+                root: { type: 'block', id: props.blockId },
                 parent: props.parent,
               })
             }}
@@ -199,7 +179,7 @@ export function CanvasItem(props: {
           </button>
           <button
             onClick={() => {
-              deleteBlock.mutate({
+              removeBlock.mutate({
                 blockId: props.blockId,
                 parent: props.parent,
               })
@@ -210,12 +190,9 @@ export function CanvasItem(props: {
           </button>
         </div>
       </div>
-      {block.id}
       <Component {...componentProps} {...componentBlocks} />
       <DropIndicator closestEdge={closestEdge} variant="horizontal" />
-      <DragPreview dragPreviewContainer={dragPreviewContainer}>
-        Move {block.name} ↕
-      </DragPreview>
+      <DragPreview dragPreviewContainer={dragPreviewContainer}>Move {block.name} ↕</DragPreview>
     </div>
   )
 }

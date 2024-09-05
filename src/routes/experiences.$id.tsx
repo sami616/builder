@@ -1,25 +1,23 @@
 import { createFileRoute } from '@tanstack/react-router'
-import {
-  useSuspenseQuery,
-  queryOptions,
-  useMutation,
-} from '@tanstack/react-query'
+import { useSuspenseQuery, queryOptions, useMutation } from '@tanstack/react-query'
 import { type Context } from '../main'
 import { type Experience, type Block } from '../db'
-import { Canvas } from '../editor-components/Canvas'
 import { Suspense, useState } from 'react'
 import { ComponentPanel } from '../editor-components/ComponentPanel'
 import './experiences.$id.css'
 import { PropsPanel } from '../editor-components/PropsPanel'
 import { useDnDEvents } from '../utils/useDnDEvents'
 import { LayerPanel } from '../editor-components/LayerPanel'
+import { DropZone } from '../editor-components/DropZone'
+import { experienceBlocksKey } from '../api'
+import { BlockItem } from '../editor-components/BlockItem'
 
 export const Route = createFileRoute('/experiences/$id')({
   component: Experience,
   loader: ({ params, context }) =>
     context.queryClient.ensureQueryData(
       // Todo: how can i start to prefetch all the blocks assosiated with this experience?
-      queryOpts(Number(params.id), context.getExperience),
+      queryOpts(Number(params.id), context.get),
     ),
   pendingComponent: () => <p>Loading..</p>,
   errorComponent: () => <p>Error!</p>,
@@ -31,20 +29,19 @@ function Experience() {
 
   const [activeBlockId, setActiveBlockId] = useState<Block['id'] | undefined>()
 
-  const { data: experience } = useSuspenseQuery(
-    queryOpts(Number(id), context.getExperience),
-  )
+  const { data: experience } = useSuspenseQuery(queryOpts(Number(id), context.get))
+
+  const blocks = Object.values(experience.slots)[0]
 
   const updateExperienceMeta = useMutation({
-    mutationFn: (args: { name: string; slug: string }) => {
-      const clonedExperience = structuredClone(experience)
-      clonedExperience.name = args.name
-      clonedExperience.slug = args.slug
-      return context.updateExperience({ experience: clonedExperience })
+    mutationFn: (args: { experience: Experience; name: string }) => {
+      const clonedEntry = structuredClone(args.experience)
+      clonedEntry.name = args.name
+      return context.update({ entry: clonedEntry })
     },
-    onSuccess: () => {
+    onSuccess: (id) => {
       context.queryClient.invalidateQueries({
-        queryKey: ['experiences', experience.id],
+        queryKey: ['experiences', id],
       })
     },
   })
@@ -56,62 +53,68 @@ function Experience() {
       {/* Edit experience meta data */}
       <div>
         <p>{experience.name}</p>
-        <p>{experience.slug}</p>
         <form
           onSubmit={(e) => {
             e.preventDefault()
             const form = e.currentTarget
             const formData = new FormData(form)
-            updateExperienceMeta.mutate({
-              name: formData.get('name') as string,
-              slug: formData.get('slug') as string,
-            })
+            updateExperienceMeta.mutate({ experience, name: formData.get('name') as string })
           }}
         >
           <fieldset disabled={updateExperienceMeta.isPending}>
             <input type="text" name="name" defaultValue={experience.name} />
-            <input name="slug" type="text" defaultValue={experience.slug} />
             <button type="submit">Update</button>
           </fieldset>
         </form>
       </div>
       {updateExperienceMeta.isPending && <p>Updating...</p>}
-      {updateExperienceMeta.error && (
-        <p>{updateExperienceMeta.error.message}</p>
-      )}
+      {updateExperienceMeta.error && <p>{updateExperienceMeta.error.message}</p>}
 
       <Suspense fallback={<p>Loading...</p>}>
         <main>
           <aside>
             <details open name="components">
               <summary>Components</summary>
-              <ComponentPanel
-                isCanvasUpdatePending={pending}
-                experience={experience}
-              />
+              <ComponentPanel isCanvasUpdatePending={pending} experience={experience} />
             </details>
             <details open name="layers">
               <summary>Layers</summary>
-              <LayerPanel
-                isCanvasUpdatePending={pending}
-                experience={experience}
-              />
+              <LayerPanel isCanvasUpdatePending={pending} experience={experience} />
             </details>
           </aside>
 
-          <Canvas
-            activeBlockId={activeBlockId}
-            setActiveBlockId={setActiveBlockId}
-            isCanvasUpdatePending={pending}
-            experience={experience}
-          />
+          <div>
+            {blocks.length === 0 && (
+              <DropZone
+                label="Root"
+                parent={{
+                  slot: experienceBlocksKey,
+                  node: experience,
+                }}
+              />
+            )}
+            {blocks.map((blockId, index) => {
+              return (
+                <BlockItem
+                  blockId={blockId}
+                  parent={{
+                    node: experience,
+                    slot: experienceBlocksKey,
+                  }}
+                  index={index}
+                  experience={experience}
+                  activeBlockId={activeBlockId}
+                  setActiveBlockId={setActiveBlockId}
+                  isCanvasUpdatePending={pending}
+                  key={blockId}
+                />
+              )
+            })}
+          </div>
 
           {activeBlockId !== undefined && (
             <aside>
-              <PropsPanel
-                activeBlockId={activeBlockId}
-                setActiveBlockId={setActiveBlockId}
-              />
+              <PropsPanel activeBlockId={activeBlockId} setActiveBlockId={setActiveBlockId} />
             </aside>
           )}
         </main>
@@ -120,9 +123,9 @@ function Experience() {
   )
 }
 
-function queryOpts(id: number, getExperience: Context['getExperience']) {
+function queryOpts(id: number, get: Context['get']) {
   return queryOptions({
     queryKey: ['experiences', id],
-    queryFn: () => getExperience({ experienceId: id }),
+    queryFn: () => get({ id, type: 'experiences' }),
   })
 }

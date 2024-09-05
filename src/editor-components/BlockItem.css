@@ -1,4 +1,4 @@
-@scope ([data-component="CanvasItem"]) to ([data-component]) {
+@scope ([data-component="BlockItem"]) to ([data-component]) {
   & {
     --highlightColor: #ff004c;
     position: relative;

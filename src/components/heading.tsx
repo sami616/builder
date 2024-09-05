@@ -1,5 +1,12 @@
-import { type ReactNode } from '@tanstack/react-router'
+export function Heading() {
+  return <h1 style={{ margin: 0, padding: 0 }}>Heading</h1>
+}
 
-export function Heading({ children = 'Heading' }: { children?: ReactNode }) {
-  return <h1 style={{ margin: 0, padding: 0 }}>{children}</h1>
+export const headingConfig = {
+  Heading: {
+    component: Heading,
+    name: 'Heading',
+    slots: {},
+    props: {},
+  },
 }
