@@ -31,8 +31,9 @@ export function useSlot(props: {
 
         // stop dragging inside child droppables
         if (sourceEl?.contains(element)) return false
+
         // stop dropping an item into its own dropzone slot (this is specifically for the layers panel as the dropzones still render when they have children)
-        if (element?.contains(sourceEl)) return false
+        if (sourceEl?.parentElement?.closest('[data-drop-target-for-element="true"]') === element) return false
 
         return true
       },

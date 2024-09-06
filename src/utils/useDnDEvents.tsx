@@ -1,6 +1,6 @@
 import { useEffect } from 'react'
 import { type SlotTarget, isSlotTarget } from '../utils/useSlot'
-import { ComponentItemSource, isComponentItemSource } from '../editor-components/ComponentItem'
+import { type ComponentItemSource, isComponentItemSource } from '../editor-components/ComponentItem'
 import { isSlotItemSource, isSlotItemTarget, type SlotItemSource, type SlotItemTarget } from '../utils/useSlotItem'
 import { type Experience, type Block } from '../db'
 import { useMutation } from '@tanstack/react-query'
@@ -199,8 +199,12 @@ export function useDnDEvents() {
   const moveBlockItemtoSameBlockDropZone = useMutation({
     mutationFn: (args: { source: SlotItemSource; target: SlotTarget; targetParentNode: Block }) => {
       if (!context.isBlock(args.target.parent.node)) throw new Error('no op')
+
+      if (args.source.parent.slot === args.target.parent.slot) throw new Error('no op')
+
       const clonedTargetParentNode = structuredClone(args.targetParentNode)
       clonedTargetParentNode.slots[args.target.parent.slot].push(args.source.block.id)
+
       clonedTargetParentNode.slots[args.source.parent.slot] = args.source.parent.node.slots[args.source.parent.slot].filter(
         (b) => b !== args.source.block.id,
       )
@@ -227,39 +231,27 @@ export function useDnDEvents() {
         return { ...blocks, [slot]: configItem.slots[slot].default }
       }, {})
 
+      const date = new Date()
       const blockId = await context.add({
         entry: {
           type: args.source.type,
           name: configItem.name,
           props: defaultProps,
           slots: defaultSlots,
-          createdAt: new Date(),
-          updatedAt: new Date(),
+          createdAt: date,
+          updatedAt: date,
         },
       })
 
       const clonedTargetParentNode = structuredClone(args.target.parent.node)
       clonedTargetParentNode.slots[args.target.parent.slot].push(blockId)
-
-      if (context.isExperience(clonedTargetParentNode)) {
-        return context.update({ entry: clonedTargetParentNode })
-      } else if (context.isBlock(clonedTargetParentNode)) {
-        return context.update({ entry: clonedTargetParentNode })
-      } else {
-        throw new Error('no op')
-      }
+      return context.update({ entry: clonedTargetParentNode })
     },
-    onSuccess: (updatedId, vars) => {
-      if (context.isExperience(vars.target.parent.node)) {
-        context.queryClient.invalidateQueries({
-          queryKey: ['experiences', updatedId],
-        })
-      }
-      if (context.isBlock(vars.target.parent.node)) {
-        context.queryClient.invalidateQueries({
-          queryKey: ['blocks', updatedId],
-        })
-      }
+    onSuccess: (id, vars) => {
+      const store = context.getStore(vars.target.parent.node)
+      context.queryClient.invalidateQueries({
+        queryKey: [store, id],
+      })
     },
   })
 
@@ -290,26 +282,11 @@ export function useDnDEvents() {
 
       const clonedTargetParentNode = structuredClone(args.target.parent.node)
       clonedTargetParentNode.slots[args.target.parent.slot].splice(args.edge === 'top' ? args.target.index : args.target.index + 1, 0, blockId)
-
-      if (context.isExperience(clonedTargetParentNode)) {
-        return context.update({ entry: clonedTargetParentNode })
-      } else if (context.isBlock(clonedTargetParentNode)) {
-        return context.update({ entry: clonedTargetParentNode })
-      } else {
-        throw new Error('no op')
-      }
+      return context.update({ entry: clonedTargetParentNode })
     },
-    onSuccess: (updatedId, vars) => {
-      if (context.isExperience(vars.target.parent.node)) {
-        context.queryClient.invalidateQueries({
-          queryKey: ['experiences', updatedId],
-        })
-      }
-      if (context.isBlock(vars.target.parent.node)) {
-        context.queryClient.invalidateQueries({
-          queryKey: ['blocks', updatedId],
-        })
-      }
+    onSuccess: (id, vars) => {
+      const store = context.getStore(vars.target.parent.node)
+      context.queryClient.invalidateQueries({ queryKey: [store, id] })
     },
   })
 

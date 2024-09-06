@@ -28,6 +28,7 @@ function Experience() {
   const context = Route.useRouteContext()
 
   const [activeBlockId, setActiveBlockId] = useState<Block['id'] | undefined>()
+  const [hoveredBlockId, setHoveredBlockId] = useState<Block['id'] | undefined>()
 
   const { data: experience } = useSuspenseQuery(queryOpts(Number(id), context.get))
 
@@ -79,32 +80,28 @@ function Experience() {
             </details>
             <details open name="layers">
               <summary>Layers</summary>
-              <LayerPanel isCanvasUpdatePending={pending} experience={experience} />
+              <LayerPanel
+                hoveredBlockId={hoveredBlockId}
+                setHoveredBlockId={setHoveredBlockId}
+                isCanvasUpdatePending={pending}
+                experience={experience}
+              />
             </details>
           </aside>
 
           <div>
-            {blocks.length === 0 && (
-              <DropZone
-                label="Root"
-                parent={{
-                  slot: experienceBlocksKey,
-                  node: experience,
-                }}
-              />
-            )}
+            {blocks.length === 0 && <DropZone label="Root" parent={{ slot: experienceBlocksKey, node: experience }} />}
             {blocks.map((blockId, index) => {
               return (
                 <BlockItem
                   blockId={blockId}
-                  parent={{
-                    node: experience,
-                    slot: experienceBlocksKey,
-                  }}
+                  parent={{ node: experience, slot: experienceBlocksKey }}
                   index={index}
                   experience={experience}
                   activeBlockId={activeBlockId}
                   setActiveBlockId={setActiveBlockId}
+                  hoveredBlockId={hoveredBlockId}
+                  setHoveredBlockId={setHoveredBlockId}
                   isCanvasUpdatePending={pending}
                   key={blockId}
                 />

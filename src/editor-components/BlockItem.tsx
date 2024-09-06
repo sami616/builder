@@ -1,4 +1,4 @@
-import { ComponentProps, useRef, useState } from 'react'
+import { ComponentProps, useRef } from 'react'
 import { DropIndicator } from './DropIndicator'
 import { type Block, type Experience } from '../db'
 import { useMutation, useMutationState, useSuspenseQuery } from '@tanstack/react-query'
@@ -17,13 +17,13 @@ export function BlockItem(props: {
   blockId: Block['id']
   activeBlockId?: Block['id']
   setActiveBlockId: (id: Block['id'] | undefined) => void
+  hoveredBlockId?: Block['id']
+  setHoveredBlockId: (id: Block['id'] | undefined) => void
 }) {
   const slotItemTargetRef = useRef<HTMLDivElement>(null)
   const slotItemSourceRef = useRef<HTMLDivElement>(null)
   const popoverRef = useRef<HTMLDivElement>(null)
-
   const context = useRouteContext({ from: '/experiences/$id' })
-  const [isHovered, setIsHovered] = useState(false)
 
   const query = useSuspenseQuery({
     queryKey: ['blocks', props.blockId],
@@ -91,6 +91,7 @@ export function BlockItem(props: {
   })
 
   const isActiveBlock = props.activeBlockId === props.blockId
+  const isHoveredBlock = props.hoveredBlockId === props.blockId
 
   const block = mutationState ?? query.data
   const componentProps = block.props
@@ -113,6 +114,8 @@ export function BlockItem(props: {
       acc[slot] = block.slots[slot].map((blockId, index) => {
         return (
           <BlockItem
+            hoveredBlockId={props.hoveredBlockId}
+            setHoveredBlockId={props.setHoveredBlockId}
             index={index}
             parent={{ slot, node: block }}
             experience={props.experience}
@@ -136,8 +139,8 @@ export function BlockItem(props: {
       style={{
         // @ts-ignore
         anchorName: `--${block.id}`,
-        zIndex: isHovered ? 1 : 0, // allows outline to sit above other BlockItems
-        outline: isActiveBlock ? '2px solid blue' : isHovered ? '2px solid red' : 'none',
+        zIndex: isHoveredBlock ? 1 : 0, // allows outline to sit above other BlockItems
+        outline: isActiveBlock ? '2px solid blue' : isHoveredBlock ? '2px solid red' : 'none',
         opacity: isDraggingSource || props.isCanvasUpdatePending ? 0.5 : 1,
       }}
       data-component="BlockItem"
@@ -147,12 +150,12 @@ export function BlockItem(props: {
       }}
       onMouseOver={(e) => {
         e.stopPropagation()
-        setIsHovered(true)
+        props.setHoveredBlockId(props.blockId)
         popoverRef.current?.showPopover()
       }}
       onMouseOut={(e) => {
         e.stopPropagation()
-        setIsHovered(false)
+        props.setHoveredBlockId(undefined)
         popoverRef.current?.hidePopover()
       }}
       ref={slotItemTargetRef}
@@ -168,11 +171,7 @@ export function BlockItem(props: {
           <span ref={slotItemSourceRef}>Move</span>
           <button
             onClick={() => {
-              duplicateBlock.mutate({
-                index: props.index,
-                root: { type: 'block', id: props.blockId },
-                parent: props.parent,
-              })
+              duplicateBlock.mutate({ index: props.index, root: { type: 'block', id: props.blockId }, parent: props.parent })
             }}
           >
             Duplicate

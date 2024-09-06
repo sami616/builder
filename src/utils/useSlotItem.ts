@@ -47,12 +47,16 @@ export function useSlotItem(props: {
         onDrop: () => {
           setClosestEdge(null)
         },
-        onDrag: ({ self }) => {
+        onDrag: ({ self, location }) => {
           const extractedEdge = self.data.edge as ReturnType<typeof getEdge>
-          setClosestEdge((currEdge) => {
-            if (currEdge === extractedEdge) return currEdge
-            return extractedEdge
-          })
+          if (self.element === location.current.dropTargets[0].element) {
+            setClosestEdge((currEdge) => {
+              if (currEdge === extractedEdge) return currEdge
+              return extractedEdge
+            })
+          } else {
+            setClosestEdge(null)
+          }
         },
         getData: ({ input, element }): SlotItemTarget => {
           return {
@@ -68,6 +72,7 @@ export function useSlotItem(props: {
         },
         canDrop: ({ source, element }) => {
           const sourceEl = source.element.closest('[data-drop-target-for-element="true"]')
+
           // stop dragging inside child droppables
           if (sourceEl?.contains(element)) return false
           return true
