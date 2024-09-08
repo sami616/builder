@@ -2,6 +2,21 @@
   & {
     --highlightColor: #ff004c;
     position: relative;
+
+    &[data-hovered='true'] {
+      --highlightColor: #ff004c;
+      outline: 2px solid var(--highlightColor);
+      z-index: 99999999;
+    }
+
+    &[data-active='true'] {
+      --highlightColor: blue;
+      outline: 2px solid var(--highlightColor);
+    }
+
+    &[data-dragging='true'] {
+      opacity: 0.5;
+    }
   }
 
   [data-context][popover] {

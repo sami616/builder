@@ -76,6 +76,33 @@ export function Experiences() {
     },
   })
 
+  const duplicateExperience = useMutation({
+    mutationFn: async (args: { root: Parameters<typeof context.getTree>[0]['root'] }) => {
+      const idMap = new Map()
+      let rootId = null
+      const entries = await context.getTree({ root: args.root })
+
+      for (const entry of entries) {
+        const clonedEntry = structuredClone(entry)
+
+        const date = new Date()
+        clonedEntry.createdAt = date
+        clonedEntry.updatedAt = date
+
+        for (var slot in entry.slots) {
+          clonedEntry.slots[slot] = entry.slots[slot].map((id) => idMap.get(id))
+        }
+
+        const { id, ...clonedEntryWithoutId } = clonedEntry
+        rootId = await context.add({ entry: clonedEntryWithoutId })
+        idMap.set(entry.id, rootId)
+      }
+    },
+    onSuccess: async () => {
+      context.queryClient.invalidateQueries({ queryKey: ['experiences'] })
+    },
+  })
+
   const removeExperience = useMutation({
     mutationFn: async (args: { entry: Experience }) => {
       const entries = await context.getTree({ root: { type: 'experience', id: args.entry.id }, entries: [] })
@@ -129,6 +156,12 @@ export function Experiences() {
             </p>
             <button disabled={removeExperience.isPending} onClick={() => removeExperience.mutate({ entry: experience })}>
               Delete
+            </button>
+            <button
+              disabled={duplicateExperience.isPending}
+              onClick={() => duplicateExperience.mutate({ root: { type: 'experience', id: experience.id } })}
+            >
+              Copy
             </button>
             <button disabled={exportExperience.isPending} onClick={() => exportExperience.mutate({ experience })}>
               Export

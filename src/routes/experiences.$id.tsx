@@ -81,16 +81,20 @@ function Experience() {
             <details open name="layers">
               <summary>Layers</summary>
               <LayerPanel
+                activeBlockId={activeBlockId}
                 hoveredBlockId={hoveredBlockId}
                 setHoveredBlockId={setHoveredBlockId}
                 isCanvasUpdatePending={pending}
                 experience={experience}
               />
             </details>
+            <details open name="templates">
+              <summary>Templates</summary>
+            </details>
           </aside>
 
           <div>
-            {blocks.length === 0 && <DropZone label="Root" parent={{ slot: experienceBlocksKey, node: experience }} />}
+            {blocks.length === 0 && <DropZone label="Start building" parent={{ slot: experienceBlocksKey, node: experience }} />}
             {blocks.map((blockId, index) => {
               return (
                 <BlockItem

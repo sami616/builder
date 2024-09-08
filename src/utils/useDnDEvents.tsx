@@ -11,6 +11,104 @@ import { reorderWithEdge } from '@atlaskit/pragmatic-drag-and-drop-hitbox/util/r
 export function useDnDEvents() {
   const context = useRouteContext({ from: '/experiences/$id' })
 
+  const handleAdd = useMutation({
+    mutationFn: async (args: { source: ComponentItemSource; target: SlotItemTarget | SlotTarget; edge: SlotItemTarget['edge'] }) => {
+      // Insert
+      const configItem = context.config[args.source.type]
+      const propKeys = Object.keys(configItem.props)
+      const slotKeys = Object.keys(configItem.slots)
+
+      const defaultProps = propKeys.reduce((props, propKey) => {
+        return { ...props, [propKey]: configItem.props[propKey].default }
+      }, {})
+
+      const defaultSlots = slotKeys.reduce((blocks, slot) => {
+        return { ...blocks, [slot]: configItem.slots[slot].default }
+      }, {})
+
+      const date = new Date()
+      const blockId = await context.add({
+        entry: {
+          type: args.source.type,
+          name: configItem.name,
+          props: defaultProps,
+          slots: defaultSlots,
+          createdAt: date,
+          updatedAt: date,
+        },
+      })
+
+      const clonedTargetParentNode = structuredClone(args.target.parent.node)
+
+      if ('index' in args.target) {
+        clonedTargetParentNode.slots[args.target.parent.slot].splice(args.edge === 'top' ? args.target.index : args.target.index + 1, 0, blockId)
+      } else {
+        clonedTargetParentNode.slots[args.target.parent.slot].push(blockId)
+      }
+
+      return context.update({ entry: clonedTargetParentNode })
+    },
+  })
+
+  const handleReorder = useMutation({
+    mutationFn: async (args: { source: SlotItemSource; target: SlotItemTarget; edge: SlotItemTarget['edge'] }) => {
+      const clonedTargetParentNode = structuredClone(args.target.parent.node)
+
+      clonedTargetParentNode.slots[args.source.parent.slot] = args.source.parent.node.slots[args.source.parent.slot].filter(
+        (b) => b !== args.source.block.id,
+      )
+      clonedTargetParentNode.slots[args.target.parent.slot].splice(
+        args.edge === 'top' ? args.target.index : args.target.index + 1,
+        0,
+        args.source.block.id,
+      )
+      return context.update({ entry: clonedTargetParentNode })
+    },
+  })
+
+  const handleReslot = useMutation({
+    mutationFn: async (args: { source: SlotItemSource; target: SlotTarget | SlotItemTarget; edge: SlotItemTarget['edge'] }) => {
+      const clonedTargetParentNode = structuredClone(args.target.parent.node)
+
+      clonedTargetParentNode.slots[args.source.parent.slot] = args.source.parent.node.slots[args.source.parent.slot].filter(
+        (b) => b !== args.source.block.id,
+      )
+
+      if ('index' in args.target) {
+        clonedTargetParentNode.slots[args.target.parent.slot].splice(
+          args.edge === 'top' ? args.target.index : args.target.index + 1,
+          0,
+          args.source.block.id,
+        )
+      } else {
+        clonedTargetParentNode.slots[args.target.parent.slot].push(args.source.block.id)
+      }
+
+      return context.update({ entry: clonedTargetParentNode })
+    },
+  })
+
+  const handleReparent = useMutation({
+    mutationFn: async (args: { source: SlotItemSource; target: SlotItemTarget | SlotTarget; edge: SlotItemTarget['edge'] }) => {
+      const clonedSourceParentNode = structuredClone(args.source.parent.node)
+      const clonedTargetParentNode = structuredClone(args.target.parent.node)
+
+      clonedSourceParentNode.slots[args.source.parent.slot] = args.source.parent.node.slots[args.source.parent.slot].filter(
+        (b) => b !== args.source.block.id,
+      )
+      if ('index' in args.target) {
+        clonedTargetParentNode.slots[args.target.parent.slot].splice(
+          args.edge === 'top' ? args.target.index : args.target.index + 1,
+          0,
+          args.source.block.id,
+        )
+      } else {
+        clonedTargetParentNode.slots[args.target.parent.slot].push(args.source.block.id)
+      }
+      return context.updateMany({ entries: [clonedSourceParentNode, clonedTargetParentNode] })
+    },
+  })
+
   // Move a canvasItem from a block to a canvasItem in a different block
   const moveBlockItemToOtherBlockItem = useMutation({
     mutationFn: (args: {

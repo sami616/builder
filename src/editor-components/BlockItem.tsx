@@ -8,6 +8,8 @@ import './BlockItem.css'
 import { DragPreview } from './DragPreview'
 import { DropZone } from './DropZone'
 import { useSlotItem } from '../utils/useSlotItem'
+import { useRemoveBlock } from '../utils/useRemoveBlock'
+import { useDuplicateBlock } from '../utils/useDuplicateBlock'
 
 export function BlockItem(props: {
   index: number
@@ -38,57 +40,8 @@ export function BlockItem(props: {
     select: (data) => (data.state.variables as Record<'block', Block>).block,
   })?.at(-1)
 
-  const duplicateBlock = useMutation({
-    mutationFn: async (args: {
-      index: number
-      root: Parameters<typeof context.getTree>[0]['root']
-      parent: ComponentProps<typeof BlockItem>['parent']
-    }) => {
-      const idMap = new Map()
-      let rootId = null
-      const entries = await context.getTree({ root: args.root })
-
-      for (const entry of entries) {
-        const clonedEntry = structuredClone(entry)
-
-        const date = new Date()
-        clonedEntry.createdAt = date
-        clonedEntry.updatedAt = date
-
-        for (var slot in entry.slots) {
-          clonedEntry.slots[slot] = entry.slots[slot].map((id) => idMap.get(id))
-        }
-
-        const { id, ...clonedEntryWithoutId } = clonedEntry
-        rootId = await context.add({ entry: clonedEntryWithoutId })
-        idMap.set(entry.id, rootId)
-      }
-
-      if (!rootId) throw new Error('no op')
-
-      const clonedParent = structuredClone(args.parent.node)
-      clonedParent.slots[args.parent.slot].splice(args.index + 1, 0, rootId)
-      await context.update({ entry: clonedParent })
-      return { store: context.getStore(clonedParent), id: args.parent.node.id }
-    },
-    onSuccess: async ({ store, id }) => {
-      context.queryClient.invalidateQueries({ queryKey: [store, id] })
-    },
-  })
-
-  const removeBlock = useMutation({
-    mutationFn: async (args: { blockId: Block['id']; parent: ComponentProps<typeof BlockItem>['parent'] }) => {
-      const entries = await context.getTree({ root: { id: args.blockId, type: 'block' } })
-      await context.removeMany({ entries })
-      const clonedParentNode = structuredClone(args.parent.node)
-      clonedParentNode.slots[args.parent.slot] = args.parent.node.slots[args.parent.slot].filter((id) => id !== args.blockId)
-      await context.update({ entry: clonedParentNode })
-      return { store: context.getStore(clonedParentNode), id: args.parent.node.id }
-    },
-    onSuccess: async ({ store, id }) => {
-      context.queryClient.invalidateQueries({ queryKey: [store, id] })
-    },
-  })
+  const duplicateBlock = useDuplicateBlock()
+  const removeBlock = useRemoveBlock()
 
   const isActiveBlock = props.activeBlockId === props.blockId
   const isHoveredBlock = props.hoveredBlockId === props.blockId
@@ -136,13 +89,10 @@ export function BlockItem(props: {
 
   return (
     <div
-      style={{
-        // @ts-ignore
-        anchorName: `--${block.id}`,
-        zIndex: isHoveredBlock ? 1 : 0, // allows outline to sit above other BlockItems
-        outline: isActiveBlock ? '2px solid blue' : isHoveredBlock ? '2px solid red' : 'none',
-        opacity: isDraggingSource || props.isCanvasUpdatePending ? 0.5 : 1,
-      }}
+      style={{ anchorName: `--${block.id}` }}
+      data-active={isActiveBlock}
+      data-hovered={isHoveredBlock}
+      data-dragging={isDraggingSource}
       data-component="BlockItem"
       onDoubleClick={(e) => {
         e.stopPropagation()

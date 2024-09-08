@@ -11,7 +11,12 @@ export function DropZone(props: { label?: string; parent: { slot: string; node: 
   })
 
   return (
-    <div data-over={isDraggingOverSlot} ref={slotTargetRef} style={{ opacity: isDraggingOverSlot ? 0.5 : 1 }} data-component="DropZone">
+    <div
+      data-over={isDraggingOverSlot}
+      ref={slotTargetRef}
+      style={{ outline: isDraggingOverSlot ? '2px solid red' : '2px solid #efefef' }}
+      data-component="DropZone"
+    >
       {props.label}
     </div>
   )

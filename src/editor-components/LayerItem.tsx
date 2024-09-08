@@ -7,6 +7,8 @@ import { DropIndicator } from './DropIndicator'
 import { useSlotItem } from '../utils/useSlotItem'
 import { useSlot } from '../utils/useSlot'
 import { DragPreview } from './DragPreview'
+import { useRemoveBlock } from '../utils/useRemoveBlock'
+import { useDuplicateBlock } from '../utils/useDuplicateBlock'
 
 export function LayerItem(props: {
   blockId: Block['id']
@@ -15,6 +17,7 @@ export function LayerItem(props: {
   parent: { slot: string; node: Block } | { slot: string; node: Experience }
   hoveredBlockId?: Block['id']
   setHoveredBlockId: (id: Block['id'] | undefined) => void
+  activeBlockId?: Block['id']
 }) {
   const context = useRouteContext({ from: '/experiences/$id' })
   const slotItemSourceRef = useRef<HTMLLIElement>(null)
@@ -24,6 +27,8 @@ export function LayerItem(props: {
     queryFn: () => context.get({ id: props.blockId, type: 'blocks' }),
   })
 
+  const duplicateBlock = useDuplicateBlock()
+  const removeBlock = useRemoveBlock()
   const mutationState = useMutationState<Block>({
     filters: {
       mutationKey: ['updateBlock', props.blockId],
@@ -35,6 +40,7 @@ export function LayerItem(props: {
   const block = mutationState ?? query.data
 
   const isHoveredBlock = props.hoveredBlockId === props.blockId
+  const isActiveBlock = props.activeBlockId === props.blockId
 
   const { isDraggingSource, closestEdge, dragPreviewContainer } = useSlotItem({
     slotItemSourceRef,
@@ -47,7 +53,7 @@ export function LayerItem(props: {
 
   return (
     <li
-      style={{ opacity: isDraggingSource ? 0.5 : 1, color: isHoveredBlock ? 'red' : 'unset' }}
+      style={{ opacity: isDraggingSource ? 0.5 : 1, color: isActiveBlock ? 'blue' : isHoveredBlock ? 'red' : 'unset' }}
       data-component="LayerItem"
       onMouseOver={(e) => {
         e.stopPropagation()
@@ -64,12 +70,17 @@ export function LayerItem(props: {
       }}
       ref={slotItemTargetRef}
     >
-      <span ref={slotItemSourceRef}>m</span>
       {query.data.name}
+
+      <button onClick={() => removeBlock.mutate({ blockId: block.id, parent: props.parent })}>del</button>
+      <button onClick={() => duplicateBlock.mutate({ index: props.index, root: { type: 'block', id: props.blockId }, parent: props.parent })}>
+        dup
+      </button>
+      <span ref={slotItemSourceRef}>move</span>
 
       {Object.keys(block.slots).map((slot) => (
         <LayerItemSlot
-          // isHoveredBlock={isHoveredBlock}
+          activeBlockId={props.activeBlockId}
           hoveredBlockId={props.hoveredBlockId}
           setHoveredBlockId={props.setHoveredBlockId}
           key={slot}
@@ -92,6 +103,7 @@ function LayerItemSlot(props: {
   parent: ComponentProps<typeof LayerItem>['parent']
   hoveredBlockId?: Block['id']
   setHoveredBlockId: (id: Block['id'] | undefined) => void
+  activeBlockId?: Block['id']
 }) {
   const slotTargetRef = useRef<HTMLDetailsElement>(null)
 
@@ -109,6 +121,7 @@ function LayerItemSlot(props: {
       <ul>
         {props.block.slots[props.slot].map((blockId, index) => (
           <LayerItem
+            activeBlockId={props.activeBlockId}
             hoveredBlockId={props.hoveredBlockId}
             setHoveredBlockId={props.setHoveredBlockId}
             isCanvasUpdatePending={props.isCanvasUpdatePending}
