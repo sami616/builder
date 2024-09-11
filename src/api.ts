@@ -36,18 +36,43 @@ export async function getTree({
   entries = [],
   ...args
 }: {
-  root: { type: 'block'; id: Block['id'] } | { type: 'experience'; id: Experience['id'] }
+  root: { store: 'blocks'; id: Block['id'] } | { store: 'experiences'; id: Experience['id'] }
   entries?: Array<Block | Experience>
 }) {
-  const entry = args.root.type === 'block' ? await get({ id: args.root.id, type: 'blocks' }) : await get({ id: args.root.id, type: 'experiences' })
+  const entry = args.root.store === 'blocks' ? await get({ id: args.root.id, type: 'blocks' }) : await get({ id: args.root.id, type: 'experiences' })
   const slots = Object.keys(entry.slots)
   for (const key of slots) {
     for (const id of entry.slots[key]) {
-      await getTree({ root: { type: 'block', id }, entries })
+      await getTree({ root: { store: 'blocks', id }, entries })
     }
   }
   entries.push(entry)
   return entries
+}
+
+export async function duplicateTree(args: { tree: Awaited<ReturnType<typeof getTree>> }) {
+  const idMap = new Map()
+  let rootEntry = null
+
+  for (const entry of args.tree) {
+    const clonedEntry = structuredClone(entry)
+
+    const date = new Date()
+    clonedEntry.createdAt = date
+    clonedEntry.updatedAt = date
+
+    for (var slot in entry.slots) {
+      clonedEntry.slots[slot] = entry.slots[slot].map((id) => idMap.get(id))
+    }
+
+    const { id, ...clonedEntryWithoutId } = clonedEntry
+    const rootId = await add({ entry: clonedEntryWithoutId })
+    rootEntry = { ...clonedEntry, id: rootId }
+    idMap.set(entry.id, rootId)
+  }
+
+  if (!rootEntry) throw new Error('No op')
+  return rootEntry
 }
 
 // add

@@ -2,7 +2,7 @@ import { createFileRoute, Link } from '@tanstack/react-router'
 import JSZip from 'jszip'
 import { useSuspenseQuery, useMutation, queryOptions } from '@tanstack/react-query'
 import { experienceBlocksKey } from '../api'
-import { type Block, type Experience } from '../db'
+import { type Experience } from '../db'
 import { type Context } from '../main'
 
 // Route
@@ -36,10 +36,10 @@ export function Experiences() {
         suggestedName: `${args.experience.name}.json`,
       })
       const writableStream = await handle.createWritable()
-      const entries = await context.getTree({ root: { type: 'experience', id: args.experience.id } })
-      await writableStream.write(JSON.stringify(entries, null, 2))
+      const tree = await context.getTree({ root: { store: 'experiences', id: args.experience.id } })
+      await writableStream.write(JSON.stringify(tree, null, 2))
       await writableStream.close()
-      return entries
+      return tree
     },
   })
 
@@ -50,8 +50,8 @@ export function Experiences() {
       const zip = new JSZip()
 
       for (const experience of args.experiences) {
-        const json = await context.getTree({ root: { type: 'experience', id: experience.id } })
-        zip.file(`${experience.name}.json`, JSON.stringify(json, null, 2)) // Add JSON file to the zip
+        const tree = await context.getTree({ root: { store: 'experiences', id: experience.id } })
+        zip.file(`${experience.name}.json`, JSON.stringify(tree, null, 2)) // Add JSON file to the zip
       }
       const zipBlob = await zip.generateAsync({ type: 'blob' })
 
@@ -79,23 +79,9 @@ export function Experiences() {
       const file = await handle.getFile()
 
       // Todo, runtime check with zod?
-      const entries = JSON.parse(await file.text()) as ImportExportData
-      const idMap = new Map()
-      let newRootId = null
+      const tree = JSON.parse(await file.text()) as Awaited<ReturnType<typeof context.getTree>>
 
-      for (const entry of entries) {
-        const clonedEntry = structuredClone(entry)
-        for (var slot in entry.slots) {
-          clonedEntry.slots[slot] = entry.slots[slot].map((id) => idMap.get(id))
-        }
-
-        const date = new Date()
-        clonedEntry.createdAt = date
-        clonedEntry.updatedAt = date
-        const { id, ...clonedEntryWithoutId } = clonedEntry
-        newRootId = await context.add({ entry: clonedEntryWithoutId })
-        idMap.set(entry.id, newRootId)
-      }
+      await context.duplicateTree({ tree })
     },
     onSuccess: () => {
       context.queryClient.invalidateQueries({ queryKey: ['experiences'] })
@@ -131,7 +117,7 @@ export function Experiences() {
 
   const removeExperience = useMutation({
     mutationFn: async (args: { entry: Experience }) => {
-      const entries = await context.getTree({ root: { type: 'experience', id: args.entry.id }, entries: [] })
+      const entries = await context.getTree({ root: { store: 'experiences', id: args.entry.id }, entries: [] })
       await context.removeMany({ entries })
     },
     onSuccess: () => {
@@ -189,7 +175,7 @@ export function Experiences() {
             </button>
             <button
               disabled={duplicateExperience.isPending}
-              onClick={() => duplicateExperience.mutate({ root: { type: 'experience', id: experience.id } })}
+              onClick={() => duplicateExperience.mutate({ root: { store: 'experiences', id: experience.id } })}
             >
               Duplicate
             </button>
@@ -219,5 +205,3 @@ function queryOpts(getMany: Context['getMany']) {
     queryFn: () => getMany({ type: 'experiences', sortBy: 'latest' }),
   })
 }
-
-type ImportExportData = Array<Block | Experience>

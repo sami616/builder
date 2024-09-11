@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { type SlotWithParentTarget, isSlotWithParentTarget, isSlotWithoutParentTarget, type SlotWithoutParentTarget } from '../utils/useSlot'
+import { type DroppableWithParent, type DroppableNoParent, isDroppableWithParent, isDroppableNoParent } from '../utils/useSlot'
 import { type ComponentItemSource, isComponentItemSource } from '../editor-components/ComponentItem'
 import { isSlotItemSource, isSlotItemTarget, type SlotItemSource, type SlotItemTarget } from '../utils/useSlotItem'
 import { useMutation } from '@tanstack/react-query'
@@ -9,8 +9,20 @@ import { monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/ad
 export function useDnDEvents() {
   const context = useRouteContext({ from: '/experiences/$id' })
 
+  // const handleAddTemplate = useMutation({
+  //   mutationFn: async (args: { source: SlotItemSource; target: DroppableNoParent }) => {
+  //     const tree = await context.getTree({ root: { store: 'blocks', id: args.source.block.id } })
+  //     const rootEntry = await context.duplicateTree({ tree })
+  //     const clonedBlock = structuredClone(rootEntry)
+  //     return await context.update({ entry: clonedBlock })
+  //   },
+  //   onSuccess: (data) => {
+  //     context.queryClient.invalidateQueries({ queryKey: ['blocks', data] })
+  //   },
+  // })
+
   const handleAdd = useMutation({
-    mutationFn: async (args: { source: ComponentItemSource; target: SlotItemTarget | SlotWithParentTarget }) => {
+    mutationFn: async (args: { source: ComponentItemSource; target: SlotItemTarget | DroppableWithParent }) => {
       const clonedParentNode = structuredClone(args.target.parent.node)
       const configItem = context.config[args.source.type]
       const propKeys = Object.keys(configItem.props)
@@ -34,7 +46,6 @@ export function useDnDEvents() {
           slots: defaultSlots,
           createdAt: date,
           updatedAt: date,
-          template: false,
         },
       })
 
@@ -57,7 +68,7 @@ export function useDnDEvents() {
   })
 
   const handleReorder = useMutation({
-    mutationFn: async (args: { source: SlotItemSource; target: SlotItemTarget | SlotWithParentTarget }) => {
+    mutationFn: async (args: { source: SlotItemSource; target: SlotItemTarget | DroppableWithParent }) => {
       const clonedParentNode = structuredClone(args.target.parent.node)
       const addSlot = args.target.parent.slot
       const removeSlot = args.source.parent.slot
@@ -84,7 +95,7 @@ export function useDnDEvents() {
   })
 
   const handleReparent = useMutation({
-    mutationFn: async (args: { source: SlotItemSource; target: SlotItemTarget | SlotWithParentTarget }) => {
+    mutationFn: async (args: { source: SlotItemSource; target: SlotItemTarget | DroppableWithParent }) => {
       const clonedSourceParentNode = structuredClone(args.source.parent.node)
       const clonedTargetParentNode = structuredClone(args.target.parent.node)
       const addSlot = args.target.parent.slot
@@ -117,11 +128,12 @@ export function useDnDEvents() {
       onDrop: async ({ source, location }) => {
         const [target] = location.current.dropTargets
 
-        if (isSlotItemTarget(target.data) || isSlotWithParentTarget(target.data)) {
+        if (isSlotItemTarget(target.data) || isDroppableWithParent(target.data)) {
           if (isComponentItemSource(source.data)) {
             handleAdd.mutate({ source: source.data, target: target.data })
           }
           if (isSlotItemSource(source.data)) {
+            console.log(target.data)
             const sameParent = source.data.parent.node.id === target.data.parent.node.id
             if (sameParent) {
               handleReorder.mutate({ source: source.data, target: target.data })
@@ -129,6 +141,9 @@ export function useDnDEvents() {
               handleReparent.mutate({ source: source.data, target: target.data })
             }
           }
+        }
+        if (isSlotItemSource(source.data) && isDroppableNoParent(target.data)) {
+          // handleAddTemplate.mutate({ source: source.data, target: target.data })
         }
       },
     })

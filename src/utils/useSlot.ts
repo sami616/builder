@@ -2,29 +2,29 @@ import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element
 import { useState, useEffect, type RefObject } from 'react'
 import { type Block, type Experience } from '../db'
 
-export function useSlot(props: {
-  slotTargetRef: RefObject<HTMLDivElement | HTMLDetailsElement>
+export function useDroppable(props: {
+  droppableRef: RefObject<HTMLDivElement | HTMLDetailsElement>
   parent?: { slot: string; node: Experience } | { slot: string; node: Block }
 }) {
-  const [isDraggingOverSlot, setIsDraggingOverSlot] = useState(false)
+  const [isDraggingOver, setIsDraggingOver] = useState(false)
 
   useEffect(() => {
-    const element = props.slotTargetRef.current
+    const element = props.droppableRef.current
     if (!element) return
     dropTargetForElements({
       element,
       onDragEnter: () => {
-        setIsDraggingOverSlot(true)
+        setIsDraggingOver(true)
       },
       onDragLeave: () => {
-        setIsDraggingOverSlot(false)
+        setIsDraggingOver(false)
       },
-      getData: (): SlotWithParentTarget | SlotWithoutParentTarget => ({
-        id: 'slotTarget',
+      getData: (): DroppableWithParent | DroppableNoParent => ({
+        id: 'droppable',
         parent: props.parent,
       }),
       onDrop: () => {
-        setIsDraggingOverSlot(false)
+        setIsDraggingOver(false)
       },
       canDrop: ({ source, element }) => {
         const sourceEl = source.element.closest('[data-drop-target-for-element="true"]')
@@ -39,22 +39,21 @@ export function useSlot(props: {
       },
     })
   }, [props.parent])
-
-  return { isDraggingOverSlot }
+  return { isDraggingOver }
 }
 
-export type SlotWithParentTarget = {
-  id: 'slotTarget'
-} & Required<Pick<Parameters<typeof useSlot>[0], 'parent'>>
+export type DroppableWithParent = {
+  id: 'droppable'
+} & Required<Pick<Parameters<typeof useDroppable>[0], 'parent'>>
 
-export type SlotWithoutParentTarget = {
-  id: 'slotTarget'
-} & Pick<Parameters<typeof useSlot>[0], 'parent'>
+export type DroppableNoParent = {
+  id: 'droppable'
+} & Pick<Parameters<typeof useDroppable>[0], 'parent'>
 
-export function isSlotWithParentTarget(args: Record<string, unknown>): args is SlotWithParentTarget {
-  return args.id === 'slotTarget' && 'parent' in args
+export function isDroppableWithParent(args: Record<string, unknown>): args is DroppableWithParent {
+  return args.id === 'droppable' && args.parent !== undefined
 }
 
-export function isSlotWithoutParentTarget(args: Record<string, unknown>): args is SlotWithoutParentTarget {
-  return args.id === 'slotTarget' && !('parent' in args)
+export function isDroppableNoParent(args: Record<string, unknown>): args is DroppableNoParent {
+  return args.id === 'droppable' && args.parent === undefined
 }

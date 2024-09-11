@@ -8,7 +8,7 @@ export function useRemoveBlock() {
   const context = useRouteContext({ from: '/experiences/$id' })
   const removeBlock = useMutation({
     mutationFn: async (args: { blockId: Block['id']; parent: ComponentProps<typeof BlockItem>['parent'] }) => {
-      const entries = await context.getTree({ root: { id: args.blockId, type: 'block' } })
+      const entries = await context.getTree({ root: { id: args.blockId, store: 'blocks' } })
       await context.removeMany({ entries })
       const clonedParentNode = structuredClone(args.parent.node)
       clonedParentNode.slots[args.parent.slot] = args.parent.node.slots[args.parent.slot].filter((id) => id !== args.blockId)

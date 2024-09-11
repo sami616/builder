@@ -21,6 +21,15 @@ export const db = await openDB<MyDB>('experienceManager', 1, {
       store.createIndex('createdAt', 'createdAt', { unique: false })
       store.createIndex('updatedAt', 'updatedAt', { unique: false })
     }
+
+    if (!db.objectStoreNames.contains('templates')) {
+      const store = db.createObjectStore('templates', {
+        keyPath: 'id',
+        autoIncrement: true,
+      })
+      store.createIndex('createdAt', 'createdAt', { unique: false })
+      store.createIndex('updatedAt', 'updatedAt', { unique: false })
+    }
   },
 })
 
@@ -39,6 +48,14 @@ export interface MyDB extends DBSchema {
     indexes: {
       createdAt: Block['createdAt']
       updatedAt: Block['updatedAt']
+    }
+  }
+  templates: {
+    key: Template['id']
+    value: Template
+    indexes: {
+      createdAt: Template['createdAt']
+      updatedAt: Template['updatedAt']
     }
   }
 }
@@ -60,5 +77,8 @@ export type Block = {
   name: string
   slots: { [index: string]: Array<Block['id']> }
   props: { [index: string]: any }
-  template: boolean
 }
+
+export type Template = {
+  template: boolean
+} & Block

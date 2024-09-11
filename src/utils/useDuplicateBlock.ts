@@ -12,30 +12,10 @@ export function useDuplicateBlock() {
       root: Parameters<typeof context.getTree>[0]['root']
       parent: ComponentProps<typeof BlockItem>['parent']
     }) => {
-      const idMap = new Map()
-      let rootId = null
-      const entries = await context.getTree({ root: args.root })
-
-      for (const entry of entries) {
-        const clonedEntry = structuredClone(entry)
-
-        const date = new Date()
-        clonedEntry.createdAt = date
-        clonedEntry.updatedAt = date
-
-        for (var slot in entry.slots) {
-          clonedEntry.slots[slot] = entry.slots[slot].map((id) => idMap.get(id))
-        }
-
-        const { id, ...clonedEntryWithoutId } = clonedEntry
-        rootId = await context.add({ entry: clonedEntryWithoutId })
-        idMap.set(entry.id, rootId)
-      }
-
-      if (!rootId) throw new Error('no op')
-
+      const tree = await context.getTree({ root: args.root })
+      const rootEntry = await context.duplicateTree({ tree })
       const clonedParent = structuredClone(args.parent.node)
-      clonedParent.slots[args.parent.slot].splice(args.index + 1, 0, rootId)
+      clonedParent.slots[args.parent.slot].splice(args.index + 1, 0, rootEntry.id)
       await context.update({ entry: clonedParent })
       return { store: context.getStore(clonedParent), id: args.parent.node.id }
     },
@@ -43,5 +23,6 @@ export function useDuplicateBlock() {
       context.queryClient.invalidateQueries({ queryKey: [store, id] })
     },
   })
+
   return duplicateBlock
 }

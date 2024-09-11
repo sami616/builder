@@ -1,6 +1,6 @@
 import { buttonConfig, headingConfig, containerConfig } from './components'
 import { StrictMode } from 'react'
-import { get, getMany, add, update, updateMany, addMany, remove, removeMany, getTree, isExperience, isBlock, getStore } from './api'
+import { get, getMany, add, update, updateMany, addMany, remove, removeMany, getTree, isExperience, isBlock, getStore, duplicateTree } from './api'
 import ReactDOM from 'react-dom/client'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -33,6 +33,7 @@ const context = {
   get,
   getMany,
   getTree,
+  duplicateTree,
   getStore,
   isBlock,
   isExperience,

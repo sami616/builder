@@ -122,7 +122,7 @@ export function BlockItem(props: {
           <span ref={slotItemSourceRef}>Move</span>
           <button
             onClick={() => {
-              duplicateBlock.mutate({ index: props.index, root: { type: 'block', id: props.blockId }, parent: props.parent })
+              duplicateBlock.mutate({ index: props.index, root: { store: 'blocks', id: props.blockId }, parent: props.parent })
             }}
           >
             Duplicate

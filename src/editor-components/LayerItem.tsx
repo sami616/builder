@@ -5,7 +5,7 @@ import { ComponentProps, useEffect, useRef, useState } from 'react'
 import './LayerItem.css'
 import { DropIndicator } from './DropIndicator'
 import { useSlotItem } from '../utils/useSlotItem'
-import { useSlot } from '../utils/useSlot'
+import { useDroppable } from '../utils/useSlot'
 import { DragPreview } from './DragPreview'
 import { useRemoveBlock } from '../utils/useRemoveBlock'
 import { useDuplicateBlock } from '../utils/useDuplicateBlock'
@@ -114,7 +114,7 @@ export function LayerItem(props: {
             {query.data.name}
 
             <button onClick={() => removeBlock.mutate({ blockId: query.data.id, parent: props.parent })}>del</button>
-            <button onClick={() => duplicateBlock.mutate({ index: props.index, root: { type: 'block', id: props.blockId }, parent: props.parent })}>
+            <button onClick={() => duplicateBlock.mutate({ index: props.index, root: { store: 'blocks', id: props.blockId }, parent: props.parent })}>
               dup
             </button>
             <span ref={slotItemSourceRef}>move</span>
@@ -149,10 +149,10 @@ function LayerItemSlot(props: {
   setHoveredBlockId: (id: Block['id'] | undefined) => void
   activeBlockId?: Block['id']
 }) {
-  const slotTargetRef = useRef<HTMLDetailsElement>(null)
+  const droppableRef = useRef<HTMLDetailsElement>(null)
 
-  const { isDraggingOverSlot } = useSlot({
-    slotTargetRef,
+  const { isDraggingOver } = useDroppable({
+    droppableRef,
     parent: { slot: props.slot, node: props.block },
   })
   const context = useRouteContext({ from: '/experiences/$id' })
@@ -160,7 +160,7 @@ function LayerItemSlot(props: {
   const hasSlotEntries = props.block.slots[props.slot].length > 0
 
   return (
-    <details open={hasSlotEntries} style={{ outline: isDraggingOverSlot ? '2px solid red' : 'none' }} ref={slotTargetRef}>
+    <details open={hasSlotEntries} style={{ outline: isDraggingOver ? '2px solid red' : 'none' }} ref={droppableRef}>
       <summary>{context.config[props.block.type].slots[props.slot].name}</summary>
       <ul>
         {props.block.slots[props.slot].map((blockId, index) => (
