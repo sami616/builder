@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { type SlotTarget, isSlotTarget } from '../utils/useSlot'
+import { type SlotWithParentTarget, isSlotWithParentTarget, isSlotWithoutParentTarget, type SlotWithoutParentTarget } from '../utils/useSlot'
 import { type ComponentItemSource, isComponentItemSource } from '../editor-components/ComponentItem'
 import { isSlotItemSource, isSlotItemTarget, type SlotItemSource, type SlotItemTarget } from '../utils/useSlotItem'
 import { useMutation } from '@tanstack/react-query'
@@ -10,7 +10,7 @@ export function useDnDEvents() {
   const context = useRouteContext({ from: '/experiences/$id' })
 
   const handleAdd = useMutation({
-    mutationFn: async (args: { source: ComponentItemSource; target: SlotItemTarget | SlotTarget }) => {
+    mutationFn: async (args: { source: ComponentItemSource; target: SlotItemTarget | SlotWithParentTarget }) => {
       const clonedParentNode = structuredClone(args.target.parent.node)
       const configItem = context.config[args.source.type]
       const propKeys = Object.keys(configItem.props)
@@ -34,6 +34,7 @@ export function useDnDEvents() {
           slots: defaultSlots,
           createdAt: date,
           updatedAt: date,
+          template: false,
         },
       })
 
@@ -56,7 +57,7 @@ export function useDnDEvents() {
   })
 
   const handleReorder = useMutation({
-    mutationFn: async (args: { source: SlotItemSource; target: SlotItemTarget | SlotTarget }) => {
+    mutationFn: async (args: { source: SlotItemSource; target: SlotItemTarget | SlotWithParentTarget }) => {
       const clonedParentNode = structuredClone(args.target.parent.node)
       const addSlot = args.target.parent.slot
       const removeSlot = args.source.parent.slot
@@ -83,7 +84,7 @@ export function useDnDEvents() {
   })
 
   const handleReparent = useMutation({
-    mutationFn: async (args: { source: SlotItemSource; target: SlotItemTarget | SlotTarget }) => {
+    mutationFn: async (args: { source: SlotItemSource; target: SlotItemTarget | SlotWithParentTarget }) => {
       const clonedSourceParentNode = structuredClone(args.source.parent.node)
       const clonedTargetParentNode = structuredClone(args.target.parent.node)
       const addSlot = args.target.parent.slot
@@ -116,7 +117,7 @@ export function useDnDEvents() {
       onDrop: async ({ source, location }) => {
         const [target] = location.current.dropTargets
 
-        if (isSlotItemTarget(target.data) || isSlotTarget(target.data)) {
+        if (isSlotItemTarget(target.data) || isSlotWithParentTarget(target.data)) {
           if (isComponentItemSource(source.data)) {
             handleAdd.mutate({ source: source.data, target: target.data })
           }

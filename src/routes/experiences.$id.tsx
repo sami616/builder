@@ -90,6 +90,7 @@ function Experience() {
             </details>
             <details open name="templates">
               <summary>Templates</summary>
+              <DropZone label="Create template" />
             </details>
           </aside>
 

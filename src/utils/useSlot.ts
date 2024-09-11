@@ -4,7 +4,7 @@ import { type Block, type Experience } from '../db'
 
 export function useSlot(props: {
   slotTargetRef: RefObject<HTMLDivElement | HTMLDetailsElement>
-  parent: { slot: string; node: Experience } | { slot: string; node: Block }
+  parent?: { slot: string; node: Experience } | { slot: string; node: Block }
 }) {
   const [isDraggingOverSlot, setIsDraggingOverSlot] = useState(false)
 
@@ -19,7 +19,7 @@ export function useSlot(props: {
       onDragLeave: () => {
         setIsDraggingOverSlot(false)
       },
-      getData: (): SlotTarget => ({
+      getData: (): SlotWithParentTarget | SlotWithoutParentTarget => ({
         id: 'slotTarget',
         parent: props.parent,
       }),
@@ -43,11 +43,18 @@ export function useSlot(props: {
   return { isDraggingOverSlot }
 }
 
-export type SlotTarget = {
+export type SlotWithParentTarget = {
   id: 'slotTarget'
-  parent: Parameters<typeof useSlot>[0]['parent']
+} & Required<Pick<Parameters<typeof useSlot>[0], 'parent'>>
+
+export type SlotWithoutParentTarget = {
+  id: 'slotTarget'
+} & Pick<Parameters<typeof useSlot>[0], 'parent'>
+
+export function isSlotWithParentTarget(args: Record<string, unknown>): args is SlotWithParentTarget {
+  return args.id === 'slotTarget' && 'parent' in args
 }
 
-export function isSlotTarget(args: Record<string, unknown>): args is SlotTarget {
-  return args.id === 'slotTarget'
+export function isSlotWithoutParentTarget(args: Record<string, unknown>): args is SlotWithoutParentTarget {
+  return args.id === 'slotTarget' && !('parent' in args)
 }

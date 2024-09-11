@@ -60,4 +60,5 @@ export type Block = {
   name: string
   slots: { [index: string]: Array<Block['id']> }
   props: { [index: string]: any }
+  template: boolean
 }

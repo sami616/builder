@@ -103,8 +103,7 @@ export type SlotItemTarget = {
   index: number
   block: Block
   edge: 'top' | 'bottom' | null
-  parent: Parameters<typeof useSlotItem>[0]['parent']
-}
+} & Pick<Parameters<typeof useSlotItem>[0], 'parent'>
 
 function getEdge(input: Input, element: Element) {
   const rect = element.getBoundingClientRect()
