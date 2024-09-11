@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
+import JSZip from 'jszip'
 import { useSuspenseQuery, useMutation, queryOptions } from '@tanstack/react-query'
 import { experienceBlocksKey } from '../api'
 import { type Block, type Experience } from '../db'
@@ -31,7 +32,7 @@ export function Experiences() {
       if (!('showSaveFilePicker' in window)) throw new Error('Save File API not supported')
       // @ts-ignore: no types for this api yet :(
       const handle = await window.showSaveFilePicker({
-        types: [{ description: 'JSON Files', accept: { 'application/json': ['.json'] } }],
+        types: [{ description: 'JSON File', accept: { 'application/json': ['.json'] } }],
         suggestedName: `${args.experience.name}.json`,
       })
       const writableStream = await handle.createWritable()
@@ -39,6 +40,30 @@ export function Experiences() {
       await writableStream.write(JSON.stringify(entries, null, 2))
       await writableStream.close()
       return entries
+    },
+  })
+
+  const exportManyExperiences = useMutation({
+    mutationFn: async (args: { experiences: Array<Experience> }) => {
+      if (!('showSaveFilePicker' in window)) throw new Error('Save File API not supported')
+
+      const zip = new JSZip()
+
+      for (const experience of args.experiences) {
+        const json = await context.getTree({ root: { type: 'experience', id: experience.id } })
+        zip.file(`${experience.name}.json`, JSON.stringify(json, null, 2)) // Add JSON file to the zip
+      }
+      const zipBlob = await zip.generateAsync({ type: 'blob' })
+
+      // @ts-ignore: no types for this api yet :(
+      const handle = await window.showSaveFilePicker({
+        types: [{ description: 'JSON Files', accept: { 'application/zip': ['.zip'] } }],
+        suggestedName: 'experiences.zip',
+      })
+
+      const writableStream = await handle.createWritable()
+      await writableStream.write(zipBlob)
+      await writableStream.close()
     },
   })
 
@@ -52,8 +77,9 @@ export function Experiences() {
       })
 
       const file = await handle.getFile()
+
       // Todo, runtime check with zod?
-      const entries = JSON.parse(file.text()) as ImportExportData
+      const entries = JSON.parse(await file.text()) as ImportExportData
       const idMap = new Map()
       let newRootId = null
 
@@ -145,9 +171,13 @@ export function Experiences() {
       <button disabled={importExperience.isPending} onClick={() => importExperience.mutate()}>
         Import
       </button>
+      <button disabled={exportManyExperiences.isPending} onClick={() => exportManyExperiences.mutate({ experiences })}>
+        Export all
+      </button>
       <ul>
         {experiences.map((experience) => (
           <li key={experience.id}>
+            <input value={experience.id} type="checkbox" />
             <h4>{experience.name}</h4>
             <p>
               <Link disabled={removeExperience.isPending} params={{ id: String(experience.id) }} to="/experiences/$id">
@@ -161,7 +191,7 @@ export function Experiences() {
               disabled={duplicateExperience.isPending}
               onClick={() => duplicateExperience.mutate({ root: { type: 'experience', id: experience.id } })}
             >
-              Copy
+              Duplicate
             </button>
             <button disabled={exportExperience.isPending} onClick={() => exportExperience.mutate({ experience })}>
               Export

@@ -11,10 +11,11 @@ import { Block } from './db'
 
 const queryClient = new QueryClient()
 
-type Config = {
+export type Config = {
   [key: string]: {
     component: (props: any) => JSX.Element
     name: string
+    folder?: Array<string>
     slots: { [key: string]: { default: Array<Block['id']>; name: string } }
     props: { [key: string]: { default: any; type: string } }
   }

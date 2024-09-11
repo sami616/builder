@@ -12,6 +12,7 @@
     &[data-active='true'] {
       --highlightColor: blue;
       outline: 2px solid var(--highlightColor);
+      z-index: 99999999;
     }
 
     &[data-dragging='true'] {

@@ -1,7 +1,7 @@
-import { useMutationState, useSuspenseQuery } from '@tanstack/react-query'
+import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
 import { Experience, type Block } from '../db'
 import { useRouteContext } from '@tanstack/react-router'
-import { ComponentProps, useRef } from 'react'
+import { ComponentProps, useEffect, useRef, useState } from 'react'
 import './LayerItem.css'
 import { DropIndicator } from './DropIndicator'
 import { useSlotItem } from '../utils/useSlotItem'
@@ -19,6 +19,7 @@ export function LayerItem(props: {
   setHoveredBlockId: (id: Block['id'] | undefined) => void
   activeBlockId?: Block['id']
 }) {
+  const inputRef = useRef<HTMLInputElement>(null)
   const context = useRouteContext({ from: '/experiences/$id' })
   const slotItemSourceRef = useRef<HTMLLIElement>(null)
   const slotItemTargetRef = useRef<HTMLLIElement>(null)
@@ -27,17 +28,33 @@ export function LayerItem(props: {
     queryFn: () => context.get({ id: props.blockId, type: 'blocks' }),
   })
 
+  const [isRenaming, setIsRenaming] = useState(false)
   const duplicateBlock = useDuplicateBlock()
   const removeBlock = useRemoveBlock()
-  const mutationState = useMutationState<Block>({
-    filters: {
-      mutationKey: ['updateBlock', props.blockId],
-      status: 'pending',
-    },
-    select: (data) => (data.state.variables as Record<'block', Block>).block,
-  })?.at(-1)
 
-  const block = mutationState ?? query.data
+  useEffect(() => {
+    async function handleClickOutside(e: MouseEvent) {
+      if (inputRef.current && !inputRef.current.contains(e.target as Node)) {
+        await updateLayerName.mutateAsync({ block: query.data, name: inputRef.current.value })
+        setIsRenaming(false)
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside)
+    return () => {
+      document.removeEventListener('mousedown', handleClickOutside)
+    }
+  }, [])
+
+  const updateLayerName = useMutation({
+    mutationFn: async (args: { block: Block; name: string }) => {
+      const clonedEntry = structuredClone(args.block)
+      clonedEntry.name = args.name
+      return context.update({ entry: clonedEntry })
+    },
+    onSuccess: (id) => {
+      context.queryClient.invalidateQueries({ queryKey: ['blocks', id] })
+    },
+  })
 
   const isHoveredBlock = props.hoveredBlockId === props.blockId
   const isActiveBlock = props.activeBlockId === props.blockId
@@ -46,7 +63,7 @@ export function LayerItem(props: {
     slotItemSourceRef,
     slotItemTargetRef,
     parent: props.parent,
-    block,
+    block: query.data,
     index: props.index,
     disableDrag: props.isCanvasUpdatePending,
   })
@@ -65,33 +82,60 @@ export function LayerItem(props: {
       }}
       onDoubleClick={(e) => {
         e.stopPropagation()
-        console.log(e.target)
-        // Todo: Rename layer (block.name)
+        setIsRenaming(true)
       }}
       ref={slotItemTargetRef}
     >
-      {query.data.name}
+      <>
+        {isRenaming && (
+          <form
+            onSubmit={async (e) => {
+              e.preventDefault()
+              const formData = new FormData(e.currentTarget)
+              const updatedName = formData.get('name') as string
+              await updateLayerName.mutateAsync({ block: query.data, name: updatedName })
+              setIsRenaming(false)
+            }}
+          >
+            <input
+              ref={inputRef}
+              name="name"
+              onKeyDown={(e) => {
+                if (e.key === 'Escape') {
+                  setIsRenaming(false)
+                }
+              }}
+              defaultValue={query.data.name}
+            />
+          </form>
+        )}
+        {!isRenaming && (
+          <>
+            {query.data.name}
 
-      <button onClick={() => removeBlock.mutate({ blockId: block.id, parent: props.parent })}>del</button>
-      <button onClick={() => duplicateBlock.mutate({ index: props.index, root: { type: 'block', id: props.blockId }, parent: props.parent })}>
-        dup
-      </button>
-      <span ref={slotItemSourceRef}>move</span>
+            <button onClick={() => removeBlock.mutate({ blockId: query.data.id, parent: props.parent })}>del</button>
+            <button onClick={() => duplicateBlock.mutate({ index: props.index, root: { type: 'block', id: props.blockId }, parent: props.parent })}>
+              dup
+            </button>
+            <span ref={slotItemSourceRef}>move</span>
+          </>
+        )}
+      </>
 
-      {Object.keys(block.slots).map((slot) => (
+      {Object.keys(query.data.slots).map((slot) => (
         <LayerItemSlot
           activeBlockId={props.activeBlockId}
           hoveredBlockId={props.hoveredBlockId}
           setHoveredBlockId={props.setHoveredBlockId}
           key={slot}
           slot={slot}
-          block={block}
+          block={query.data}
           isCanvasUpdatePending={props.isCanvasUpdatePending}
           parent={props.parent}
         />
       ))}
       <DropIndicator closestEdge={closestEdge} variant="horizontal" />
-      <DragPreview dragPreviewContainer={dragPreviewContainer}>Move {block.name} ↕</DragPreview>
+      <DragPreview dragPreviewContainer={dragPreviewContainer}>Move {query.data.name} ↕</DragPreview>
     </li>
   )
 }

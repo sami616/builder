@@ -1,7 +1,7 @@
-import { ComponentProps, useRef } from 'react'
+import { useRef } from 'react'
 import { DropIndicator } from './DropIndicator'
 import { type Block, type Experience } from '../db'
-import { useMutation, useMutationState, useSuspenseQuery } from '@tanstack/react-query'
+import { useMutationState, useSuspenseQuery } from '@tanstack/react-query'
 import { useRouteContext } from '@tanstack/react-router'
 
 import './BlockItem.css'
@@ -89,6 +89,7 @@ export function BlockItem(props: {
 
   return (
     <div
+      // @ts-ignore
       style={{ anchorName: `--${block.id}` }}
       data-active={isActiveBlock}
       data-hovered={isHoveredBlock}
