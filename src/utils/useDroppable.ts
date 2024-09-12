@@ -19,7 +19,7 @@ export function useDroppable(props: {
       onDragLeave: () => {
         setIsDraggingOver(false)
       },
-      getData: (): DroppableWithParent | DroppableNoParent => ({
+      getData: (): DroppableTarget | DroppableRootTarget => ({
         id: 'droppable',
         parent: props.parent,
       }),
@@ -42,18 +42,19 @@ export function useDroppable(props: {
   return { isDraggingOver }
 }
 
-export type DroppableWithParent = {
+export type DroppableTarget = {
   id: 'droppable'
-} & Required<Pick<Parameters<typeof useDroppable>[0], 'parent'>>
+  parent: { slot: string; node: Experience } | { slot: string; node: Block }
+}
 
-export type DroppableNoParent = {
-  id: 'droppable'
-} & Pick<Parameters<typeof useDroppable>[0], 'parent'>
-
-export function isDroppableWithParent(args: Record<string, unknown>): args is DroppableWithParent {
+export function isDroppableTarget(args: Record<string, any>): args is DroppableTarget {
   return args.id === 'droppable' && args.parent !== undefined
 }
 
-export function isDroppableNoParent(args: Record<string, unknown>): args is DroppableNoParent {
+export type DroppableRootTarget = {
+  id: 'droppable'
+}
+
+export function isDroppableRootTarget(args: Record<string, any>): args is DroppableRootTarget {
   return args.id === 'droppable' && args.parent === undefined
 }

@@ -5,7 +5,7 @@ import { ComponentProps, useEffect, useRef, useState } from 'react'
 import './LayerItem.css'
 import { DropIndicator } from './DropIndicator'
 import { useSlotItem } from '../utils/useSlotItem'
-import { useDroppable } from '../utils/useSlot'
+import { useDroppable } from '../utils/useDroppable'
 import { DragPreview } from './DragPreview'
 import { useRemoveBlock } from '../utils/useRemoveBlock'
 import { useDuplicateBlock } from '../utils/useDuplicateBlock'
@@ -68,6 +68,12 @@ export function LayerItem(props: {
     disableDrag: props.isCanvasUpdatePending,
   })
 
+  useEffect(() => {
+    if (isRenaming) {
+      inputRef.current?.select()
+    }
+  }, [isRenaming])
+
   return (
     <li
       style={{ opacity: isDraggingSource ? 0.5 : 1, color: isActiveBlock ? 'blue' : isHoveredBlock ? 'red' : 'unset' }}
@@ -100,6 +106,7 @@ export function LayerItem(props: {
             <input
               ref={inputRef}
               name="name"
+              autoFocus
               onKeyDown={(e) => {
                 if (e.key === 'Escape') {
                   setIsRenaming(false)
@@ -112,7 +119,6 @@ export function LayerItem(props: {
         {!isRenaming && (
           <>
             {query.data.name}
-
             <button onClick={() => removeBlock.mutate({ blockId: query.data.id, parent: props.parent })}>del</button>
             <button onClick={() => duplicateBlock.mutate({ index: props.index, root: { store: 'blocks', id: props.blockId }, parent: props.parent })}>
               dup

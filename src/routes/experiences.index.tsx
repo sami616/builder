@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
 import JSZip from 'jszip'
 import { useSuspenseQuery, useMutation, queryOptions } from '@tanstack/react-query'
-import { experienceBlocksKey } from '../api'
 import { type Experience } from '../db'
 import { type Context } from '../main'
 
@@ -135,10 +134,11 @@ export function Experiences() {
           const formData = new FormData(form)
           await addExperience.mutateAsync({
             entry: {
+              store: 'experiences',
               name: formData.get('name') as string,
               createdAt: new Date(),
               updatedAt: new Date(),
-              slots: { [experienceBlocksKey]: [] },
+              slots: { root: [] },
               status: 'draft',
             },
           })

@@ -1,7 +1,7 @@
 import './DropZone.css'
 import { useRef } from 'react'
 import { Block, Experience } from '../db'
-import { useDroppable } from '../utils/useSlot'
+import { useDroppable } from '../utils/useDroppable'
 
 export function DropZone(props: { label?: string; parent?: { slot: string; node: Experience } | { slot: string; node: Block } }) {
   const droppableRef = useRef<HTMLDivElement>(null)

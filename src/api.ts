@@ -1,5 +1,4 @@
-import { type Block, type Experience, db } from './db'
-export const experienceBlocksKey = 'experienceRoot'
+import { type Block, type Experience, Template, db } from './db'
 
 // get
 export async function get(args: { id: Experience['id']; type: 'experiences' }): Promise<Experience>
@@ -13,10 +12,11 @@ export async function get(args: { id: Experience['id'] | Block['id']; type: 'exp
 }
 
 // getMany
-export async function getMany(args: { type: 'experiences'; sortBy: 'latest' | 'oldest' }): Promise<Experience[]>
-export async function getMany(args: { type: 'blocks'; sortBy: 'latest' | 'oldest' }): Promise<Block[]>
+export async function getMany(args: { type: 'experiences'; sortBy?: 'latest' | 'oldest' }): Promise<Experience[]>
+export async function getMany(args: { type: 'blocks'; sortBy?: 'latest' | 'oldest' }): Promise<Block[]>
+export async function getMany(args: { type: 'templates'; sortBy?: 'latest' | 'oldest' }): Promise<Template[]>
 
-export async function getMany(args: { type: 'experiences' | 'blocks'; sortBy: 'latest' | 'oldest' }) {
+export async function getMany(args: { type: 'experiences' | 'blocks' | 'templates'; sortBy?: 'latest' | 'oldest' }) {
   const tx = db.transaction(args.type, 'readonly')
   const map = new Map([
     ['latest', 'prev'],
@@ -24,7 +24,8 @@ export async function getMany(args: { type: 'experiences' | 'blocks'; sortBy: 'l
   ] as const)
   const index = tx.store.index('createdAt')
   const entries = []
-  let cursor = await index.openCursor(null, map.get(args.sortBy))
+
+  let cursor = args.sortBy ? await index.openCursor(null, map.get(args.sortBy)) : await index.openCursor()
   while (cursor) {
     entries.push(cursor.value), (cursor = await cursor.continue())
   }
@@ -76,9 +77,10 @@ export async function duplicateTree(args: { tree: Awaited<ReturnType<typeof getT
 }
 
 // add
-export async function add(args: { entry: Omit<Experience, 'id'> | Omit<Block, 'id'> }) {
-  const tx = db.transaction(getStore(args.entry), 'readwrite')
-  const [id] = await Promise.all([tx.store.add(args.entry as Block | Experience), tx.done])
+export async function add(args: { entry: Omit<Experience, 'id'> | Omit<Block, 'id'> | Omit<Template, 'id'> }) {
+  const tx = db.transaction(args.entry.store, 'readwrite')
+  args.entry.store
+  const [id] = await Promise.all([tx.store.add(args.entry as Block | Experience | Template), tx.done])
   return id
 }
 
@@ -92,11 +94,11 @@ export async function addMany(args: { entries: Array<Experience | Block> }) {
 }
 
 // update
-export async function update(args: { entry: Experience | Block }) {
+export async function update(args: { entry: Experience | Block | Template }) {
   if (isBlock(args.entry)) {
     args.entry
   }
-  const tx = db.transaction(getStore(args.entry), 'readwrite')
+  const tx = db.transaction(args.entry.store, 'readwrite')
   const [id] = await Promise.all([tx.store.put(args.entry), tx.done])
   return id
 }
@@ -112,7 +114,7 @@ export async function updateMany(args: { entries: Array<Experience | Block> }) {
 
 // remove
 export async function remove(args: { entry: Experience | Block }) {
-  const tx = db.transaction(getStore(args.entry), 'readwrite')
+  const tx = db.transaction(args.entry.store, 'readwrite')
   await Promise.all([tx.store.delete(args.entry.id), tx.done])
 }
 
@@ -124,14 +126,14 @@ export async function removeMany(args: { entries: Array<Experience | Block> }) {
   await Promise.all([...promises, expTx.done, bloTx.done])
 }
 
-export function isBlock(args: Omit<Block | Experience, 'id'>): args is Block {
-  return 'props' in args
+export function isBlock(args: Omit<Block | Experience | Template, 'id'>): args is Block {
+  return args.store === 'blocks'
 }
 
-export function isExperience(args: Block | Experience): args is Experience {
-  return !('props' in args)
+export function isTemplate(args: Omit<Block | Template | Experience, 'id'>): args is Template {
+  return args.store === 'templates'
 }
 
-export function getStore(arg: Omit<Experience, 'id'> | Omit<Block, 'id'>) {
-  return isBlock(arg) ? 'blocks' : 'experiences'
+export function isExperience(args: Omit<Block | Experience | Template, 'id'>): args is Experience {
+  return args.store === 'experiences'
 }

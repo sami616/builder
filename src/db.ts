@@ -60,25 +60,28 @@ export interface MyDB extends DBSchema {
   }
 }
 
-export type Experience = {
+export type Sys = {
   id: number
-  name: string
   createdAt: Date
   updatedAt: Date
+}
+
+export type Experience = Sys & {
+  store: 'experiences'
+  name: string
   status: 'published' | 'draft' | 'changed'
   slots: { [index: string]: Array<Block['id']> }
 }
-
-export type Block = {
-  id: number
-  createdAt: Date
-  updatedAt: Date
+export type Block = Sys & {
+  store: 'blocks'
   type: string
   name: string
   slots: { [index: string]: Array<Block['id']> }
   props: { [index: string]: any }
 }
 
-export type Template = {
-  template: boolean
-} & Block
+export type Template = Sys & {
+  store: 'templates'
+  name: string
+  slots: { [index: string]: Array<Block['id']> }
+}

@@ -17,7 +17,7 @@ export function useDuplicateBlock() {
       const clonedParent = structuredClone(args.parent.node)
       clonedParent.slots[args.parent.slot].splice(args.index + 1, 0, rootEntry.id)
       await context.update({ entry: clonedParent })
-      return { store: context.getStore(clonedParent), id: args.parent.node.id }
+      return { store: clonedParent.store, id: args.parent.node.id }
     },
     onSuccess: async ({ store, id }) => {
       context.queryClient.invalidateQueries({ queryKey: [store, id] })

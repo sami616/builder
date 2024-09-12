@@ -1,5 +1,5 @@
 import { useEffect } from 'react'
-import { type DroppableWithParent, type DroppableNoParent, isDroppableWithParent, isDroppableNoParent } from '../utils/useSlot'
+import { DroppableRootTarget, type DroppableTarget, isDroppableRootTarget, isDroppableTarget } from '../utils/useDroppable'
 import { type ComponentItemSource, isComponentItemSource } from '../editor-components/ComponentItem'
 import { isSlotItemSource, isSlotItemTarget, type SlotItemSource, type SlotItemTarget } from '../utils/useSlotItem'
 import { useMutation } from '@tanstack/react-query'
@@ -9,20 +9,29 @@ import { monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/ad
 export function useDnDEvents() {
   const context = useRouteContext({ from: '/experiences/$id' })
 
-  // const handleAddTemplate = useMutation({
-  //   mutationFn: async (args: { source: SlotItemSource; target: DroppableNoParent }) => {
-  //     const tree = await context.getTree({ root: { store: 'blocks', id: args.source.block.id } })
-  //     const rootEntry = await context.duplicateTree({ tree })
-  //     const clonedBlock = structuredClone(rootEntry)
-  //     return await context.update({ entry: clonedBlock })
-  //   },
-  //   onSuccess: (data) => {
-  //     context.queryClient.invalidateQueries({ queryKey: ['blocks', data] })
-  //   },
-  // })
+  const handleAddTemplate = useMutation({
+    mutationFn: async (args: { source: SlotItemSource; target: DroppableRootTarget }) => {
+      const tree = await context.getTree({ root: { store: 'blocks', id: args.source.block.id } })
+      const rootEntry = await context.duplicateTree({ tree })
+
+      const date = new Date()
+      return context.add({
+        entry: {
+          name: args.source.block.name,
+          store: 'templates',
+          createdAt: date,
+          updatedAt: date,
+          slots: { root: [rootEntry.id] },
+        },
+      })
+    },
+    onSuccess: (data) => {
+      context.queryClient.invalidateQueries({ queryKey: ['templates', data] })
+    },
+  })
 
   const handleAdd = useMutation({
-    mutationFn: async (args: { source: ComponentItemSource; target: SlotItemTarget | DroppableWithParent }) => {
+    mutationFn: async (args: { source: ComponentItemSource; target: SlotItemTarget | DroppableTarget }) => {
       const clonedParentNode = structuredClone(args.target.parent.node)
       const configItem = context.config[args.source.type]
       const propKeys = Object.keys(configItem.props)
@@ -40,6 +49,7 @@ export function useDnDEvents() {
       const date = new Date()
       const blockId = await context.add({
         entry: {
+          store: 'blocks',
           type: args.source.type,
           name: configItem.name,
           props: defaultProps,
@@ -62,13 +72,12 @@ export function useDnDEvents() {
       return context.update({ entry: clonedParentNode })
     },
     onSuccess: (data, vars) => {
-      const store = context.getStore(vars.target.parent.node)
-      context.queryClient.invalidateQueries({ queryKey: [store, data] })
+      context.queryClient.invalidateQueries({ queryKey: [vars.target.parent.node.store, data] })
     },
   })
 
   const handleReorder = useMutation({
-    mutationFn: async (args: { source: SlotItemSource; target: SlotItemTarget | DroppableWithParent }) => {
+    mutationFn: async (args: { source: SlotItemSource; target: SlotItemTarget | DroppableTarget }) => {
       const clonedParentNode = structuredClone(args.target.parent.node)
       const addSlot = args.target.parent.slot
       const removeSlot = args.source.parent.slot
@@ -89,13 +98,12 @@ export function useDnDEvents() {
       return context.update({ entry: clonedParentNode })
     },
     onSuccess: (data, vars) => {
-      const store = context.getStore(vars.target.parent.node)
-      context.queryClient.invalidateQueries({ queryKey: [store, data] })
+      context.queryClient.invalidateQueries({ queryKey: [vars.target.parent.node.store, data] })
     },
   })
 
   const handleReparent = useMutation({
-    mutationFn: async (args: { source: SlotItemSource; target: SlotItemTarget | DroppableWithParent }) => {
+    mutationFn: async (args: { source: SlotItemSource; target: SlotItemTarget | DroppableTarget }) => {
       const clonedSourceParentNode = structuredClone(args.source.parent.node)
       const clonedTargetParentNode = structuredClone(args.target.parent.node)
       const addSlot = args.target.parent.slot
@@ -116,10 +124,8 @@ export function useDnDEvents() {
       return context.updateMany({ entries: [clonedSourceParentNode, clonedTargetParentNode] })
     },
     onSuccess: ([sourceData, targetData], vars) => {
-      const sourceStore = context.getStore(vars.source.parent.node)
-      const targetStore = context.getStore(vars.target.parent.node)
-      context.queryClient.invalidateQueries({ queryKey: [sourceStore, sourceData] })
-      context.queryClient.invalidateQueries({ queryKey: [targetStore, targetData] })
+      context.queryClient.invalidateQueries({ queryKey: [vars.source.parent.node.store, sourceData] })
+      context.queryClient.invalidateQueries({ queryKey: [vars.target.parent.node.store, targetData] })
     },
   })
 
@@ -128,12 +134,11 @@ export function useDnDEvents() {
       onDrop: async ({ source, location }) => {
         const [target] = location.current.dropTargets
 
-        if (isSlotItemTarget(target.data) || isDroppableWithParent(target.data)) {
+        if (isSlotItemTarget(target.data) || isDroppableTarget(target.data)) {
           if (isComponentItemSource(source.data)) {
             handleAdd.mutate({ source: source.data, target: target.data })
           }
           if (isSlotItemSource(source.data)) {
-            console.log(target.data)
             const sameParent = source.data.parent.node.id === target.data.parent.node.id
             if (sameParent) {
               handleReorder.mutate({ source: source.data, target: target.data })
@@ -142,8 +147,8 @@ export function useDnDEvents() {
             }
           }
         }
-        if (isSlotItemSource(source.data) && isDroppableNoParent(target.data)) {
-          // handleAddTemplate.mutate({ source: source.data, target: target.data })
+        if (isSlotItemSource(source.data) && isDroppableRootTarget(target.data)) {
+          handleAddTemplate.mutate({ source: source.data, target: target.data })
         }
       },
     })

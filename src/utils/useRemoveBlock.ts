@@ -13,7 +13,7 @@ export function useRemoveBlock() {
       const clonedParentNode = structuredClone(args.parent.node)
       clonedParentNode.slots[args.parent.slot] = args.parent.node.slots[args.parent.slot].filter((id) => id !== args.blockId)
       await context.update({ entry: clonedParentNode })
-      return { store: context.getStore(clonedParentNode), id: args.parent.node.id }
+      return { store: clonedParentNode.store, id: args.parent.node.id }
     },
     onSuccess: async ({ store, id }) => {
       context.queryClient.invalidateQueries({ queryKey: [store, id] })

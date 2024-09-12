@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useSuspenseQuery, queryOptions, useMutation } from '@tanstack/react-query'
+import { useSuspenseQuery, useMutation } from '@tanstack/react-query'
 import { type Context } from '../main'
 import { type Experience, type Block } from '../db'
 import { Suspense, useState } from 'react'
@@ -9,16 +9,17 @@ import { PropsPanel } from '../editor-components/PropsPanel'
 import { useDnDEvents } from '../utils/useDnDEvents'
 import { LayerPanel } from '../editor-components/LayerPanel'
 import { DropZone } from '../editor-components/DropZone'
-import { experienceBlocksKey } from '../api'
 import { BlockItem } from '../editor-components/BlockItem'
+import { TemplatePanel } from '../editor-components/TemplatesPanel'
 
 export const Route = createFileRoute('/experiences/$id')({
   component: Experience,
-  loader: ({ params, context }) =>
-    context.queryClient.ensureQueryData(
-      // Todo: how can i start to prefetch all the blocks assosiated with this experience?
-      queryOpts(Number(params.id), context.get),
-    ),
+  loader: async ({ context, params }) => {
+    const experiences = context.queryClient.ensureQueryData(experienceOpts(Number(params.id), context.get))
+    const templates = context.queryClient.ensureQueryData(templateOpts(context.getMany))
+    const data = await Promise.all([experiences, templates])
+    return { experiences: data.at(0), templates: data.at(1) }
+  },
   pendingComponent: () => <p>Loading..</p>,
   errorComponent: () => <p>Error!</p>,
 })
@@ -30,7 +31,10 @@ function Experience() {
   const [activeBlockId, setActiveBlockId] = useState<Block['id'] | undefined>()
   const [hoveredBlockId, setHoveredBlockId] = useState<Block['id'] | undefined>()
 
-  const { data: experience } = useSuspenseQuery(queryOpts(Number(id), context.get))
+  const { data: experience } = useSuspenseQuery(experienceOpts(Number(id), context.get))
+  const { data: templates } = useSuspenseQuery(templateOpts(context.getMany))
+
+  console.log(templates)
 
   const blocks = Object.values(experience.slots)[0]
 
@@ -90,17 +94,17 @@ function Experience() {
             </details>
             <details open name="templates">
               <summary>Templates</summary>
-              <DropZone label="Create template" />
+              {<TemplatePanel templates={templates} isCanvasUpdatePending={pending} />}
             </details>
           </aside>
 
           <div>
-            {blocks.length === 0 && <DropZone label="Start building" parent={{ slot: experienceBlocksKey, node: experience }} />}
+            {blocks.length === 0 && <DropZone label="Start building" parent={{ slot: 'root', node: experience }} />}
             {blocks.map((blockId, index) => {
               return (
                 <BlockItem
                   blockId={blockId}
-                  parent={{ node: experience, slot: experienceBlocksKey }}
+                  parent={{ node: experience, slot: 'root' }}
                   index={index}
                   experience={experience}
                   activeBlockId={activeBlockId}
@@ -125,9 +129,10 @@ function Experience() {
   )
 }
 
-function queryOpts(id: number, get: Context['get']) {
-  return queryOptions({
-    queryKey: ['experiences', id],
-    queryFn: () => get({ id, type: 'experiences' }),
-  })
+function experienceOpts(id: number, get: Context['get']) {
+  return { queryKey: ['experiences', id], queryFn: () => get({ id, type: 'experiences' }) }
+}
+
+function templateOpts(getMany: Context['getMany']) {
+  return { queryKey: ['templates'], queryFn: () => getMany({ type: 'templates' }) }
 }
