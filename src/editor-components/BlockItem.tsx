@@ -7,7 +7,7 @@ import { useRouteContext } from '@tanstack/react-router'
 import './BlockItem.css'
 import { DragPreview } from './DragPreview'
 import { DropZone } from './DropZone'
-import { useSlotItem } from '../utils/useSlotItem'
+import { useDragDrop } from '../utils/useDragDrop'
 import { useRemoveBlock } from '../utils/useRemoveBlock'
 import { useDuplicateBlock } from '../utils/useDuplicateBlock'
 
@@ -15,15 +15,15 @@ export function BlockItem(props: {
   index: number
   experience: Experience
   isCanvasUpdatePending: boolean
-  parent: { slot: string; node: Block } | { slot: string; node: Experience }
+  parent: { slot: string; node: Block | Experience }
   blockId: Block['id']
   activeBlockId?: Block['id']
   setActiveBlockId: (id: Block['id'] | undefined) => void
   hoveredBlockId?: Block['id']
   setHoveredBlockId: (id: Block['id'] | undefined) => void
 }) {
-  const slotItemTargetRef = useRef<HTMLDivElement>(null)
-  const slotItemSourceRef = useRef<HTMLDivElement>(null)
+  const dropRef = useRef<HTMLDivElement>(null)
+  const dragRef = useRef<HTMLDivElement>(null)
   const popoverRef = useRef<HTMLDivElement>(null)
   const context = useRouteContext({ from: '/experiences/$id' })
 
@@ -49,20 +49,23 @@ export function BlockItem(props: {
   const block = mutationState ?? query.data
   const componentProps = block.props
 
-  const { isDraggingSource, closestEdge, dragPreviewContainer } = useSlotItem({
-    slotItemSourceRef,
-    slotItemTargetRef,
-    parent: props.parent,
-    index: props.index,
-    block: block,
+  const { isDraggingSource, closestEdge, dragPreviewContainer } = useDragDrop({
+    dragRef,
+    dropRef,
     disableDrag: props.isCanvasUpdatePending,
+    data: {
+      index: props.index,
+      parent: props.parent,
+      node: block,
+      id: 'block',
+    },
   })
 
   const componentBlocks = Object.keys(block.slots).reduce<{
     [key: string]: JSX.Element[] | JSX.Element
   }>((acc, slot) => {
     if (block.slots[slot].length === 0) {
-      acc[slot] = <DropZone label={context.config[block.type].slots[slot].name} parent={{ slot, node: block }} />
+      acc[slot] = <DropZone label={context.config[block.type].slots[slot].name} data={{ id: 'block', parent: { slot, node: block } }} />
     } else {
       acc[slot] = block.slots[slot].map((blockId, index) => {
         return (
@@ -109,7 +112,7 @@ export function BlockItem(props: {
         props.setHoveredBlockId(undefined)
         popoverRef.current?.hidePopover()
       }}
-      ref={slotItemTargetRef}
+      ref={dropRef}
     >
       <div
         // @ts-ignore
@@ -119,7 +122,7 @@ export function BlockItem(props: {
         data-context
       >
         <div>
-          <span ref={slotItemSourceRef}>Move</span>
+          <span ref={dragRef}>Move</span>
           <button
             onClick={() => {
               duplicateBlock.mutate({ index: props.index, root: { store: 'blocks', id: props.blockId }, parent: props.parent })

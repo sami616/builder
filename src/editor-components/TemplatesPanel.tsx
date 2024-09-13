@@ -4,11 +4,11 @@ import { TemplateItem } from './TemplateItem'
 import './TemplatePanel.css'
 
 export function TemplatePanel(props: { templates: Template[]; isCanvasUpdatePending: boolean }) {
-  if (props.templates.length === 0) <DropZone label="Create template" />
+  if (props.templates.length === 0) <DropZone data={{ id: 'template' }} label="Create template" />
   return (
     <ul data-component="TemplatePanel">
       {props.templates.map((template) => {
-        return <TemplateItem template={template} isCanvasUpdatePending={props.isCanvasUpdatePending} />
+        return <TemplateItem key={template.id} template={template} isCanvasUpdatePending={props.isCanvasUpdatePending} />
       })}
     </ul>
   )

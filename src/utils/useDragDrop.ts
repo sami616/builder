@@ -4,32 +4,26 @@ import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine'
 import { setCustomNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview'
 import { type Block, type Experience } from '../db'
 import { type Input } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types'
+import { isBlock, isExperience } from '../api'
 
-export function useSlotItem(props: {
-  slotItemSourceRef: RefObject<HTMLLIElement | HTMLDivElement>
-  slotItemTargetRef: RefObject<HTMLLIElement | HTMLDivElement>
-  block: Block
+export function useDragDrop(props: {
+  dragRef: RefObject<HTMLLIElement | HTMLDivElement>
+  dropRef: RefObject<HTMLLIElement | HTMLDivElement>
   disableDrag?: boolean
-  index: number
-  parent: { slot: string; node: Experience } | { slot: string; node: Block }
+  data: Data
 }) {
   const [dragPreviewContainer, setDragPreviewContainer] = useState<HTMLElement | null>(null)
   const [isDraggingSource, setIsDraggingSource] = useState(false)
-  const [closestEdge, setClosestEdge] = useState<'top' | 'bottom' | null>(null)
+  const [closestEdge, setClosestEdge] = useState<Edge>(null)
 
   useEffect(() => {
-    const dragElement = props.slotItemSourceRef.current
-    const dropElement = props.slotItemTargetRef.current
+    const dragElement = props.dragRef.current
+    const dropElement = props.dropRef.current
     if (!dragElement || !dropElement) return
     return combine(
       draggable({
         element: dragElement,
-        getInitialData: (): SlotItemSource => ({
-          index: props.index,
-          block: props.block,
-          id: 'slotItem',
-          parent: props.parent,
-        }),
+        getInitialData: () => props.data,
         onGenerateDragPreview: ({ nativeSetDragImage }) => {
           setCustomNativeDragPreview({
             nativeSetDragImage,
@@ -58,12 +52,9 @@ export function useSlotItem(props: {
             setClosestEdge(null)
           }
         },
-        getData: ({ input, element }): SlotItemTarget => {
+        getData: ({ input, element }) => {
           return {
-            id: 'slotItem',
-            index: props.index,
-            block: props.block,
-            parent: props.parent,
+            ...props.data,
             edge: getEdge(input, element),
           }
         },
@@ -79,33 +70,53 @@ export function useSlotItem(props: {
         },
       }),
     )
-  }, [props.index, props.disableDrag, props.block, props.parent])
+  }, [props.data, props.disableDrag])
   return { isDraggingSource, dragPreviewContainer, closestEdge }
 }
 
-export function isSlotItemSource(args: Record<string, unknown>): args is SlotItemSource {
-  return args.id === 'slotItem'
+export type BlockDragDrop = {
+  Source: {
+    id: 'block'
+    index: number
+    node: Block
+    parent: { slot: string; node: Experience | Block }
+  }
+  Target: {
+    id: 'block'
+    index: number
+    node: Block
+    parent: { slot: string; node: Experience | Block }
+    edge: Edge
+  }
 }
 
-export type SlotItemSource = {
-  index: number
-  id: 'slotItem'
-  block: Block
-  parent: Parameters<typeof useSlotItem>[0]['parent']
+const allowedEdges = ['top', 'bottom', null] as const
+type Edge = (typeof allowedEdges)[number]
+
+type Data = BlockDragDrop['Source'] | BlockDragDrop['Target']
+
+export const isBlockDragDrop = {
+  source(args: Record<string, any>): args is BlockDragDrop['Source'] {
+    if (args.id !== 'block') return false
+    if (typeof args.index !== 'number') return false
+    if (!isBlock(args.node)) return false
+    if (typeof args.parent?.slot !== 'string') return false
+    if (!isBlock(args.parent?.node) && !isExperience(args.parent?.node)) return false
+    if (args.edge !== undefined) return false
+    return true
+  },
+  target(args: Record<string, any>): args is BlockDragDrop['Target'] {
+    if (args.id !== 'block') return false
+    if (typeof args.index !== 'number') return false
+    if (!isBlock(args.node)) return false
+    if (typeof args.parent?.slot !== 'string') return false
+    if (!isBlock(args.parent?.node) && !isExperience(args.parent?.node)) return false
+    if (args.edge === undefined || !allowedEdges.includes(args.edge)) return false
+    return true
+  },
 }
 
-export function isSlotItemTarget(args: Record<string, unknown>): args is SlotItemTarget {
-  return args.id === 'slotItem'
-}
-
-export type SlotItemTarget = {
-  id: 'slotItem'
-  index: number
-  block: Block
-  edge: 'top' | 'bottom' | null
-} & Pick<Parameters<typeof useSlotItem>[0], 'parent'>
-
-function getEdge(input: Input, element: Element) {
+function getEdge(input: Input, element: Element): Edge {
   const rect = element.getBoundingClientRect()
   const thresh = 10
   const bottomThresh = rect.bottom - thresh

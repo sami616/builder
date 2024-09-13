@@ -1,7 +1,8 @@
 import { useEffect } from 'react'
-import { DroppableRootTarget, type DroppableTarget, isDroppableRootTarget, isDroppableTarget } from '../utils/useDroppable'
+import { type BlockDrop, type TemplateDrop, isTemplateDrop, isBlockDrop } from '../utils/useDrop'
+
 import { type ComponentItemSource, isComponentItemSource } from '../editor-components/ComponentItem'
-import { isSlotItemSource, isSlotItemTarget, type SlotItemSource, type SlotItemTarget } from '../utils/useSlotItem'
+import { isBlockDragDrop, type BlockDragDrop } from '../utils/useDragDrop'
 import { useMutation } from '@tanstack/react-query'
 import { useRouteContext } from '@tanstack/react-router'
 import { monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
@@ -10,14 +11,14 @@ export function useDnDEvents() {
   const context = useRouteContext({ from: '/experiences/$id' })
 
   const handleAddTemplate = useMutation({
-    mutationFn: async (args: { source: SlotItemSource; target: DroppableRootTarget }) => {
-      const tree = await context.getTree({ root: { store: 'blocks', id: args.source.block.id } })
+    mutationFn: async (args: { source: BlockDragDrop['Source']; target: TemplateDrop }) => {
+      const tree = await context.getTree({ root: { store: 'blocks', id: args.source.node.id } })
       const rootEntry = await context.duplicateTree({ tree })
 
       const date = new Date()
       return context.add({
         entry: {
-          name: args.source.block.name,
+          name: args.source.node.name,
           store: 'templates',
           createdAt: date,
           updatedAt: date,
@@ -31,7 +32,7 @@ export function useDnDEvents() {
   })
 
   const handleAdd = useMutation({
-    mutationFn: async (args: { source: ComponentItemSource; target: SlotItemTarget | DroppableTarget }) => {
+    mutationFn: async (args: { source: ComponentItemSource; target: BlockDragDrop['Target'] | BlockDrop }) => {
       const clonedParentNode = structuredClone(args.target.parent.node)
       const configItem = context.config[args.source.type]
       const propKeys = Object.keys(configItem.props)
@@ -60,7 +61,7 @@ export function useDnDEvents() {
       })
 
       // Add new item
-      if ('index' in args.target) {
+      if (isBlockDragDrop.target(args.target)) {
         let addIndex = args.target.index
         let { edge } = args.target
         if (edge === 'bottom') addIndex += 1
@@ -77,7 +78,7 @@ export function useDnDEvents() {
   })
 
   const handleReorder = useMutation({
-    mutationFn: async (args: { source: SlotItemSource; target: SlotItemTarget | DroppableTarget }) => {
+    mutationFn: async (args: { source: BlockDragDrop['Source']; target: BlockDragDrop['Target'] | BlockDrop }) => {
       const clonedParentNode = structuredClone(args.target.parent.node)
       const addSlot = args.target.parent.slot
       const removeSlot = args.source.parent.slot
@@ -89,9 +90,9 @@ export function useDnDEvents() {
         if (edge === 'bottom') addIndex += 1
         // adjust removeIndex by 1 when reordering in same slot seeing as we add first, then remove
         if (removeSlot === addSlot && removeIndex >= addIndex) removeIndex += 1
-        clonedParentNode.slots[addSlot].splice(addIndex, 0, args.source.block.id)
+        clonedParentNode.slots[addSlot].splice(addIndex, 0, args.source.node.id)
       } else {
-        clonedParentNode.slots[addSlot].push(args.source.block.id)
+        clonedParentNode.slots[addSlot].push(args.source.node.id)
       }
 
       clonedParentNode.slots[removeSlot].splice(removeIndex, 1)
@@ -103,7 +104,7 @@ export function useDnDEvents() {
   })
 
   const handleReparent = useMutation({
-    mutationFn: async (args: { source: SlotItemSource; target: SlotItemTarget | DroppableTarget }) => {
+    mutationFn: async (args: { source: BlockDragDrop['Source']; target: BlockDragDrop['Target'] | BlockDrop }) => {
       const clonedSourceParentNode = structuredClone(args.source.parent.node)
       const clonedTargetParentNode = structuredClone(args.target.parent.node)
       const addSlot = args.target.parent.slot
@@ -114,9 +115,9 @@ export function useDnDEvents() {
         let addIndex = args.target.index
         let { edge } = args.target
         if (edge === 'bottom') addIndex += 1
-        clonedTargetParentNode.slots[addSlot].splice(addIndex, 0, args.source.block.id)
+        clonedTargetParentNode.slots[addSlot].splice(addIndex, 0, args.source.node.id)
       } else {
-        clonedTargetParentNode.slots[addSlot].push(args.source.block.id)
+        clonedTargetParentNode.slots[addSlot].push(args.source.node.id)
       }
 
       clonedSourceParentNode.slots[removeSlot].splice(removeIndex, 1)
@@ -134,11 +135,11 @@ export function useDnDEvents() {
       onDrop: async ({ source, location }) => {
         const [target] = location.current.dropTargets
 
-        if (isSlotItemTarget(target.data) || isDroppableTarget(target.data)) {
+        if (isBlockDragDrop.target(target.data) || isBlockDrop(target.data)) {
           if (isComponentItemSource(source.data)) {
             handleAdd.mutate({ source: source.data, target: target.data })
           }
-          if (isSlotItemSource(source.data)) {
+          if (isBlockDragDrop.source(source.data)) {
             const sameParent = source.data.parent.node.id === target.data.parent.node.id
             if (sameParent) {
               handleReorder.mutate({ source: source.data, target: target.data })
@@ -147,7 +148,7 @@ export function useDnDEvents() {
             }
           }
         }
-        if (isSlotItemSource(source.data) && isDroppableRootTarget(target.data)) {
+        if (isBlockDragDrop.source(source.data) && isTemplateDrop(target.data)) {
           handleAddTemplate.mutate({ source: source.data, target: target.data })
         }
       },

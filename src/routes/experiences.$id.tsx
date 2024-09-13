@@ -34,8 +34,6 @@ function Experience() {
   const { data: experience } = useSuspenseQuery(experienceOpts(Number(id), context.get))
   const { data: templates } = useSuspenseQuery(templateOpts(context.getMany))
 
-  console.log(templates)
-
   const blocks = Object.values(experience.slots)[0]
 
   const updateExperienceMeta = useMutation({
@@ -99,7 +97,7 @@ function Experience() {
           </aside>
 
           <div>
-            {blocks.length === 0 && <DropZone label="Start building" parent={{ slot: 'root', node: experience }} />}
+            {blocks.length === 0 && <DropZone label="Start building" data={{ id: 'block', parent: { slot: 'root', node: experience } }} />}
             {blocks.map((blockId, index) => {
               return (
                 <BlockItem

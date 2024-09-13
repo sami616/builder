@@ -4,8 +4,8 @@ import { useRouteContext } from '@tanstack/react-router'
 import { ComponentProps, useEffect, useRef, useState } from 'react'
 import './LayerItem.css'
 import { DropIndicator } from './DropIndicator'
-import { useSlotItem } from '../utils/useSlotItem'
-import { useDroppable } from '../utils/useDroppable'
+import { useDragDrop } from '../utils/useDragDrop'
+import { useDrop } from '../utils/useDrop'
 import { DragPreview } from './DragPreview'
 import { useRemoveBlock } from '../utils/useRemoveBlock'
 import { useDuplicateBlock } from '../utils/useDuplicateBlock'
@@ -59,13 +59,16 @@ export function LayerItem(props: {
   const isHoveredBlock = props.hoveredBlockId === props.blockId
   const isActiveBlock = props.activeBlockId === props.blockId
 
-  const { isDraggingSource, closestEdge, dragPreviewContainer } = useSlotItem({
-    slotItemSourceRef,
-    slotItemTargetRef,
-    parent: props.parent,
-    block: query.data,
-    index: props.index,
+  const { isDraggingSource, closestEdge, dragPreviewContainer } = useDragDrop({
+    dragRef: slotItemSourceRef,
+    dropRef: slotItemTargetRef,
     disableDrag: props.isCanvasUpdatePending,
+    data: {
+      id: 'block',
+      parent: props.parent,
+      node: query.data,
+      index: props.index,
+    },
   })
 
   useEffect(() => {
@@ -155,18 +158,19 @@ function LayerItemSlot(props: {
   setHoveredBlockId: (id: Block['id'] | undefined) => void
   activeBlockId?: Block['id']
 }) {
-  const droppableRef = useRef<HTMLDetailsElement>(null)
+  const ref = useRef<HTMLDetailsElement>(null)
 
-  const { isDraggingOver } = useDroppable({
-    droppableRef,
-    parent: { slot: props.slot, node: props.block },
+  const { isDraggingOver } = useDrop({
+    dropRef: ref,
+    data: { id: 'block', parent: { slot: props.slot, node: props.block } },
   })
+
   const context = useRouteContext({ from: '/experiences/$id' })
 
   const hasSlotEntries = props.block.slots[props.slot].length > 0
 
   return (
-    <details open={hasSlotEntries} style={{ outline: isDraggingOver ? '2px solid red' : 'none' }} ref={droppableRef}>
+    <details open={hasSlotEntries} style={{ outline: isDraggingOver ? '2px solid red' : 'none' }} ref={ref}>
       <summary>{context.config[props.block.type].slots[props.slot].name}</summary>
       <ul>
         {props.block.slots[props.slot].map((blockId, index) => (

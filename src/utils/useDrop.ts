@@ -1,15 +1,13 @@
 import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { useState, useEffect, type RefObject } from 'react'
 import { type Block, type Experience } from '../db'
+import { isBlock, isExperience } from '../api'
 
-export function useDroppable(props: {
-  droppableRef: RefObject<HTMLDivElement | HTMLDetailsElement>
-  parent?: { slot: string; node: Experience } | { slot: string; node: Block }
-}) {
+export function useDrop(props: { dropRef: RefObject<HTMLDivElement | HTMLDetailsElement>; data: Data }) {
   const [isDraggingOver, setIsDraggingOver] = useState(false)
 
   useEffect(() => {
-    const element = props.droppableRef.current
+    const element = props.dropRef.current
     if (!element) return
     dropTargetForElements({
       element,
@@ -19,10 +17,7 @@ export function useDroppable(props: {
       onDragLeave: () => {
         setIsDraggingOver(false)
       },
-      getData: (): DroppableTarget | DroppableRootTarget => ({
-        id: 'droppable',
-        parent: props.parent,
-      }),
+      getData: () => props.data,
       onDrop: () => {
         setIsDraggingOver(false)
       },
@@ -38,23 +33,22 @@ export function useDroppable(props: {
         return true
       },
     })
-  }, [props.parent])
+  }, [props.data])
   return { isDraggingOver }
 }
 
-export type DroppableTarget = {
-  id: 'droppable'
-  parent: { slot: string; node: Experience } | { slot: string; node: Block }
+export type TemplateDrop = { id: 'template' }
+export type BlockDrop = { id: 'block'; parent: { slot: string; node: Block | Experience } }
+
+type Data = BlockDrop | TemplateDrop
+
+export function isBlockDrop(args: Record<string, any>): args is BlockDrop {
+  if (args.id !== 'block') return false
+  if (typeof args.parent?.slot !== 'string') return false
+  if (!isBlock(args.parent?.node) && !isExperience(args.parent?.node)) return false
+  return true
 }
 
-export function isDroppableTarget(args: Record<string, any>): args is DroppableTarget {
-  return args.id === 'droppable' && args.parent !== undefined
-}
-
-export type DroppableRootTarget = {
-  id: 'droppable'
-}
-
-export function isDroppableRootTarget(args: Record<string, any>): args is DroppableRootTarget {
-  return args.id === 'droppable' && args.parent === undefined
+export function isTemplateDrop(args: Record<string, unknown>): args is TemplateDrop {
+  return args.id === 'template'
 }
