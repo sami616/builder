@@ -2,9 +2,9 @@ import { type RefObject, useEffect, useState } from 'react'
 import { draggable, dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine'
 import { setCustomNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview'
-import { type Block, type Experience } from '../db'
+import { Template, type Block, type Experience } from '../db'
 import { type Input } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types'
-import { isBlock, isExperience } from '../api'
+import { isBlock, isExperience, isTemplate } from '../api'
 
 export function useDragDrop(props: {
   dragRef: RefObject<HTMLLIElement | HTMLDivElement>
@@ -74,45 +74,78 @@ export function useDragDrop(props: {
   return { isDraggingSource, dragPreviewContainer, closestEdge }
 }
 
-export type BlockDragDrop = {
-  Source: {
-    id: 'block'
-    index: number
-    node: Block
-    parent: { slot: string; node: Experience | Block }
+export type DragDrop = {
+  Block: {
+    Source: {
+      id: 'blockDragDrop'
+      index: number
+      node: Block
+      parent: { slot: string; node: Experience | Block }
+    }
+    Target: {
+      id: 'blockDragDrop'
+      index: number
+      node: Block
+      parent: { slot: string; node: Experience | Block }
+      edge: Edge
+    }
   }
-  Target: {
-    id: 'block'
-    index: number
-    node: Block
-    parent: { slot: string; node: Experience | Block }
-    edge: Edge
+  Template: {
+    Source: {
+      id: 'templateDragDrop'
+      index: number
+      node: Template
+    }
+    Target: {
+      id: 'templateDragDrop'
+      index: number
+      node: Template
+      edge: Edge
+    }
   }
 }
 
 const allowedEdges = ['top', 'bottom', null] as const
 type Edge = (typeof allowedEdges)[number]
 
-type Data = BlockDragDrop['Source'] | BlockDragDrop['Target']
+type Data = DragDrop['Block']['Source'] | DragDrop['Block']['Target'] | DragDrop['Template']['Source'] | DragDrop['Template']['Target']
 
-export const isBlockDragDrop = {
-  source(args: Record<string, any>): args is BlockDragDrop['Source'] {
-    if (args.id !== 'block') return false
-    if (typeof args.index !== 'number') return false
-    if (!isBlock(args.node)) return false
-    if (typeof args.parent?.slot !== 'string') return false
-    if (!isBlock(args.parent?.node) && !isExperience(args.parent?.node)) return false
-    if (args.edge !== undefined) return false
-    return true
+export const isDragDrop = {
+  block: {
+    source(args: Record<string, any>): args is DragDrop['Block']['Source'] {
+      if (args.id !== 'blockDragDrop') return false
+      if (typeof args.index !== 'number') return false
+      if (!isBlock(args.node)) return false
+      if (typeof args.parent?.slot !== 'string') return false
+      if (!isBlock(args.parent?.node) && !isExperience(args.parent?.node)) return false
+      if (args.edge !== undefined) return false
+      return true
+    },
+    target(args: Record<string, any>): args is DragDrop['Block']['Target'] {
+      if (args.id !== 'blockDragDrop') return false
+      if (typeof args.index !== 'number') return false
+      if (!isBlock(args.node)) return false
+      if (typeof args.parent?.slot !== 'string') return false
+      if (!isBlock(args.parent?.node) && !isExperience(args.parent?.node)) return false
+      if (args.edge === undefined || !allowedEdges.includes(args.edge)) return false
+      return true
+    },
   },
-  target(args: Record<string, any>): args is BlockDragDrop['Target'] {
-    if (args.id !== 'block') return false
-    if (typeof args.index !== 'number') return false
-    if (!isBlock(args.node)) return false
-    if (typeof args.parent?.slot !== 'string') return false
-    if (!isBlock(args.parent?.node) && !isExperience(args.parent?.node)) return false
-    if (args.edge === undefined || !allowedEdges.includes(args.edge)) return false
-    return true
+  template: {
+    source(args: Record<string, any>): args is DragDrop['Block']['Source'] {
+      if (args.id !== 'templateDragDrop') return false
+      if (typeof args.index !== 'number') return false
+      if (!isTemplate(args.node)) return false
+      if (args.edge !== undefined) return false
+      return true
+    },
+    target(args: Record<string, any>): args is DragDrop['Block']['Target'] {
+      if (args.id !== 'templateDragDrop') return false
+      if (typeof args.index !== 'number') return false
+      if (!isTemplate(args.node)) return false
+      if (args.edge === undefined || !allowedEdges.includes(args.edge)) return false
+      return true
+    },
   },
 }
 

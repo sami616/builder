@@ -37,18 +37,25 @@ export function useDrop(props: { dropRef: RefObject<HTMLDivElement | HTMLDetails
   return { isDraggingOver }
 }
 
-export type TemplateDrop = { id: 'template' }
-export type BlockDrop = { id: 'block'; parent: { slot: string; node: Block | Experience } }
-
-type Data = BlockDrop | TemplateDrop
-
-export function isBlockDrop(args: Record<string, any>): args is BlockDrop {
-  if (args.id !== 'block') return false
-  if (typeof args.parent?.slot !== 'string') return false
-  if (!isBlock(args.parent?.node) && !isExperience(args.parent?.node)) return false
-  return true
+export type Drop = {
+  Template: { Target: { id: 'templateDrop' } }
+  Block: { Target: { id: 'blockDrop'; parent: { slot: string; node: Block | Experience } } }
 }
 
-export function isTemplateDrop(args: Record<string, unknown>): args is TemplateDrop {
-  return args.id === 'template'
+type Data = Drop['Block']['Target'] | Drop['Template']['Target']
+
+export const isDrop = {
+  block: {
+    target(args: Record<string, any>): args is Drop['Block']['Target'] {
+      if (args.id !== 'blockDrop') return false
+      if (typeof args.parent?.slot !== 'string') return false
+      if (!isBlock(args.parent?.node) && !isExperience(args.parent?.node)) return false
+      return true
+    },
+  },
+  template: {
+    target(args: Record<string, unknown>): args is Drop['Template']['Target'] {
+      return args.id === 'templateDrop'
+    },
+  },
 }

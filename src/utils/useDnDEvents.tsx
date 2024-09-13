@@ -1,8 +1,8 @@
 import { useEffect } from 'react'
-import { type BlockDrop, type TemplateDrop, isTemplateDrop, isBlockDrop } from '../utils/useDrop'
+import { type Drop, isDrop } from '../utils/useDrop'
 
 import { type ComponentItemSource, isComponentItemSource } from '../editor-components/ComponentItem'
-import { isBlockDragDrop, type BlockDragDrop } from '../utils/useDragDrop'
+import { isDragDrop, type DragDrop } from '../utils/useDragDrop'
 import { useMutation } from '@tanstack/react-query'
 import { useRouteContext } from '@tanstack/react-router'
 import { monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
@@ -11,7 +11,7 @@ export function useDnDEvents() {
   const context = useRouteContext({ from: '/experiences/$id' })
 
   const handleAddTemplate = useMutation({
-    mutationFn: async (args: { source: BlockDragDrop['Source']; target: TemplateDrop }) => {
+    mutationFn: async (args: { source: DragDrop['Block']['Source']; target: Drop['Template']['Target'] | DragDrop['Template']['Target'] }) => {
       const tree = await context.getTree({ root: { store: 'blocks', id: args.source.node.id } })
       const rootEntry = await context.duplicateTree({ tree })
 
@@ -26,13 +26,13 @@ export function useDnDEvents() {
         },
       })
     },
-    onSuccess: (data) => {
-      context.queryClient.invalidateQueries({ queryKey: ['templates', data] })
+    onSuccess: () => {
+      context.queryClient.invalidateQueries({ queryKey: ['templates'] })
     },
   })
 
-  const handleAdd = useMutation({
-    mutationFn: async (args: { source: ComponentItemSource; target: BlockDragDrop['Target'] | BlockDrop }) => {
+  const handleAddBlock = useMutation({
+    mutationFn: async (args: { source: ComponentItemSource; target: DragDrop['Block']['Target'] | Drop['Block']['Target'] }) => {
       const clonedParentNode = structuredClone(args.target.parent.node)
       const configItem = context.config[args.source.type]
       const propKeys = Object.keys(configItem.props)
@@ -61,7 +61,7 @@ export function useDnDEvents() {
       })
 
       // Add new item
-      if (isBlockDragDrop.target(args.target)) {
+      if (isDragDrop.block.target(args.target)) {
         let addIndex = args.target.index
         let { edge } = args.target
         if (edge === 'bottom') addIndex += 1
@@ -77,8 +77,8 @@ export function useDnDEvents() {
     },
   })
 
-  const handleReorder = useMutation({
-    mutationFn: async (args: { source: BlockDragDrop['Source']; target: BlockDragDrop['Target'] | BlockDrop }) => {
+  const handleReorderBlock = useMutation({
+    mutationFn: async (args: { source: DragDrop['Block']['Source']; target: DragDrop['Block']['Target'] | Drop['Block']['Target'] }) => {
       const clonedParentNode = structuredClone(args.target.parent.node)
       const addSlot = args.target.parent.slot
       const removeSlot = args.source.parent.slot
@@ -103,8 +103,8 @@ export function useDnDEvents() {
     },
   })
 
-  const handleReparent = useMutation({
-    mutationFn: async (args: { source: BlockDragDrop['Source']; target: BlockDragDrop['Target'] | BlockDrop }) => {
+  const handleReparentBlock = useMutation({
+    mutationFn: async (args: { source: DragDrop['Block']['Source']; target: DragDrop['Block']['Target'] | Drop['Block']['Target'] }) => {
       const clonedSourceParentNode = structuredClone(args.source.parent.node)
       const clonedTargetParentNode = structuredClone(args.target.parent.node)
       const addSlot = args.target.parent.slot
@@ -135,27 +135,32 @@ export function useDnDEvents() {
       onDrop: async ({ source, location }) => {
         const [target] = location.current.dropTargets
 
-        if (isBlockDragDrop.target(target.data) || isBlockDrop(target.data)) {
+        if (isDragDrop.block.target(target.data) || isDrop.block.target(target.data)) {
           if (isComponentItemSource(source.data)) {
-            handleAdd.mutate({ source: source.data, target: target.data })
+            handleAddBlock.mutate({ source: source.data, target: target.data })
           }
-          if (isBlockDragDrop.source(source.data)) {
+          if (isDragDrop.block.source(source.data)) {
             const sameParent = source.data.parent.node.id === target.data.parent.node.id
             if (sameParent) {
-              handleReorder.mutate({ source: source.data, target: target.data })
+              handleReorderBlock.mutate({ source: source.data, target: target.data })
             } else {
-              handleReparent.mutate({ source: source.data, target: target.data })
+              handleReparentBlock.mutate({ source: source.data, target: target.data })
             }
           }
         }
-        if (isBlockDragDrop.source(source.data) && isTemplateDrop(target.data)) {
-          handleAddTemplate.mutate({ source: source.data, target: target.data })
+        if (isDragDrop.block.source(source.data)) {
+          if (isDrop.template.target(target.data)) {
+            handleAddTemplate.mutate({ source: source.data, target: target.data })
+          }
+          if (isDragDrop.template.target(target.data)) {
+            console.log('woohoo')
+          }
         }
       },
     })
   }, [])
 
-  const pending = handleAdd.isPending || handleReparent.isPending || handleReorder.isPending
+  const pending = handleAddBlock.isPending || handleReparentBlock.isPending || handleReorderBlock.isPending
 
   return { pending }
 }

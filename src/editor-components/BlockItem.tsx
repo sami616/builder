@@ -54,10 +54,10 @@ export function BlockItem(props: {
     dropRef,
     disableDrag: props.isCanvasUpdatePending,
     data: {
+      id: 'blockDragDrop',
       index: props.index,
       parent: props.parent,
       node: block,
-      id: 'block',
     },
   })
 
@@ -65,7 +65,7 @@ export function BlockItem(props: {
     [key: string]: JSX.Element[] | JSX.Element
   }>((acc, slot) => {
     if (block.slots[slot].length === 0) {
-      acc[slot] = <DropZone label={context.config[block.type].slots[slot].name} data={{ id: 'block', parent: { slot, node: block } }} />
+      acc[slot] = <DropZone label={context.config[block.type].slots[slot].name} data={{ id: 'blockDrop', parent: { slot, node: block } }} />
     } else {
       acc[slot] = block.slots[slot].map((blockId, index) => {
         return (

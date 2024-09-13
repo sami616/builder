@@ -97,7 +97,7 @@ function Experience() {
           </aside>
 
           <div>
-            {blocks.length === 0 && <DropZone label="Start building" data={{ id: 'block', parent: { slot: 'root', node: experience } }} />}
+            {blocks.length === 0 && <DropZone label="Start building" data={{ id: 'blockDrop', parent: { slot: 'root', node: experience } }} />}
             {blocks.map((blockId, index) => {
               return (
                 <BlockItem

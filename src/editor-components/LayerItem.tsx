@@ -21,8 +21,8 @@ export function LayerItem(props: {
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
   const context = useRouteContext({ from: '/experiences/$id' })
-  const slotItemSourceRef = useRef<HTMLLIElement>(null)
-  const slotItemTargetRef = useRef<HTMLLIElement>(null)
+  const dragRef = useRef<HTMLLIElement>(null)
+  const dropRef = useRef<HTMLLIElement>(null)
   const query = useSuspenseQuery({
     queryKey: ['blocks', props.blockId],
     queryFn: () => context.get({ id: props.blockId, type: 'blocks' }),
@@ -60,11 +60,11 @@ export function LayerItem(props: {
   const isActiveBlock = props.activeBlockId === props.blockId
 
   const { isDraggingSource, closestEdge, dragPreviewContainer } = useDragDrop({
-    dragRef: slotItemSourceRef,
-    dropRef: slotItemTargetRef,
+    dragRef,
+    dropRef,
     disableDrag: props.isCanvasUpdatePending,
     data: {
-      id: 'block',
+      id: 'blockDragDrop',
       parent: props.parent,
       node: query.data,
       index: props.index,
@@ -93,7 +93,7 @@ export function LayerItem(props: {
         e.stopPropagation()
         setIsRenaming(true)
       }}
-      ref={slotItemTargetRef}
+      ref={dropRef}
     >
       <>
         {isRenaming && (
@@ -126,7 +126,7 @@ export function LayerItem(props: {
             <button onClick={() => duplicateBlock.mutate({ index: props.index, root: { store: 'blocks', id: props.blockId }, parent: props.parent })}>
               dup
             </button>
-            <span ref={slotItemSourceRef}>move</span>
+            <span ref={dragRef}>move</span>
           </>
         )}
       </>
@@ -162,7 +162,7 @@ function LayerItemSlot(props: {
 
   const { isDraggingOver } = useDrop({
     dropRef: ref,
-    data: { id: 'block', parent: { slot: props.slot, node: props.block } },
+    data: { id: 'blockDrop', parent: { slot: props.slot, node: props.block } },
   })
 
   const context = useRouteContext({ from: '/experiences/$id' })

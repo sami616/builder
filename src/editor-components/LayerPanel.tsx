@@ -12,7 +12,7 @@ export function LayerPanel(props: {
 }) {
   const blocks = Object.values(props.experience.slots)[0]
   if (blocks.length === 0) {
-    return <DropZone label="Start bulding" data={{ id: 'block', parent: { slot: 'root', node: props.experience } }} />
+    return <DropZone label="Start bulding" data={{ id: 'blockDrop', parent: { slot: 'root', node: props.experience } }} />
   }
   return (
     <ul data-component="LayerPanel">
