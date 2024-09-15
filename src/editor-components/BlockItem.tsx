@@ -29,7 +29,7 @@ export function BlockItem(props: {
 
   const query = useSuspenseQuery({
     queryKey: ['blocks', props.blockId],
-    queryFn: () => context.get({ id: props.blockId, type: 'blocks' }),
+    queryFn: () => context.get({ id: props.blockId, store: 'blocks' }),
   })
 
   const mutationState = useMutationState<Block>({

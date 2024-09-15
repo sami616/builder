@@ -25,7 +25,7 @@ export function LayerItem(props: {
   const dropRef = useRef<HTMLLIElement>(null)
   const query = useSuspenseQuery({
     queryKey: ['blocks', props.blockId],
-    queryFn: () => context.get({ id: props.blockId, type: 'blocks' }),
+    queryFn: () => context.get({ id: props.blockId, store: 'blocks' }),
   })
 
   const [isRenaming, setIsRenaming] = useState(false)

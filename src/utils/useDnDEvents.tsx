@@ -16,15 +16,16 @@ export function useDnDEvents() {
       const rootEntry = await context.duplicateTree({ tree })
 
       const date = new Date()
-      return context.add({
-        entry: {
-          name: args.source.node.name,
-          store: 'templates',
-          createdAt: date,
-          updatedAt: date,
-          slots: { root: [rootEntry.id] },
-        },
-      })
+      const template = {
+        name: args.source.node.name,
+        store: 'templates',
+        createdAt: date,
+        updatedAt: date,
+        block: rootEntry.id,
+        order: Math.random(),
+      } as const
+
+      return context.add({ entry: template })
     },
     onSuccess: () => {
       context.queryClient.invalidateQueries({ queryKey: ['templates'] })

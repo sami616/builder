@@ -7,7 +7,7 @@ export function PropsPanel(props: { activeBlockId: number; setActiveBlockId: (id
 
   const { data: activeBlock } = useSuspenseQuery({
     queryKey: ['blocks', props.activeBlockId],
-    queryFn: () => context.get({ id: props.activeBlockId, type: 'blocks' }),
+    queryFn: () => context.get({ id: props.activeBlockId, store: 'blocks' }),
   })
 
   const updateBlock = useMutation({

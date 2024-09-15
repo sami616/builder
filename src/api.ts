@@ -1,31 +1,60 @@
-import { type Block, type Experience, Template, db } from './db'
+import { type Block, type Experience, Template, db, type Indexes } from './db'
 
 // get
-export async function get(args: { id: Experience['id']; type: 'experiences' }): Promise<Experience>
-export async function get(args: { id: Block['id']; type: 'blocks' }): Promise<Block>
+export async function get(args: { id: Experience['id']; store: 'experiences' }): Promise<Experience>
+export async function get(args: { id: Block['id']; store: 'blocks' }): Promise<Block>
 
-export async function get(args: { id: Experience['id'] | Block['id']; type: 'experiences' | 'blocks' }) {
-  const tx = db.transaction(args.type, 'readonly')
+export async function get(args: { id: Experience['id'] | Block['id']; store: 'experiences' | 'blocks' }) {
+  const tx = db.transaction(args.store, 'readonly')
   const [entry] = await Promise.all([tx.store.get(args.id), tx.done])
   if (!entry) throw new Error('Entry not found')
   return entry
 }
 
-// getMany
-export async function getMany(args: { type: 'experiences'; sortBy?: 'latest' | 'oldest' }): Promise<Experience[]>
-export async function getMany(args: { type: 'blocks'; sortBy?: 'latest' | 'oldest' }): Promise<Block[]>
-export async function getMany(args: { type: 'templates'; sortBy?: 'latest' | 'oldest' }): Promise<Template[]>
+type SortBy = 'ascending' | 'descending'
 
-export async function getMany(args: { type: 'experiences' | 'blocks' | 'templates'; sortBy?: 'latest' | 'oldest' }) {
-  const tx = db.transaction(args.type, 'readonly')
-  const map = new Map([
-    ['latest', 'prev'],
-    ['oldest', 'next'],
-  ] as const)
-  const index = tx.store.index('createdAt')
+const map = new Map([
+  ['descending', 'next'],
+  ['ascending', 'prev'],
+] as const)
+
+export async function getExperiences(args: { sortBy: [Indexes['Experience'], SortBy] }) {
   const entries = []
+  const tx = db.transaction('experiences', 'readonly')
+  const [by, order] = args.sortBy
 
-  let cursor = args.sortBy ? await index.openCursor(null, map.get(args.sortBy)) : await index.openCursor()
+  const index = tx.store.index(by)
+  let cursor = await index.openCursor(null, map.get(order))
+  while (cursor) {
+    entries.push(cursor.value), (cursor = await cursor.continue())
+  }
+  return entries
+}
+
+export async function getTemplates(args: { sortBy: [Indexes['Template'], SortBy] }) {
+  const entries = []
+  const tx = db.transaction('templates', 'readonly')
+  const [by, order] = args.sortBy
+
+  const index = tx.store.index(by)
+  let cursor = await index.openCursor(null, map.get(order))
+  while (cursor) {
+    entries.push(cursor.value), (cursor = await cursor.continue())
+  }
+  return entries
+}
+
+export async function getMany(args: { store: 'experiences'; sortBy: [Indexes['Experience'], SortBy] }): Promise<Experience[]>
+export async function getMany(args: { store: 'blocks'; sortBy: [Indexes['Block'], SortBy] }): Promise<Block[]>
+
+export async function getMany(args: { store: 'experiences' | 'blocks'; sortBy: [Indexes['Block'] | Indexes['Experience'], SortBy] }) {
+  const entries = []
+  const tx = db.transaction(args.store, 'readonly')
+
+  const [by, order] = args.sortBy
+
+  const index = tx.store.index(by)
+  let cursor = await index.openCursor(null, map.get(order))
   while (cursor) {
     entries.push(cursor.value), (cursor = await cursor.continue())
   }
@@ -40,7 +69,8 @@ export async function getTree({
   root: { store: 'blocks'; id: Block['id'] } | { store: 'experiences'; id: Experience['id'] }
   entries?: Array<Block | Experience>
 }) {
-  const entry = args.root.store === 'blocks' ? await get({ id: args.root.id, type: 'blocks' }) : await get({ id: args.root.id, type: 'experiences' })
+  const entry =
+    args.root.store === 'blocks' ? await get({ id: args.root.id, store: 'blocks' }) : await get({ id: args.root.id, store: 'experiences' })
   const slots = Object.keys(entry.slots)
   for (const key of slots) {
     for (const id of entry.slots[key]) {

@@ -202,6 +202,6 @@ export function Experiences() {
 function queryOpts(getMany: Context['getMany']) {
   return queryOptions({
     queryKey: ['experiences'],
-    queryFn: () => getMany({ type: 'experiences', sortBy: 'latest' }),
+    queryFn: () => getMany({ store: 'experiences', sortBy: ['createdAt', 'descending'] }),
   })
 }

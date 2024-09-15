@@ -128,9 +128,9 @@ function Experience() {
 }
 
 function experienceOpts(id: number, get: Context['get']) {
-  return { queryKey: ['experiences', id], queryFn: () => get({ id, type: 'experiences' }) }
+  return { queryKey: ['experiences', id], queryFn: () => get({ id, store: 'experiences' }) }
 }
 
 function templateOpts(getMany: Context['getMany']) {
-  return { queryKey: ['templates'], queryFn: () => getMany({ type: 'templates' }) }
+  return { queryKey: ['templates'], queryFn: () => getMany({ store: 'templates', sortBy: ['order', 'descending'] }) }
 }
