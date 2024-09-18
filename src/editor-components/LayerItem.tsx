@@ -122,7 +122,7 @@ export function LayerItem(props: {
         {!isRenaming && (
           <>
             {query.data.name}
-            <button onClick={() => removeBlock.mutate({ blockId: query.data.id, parent: props.parent })}>del</button>
+            <button onClick={() => removeBlock.mutate({ blockId: query.data.id, index: props.index, parent: props.parent })}>del</button>
             <button onClick={() => duplicateBlock.mutate({ index: props.index, root: { store: 'blocks', id: props.blockId }, parent: props.parent })}>
               dup
             </button>

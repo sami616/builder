@@ -133,6 +133,7 @@ export function BlockItem(props: {
           <button
             onClick={() => {
               removeBlock.mutate({
+                index: props.index,
                 blockId: props.blockId,
                 parent: props.parent,
               })
