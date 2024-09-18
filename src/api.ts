@@ -1,10 +1,6 @@
-import { type Block, type Experience, Template, db, type Indexes } from './db'
+import { type Block, type Experience, Template, db, type DB } from './db'
 
-// get
-export async function get(args: { id: Experience['id']; store: 'experiences' }): Promise<Experience>
-export async function get(args: { id: Block['id']; store: 'blocks' }): Promise<Block>
-
-export async function get(args: { id: Experience['id'] | Block['id']; store: 'experiences' | 'blocks' }) {
+export async function get<Store extends keyof DB>(args: { store: Store; id: DB[Store]['value']['id'] }): Promise<DB[Store]['value']> {
   const tx = db.transaction(args.store, 'readonly')
   const [entry] = await Promise.all([tx.store.get(args.id), tx.done])
   if (!entry) throw new Error('Entry not found')
@@ -18,36 +14,10 @@ const map = new Map([
   ['ascending', 'prev'],
 ] as const)
 
-export async function getExperiences(args: { sortBy: [Indexes['Experience'], SortBy] }) {
-  const entries = []
-  const tx = db.transaction('experiences', 'readonly')
-  const [by, order] = args.sortBy
-
-  const index = tx.store.index(by)
-  let cursor = await index.openCursor(null, map.get(order))
-  while (cursor) {
-    entries.push(cursor.value), (cursor = await cursor.continue())
-  }
-  return entries
-}
-
-export async function getTemplates(args: { sortBy: [Indexes['Template'], SortBy] }) {
-  const entries = []
-  const tx = db.transaction('templates', 'readonly')
-  const [by, order] = args.sortBy
-
-  const index = tx.store.index(by)
-  let cursor = await index.openCursor(null, map.get(order))
-  while (cursor) {
-    entries.push(cursor.value), (cursor = await cursor.continue())
-  }
-  return entries
-}
-
-export async function getMany(args: { store: 'experiences'; sortBy: [Indexes['Experience'], SortBy] }): Promise<Experience[]>
-export async function getMany(args: { store: 'blocks'; sortBy: [Indexes['Block'], SortBy] }): Promise<Block[]>
-
-export async function getMany(args: { store: 'experiences' | 'blocks'; sortBy: [Indexes['Block'] | Indexes['Experience'], SortBy] }) {
+export async function getMany<Store extends keyof DB, Indexes extends keyof DB[Store]['indexes']>(args: {
+  store: Store
+  sortBy: [Indexes, SortBy]
+}): Promise<Array<DB[Store]['value']>> {
   const entries = []
   const tx = db.transaction(args.store, 'readonly')
 
@@ -56,21 +26,20 @@ export async function getMany(args: { store: 'experiences' | 'blocks'; sortBy: [
   const index = tx.store.index(by)
   let cursor = await index.openCursor(null, map.get(order))
   while (cursor) {
-    entries.push(cursor.value), (cursor = await cursor.continue())
+    entries.push(cursor.value)
+    cursor = await cursor.continue()
   }
+
   return entries
 }
+type Root = { [K in keyof DB]: { store: K; id: DB[K]['value']['id'] } }[keyof DB]
 
 // getTree
-export async function getTree({
-  entries = [],
-  ...args
-}: {
-  root: { store: 'blocks'; id: Block['id'] } | { store: 'experiences'; id: Experience['id'] }
-  entries?: Array<Block | Experience>
-}) {
-  const entry =
-    args.root.store === 'blocks' ? await get({ id: args.root.id, store: 'blocks' }) : await get({ id: args.root.id, store: 'experiences' })
+export async function getTree({ entries = [], ...args }: { root: Root; entries?: Array<Block | Experience | Template> }) {
+  // const entry =
+  //   args.root.store === 'blocks' ? await get({ id: args.root.id, store: 'blocks' }) : await get({ id: args.root.id, store: 'experiences' })
+  //
+  const entry = await get({ id: args.root.id, store: args.root.store })
   const slots = Object.keys(entry.slots)
   for (const key of slots) {
     for (const id of entry.slots[key]) {
@@ -109,51 +78,65 @@ export async function duplicateTree(args: { tree: Awaited<ReturnType<typeof getT
 // add
 export async function add(args: { entry: Omit<Experience, 'id'> | Omit<Block, 'id'> | Omit<Template, 'id'> }) {
   const tx = db.transaction(args.entry.store, 'readwrite')
-  args.entry.store
   const [id] = await Promise.all([tx.store.add(args.entry as Block | Experience | Template), tx.done])
   return id
 }
 
 // addMany
-export async function addMany(args: { entries: Array<Experience | Block> }) {
+export async function addMany(args: { entries: Array<Experience | Block | Template> }) {
   const expTx = db.transaction('experiences', 'readwrite')
   const bloTx = db.transaction('blocks', 'readwrite')
-  const promises = args.entries.map((entry) => (isBlock(entry) ? bloTx.store.add(entry) : expTx.store.add(entry)))
-  const ids = await Promise.all([...promises, expTx.done, bloTx.done])
+  const tempTx = db.transaction('templates', 'readwrite')
+  const promises = args.entries.map((entry) => {
+    if (isBlock(entry)) return bloTx.store.add(entry)
+    if (isTemplate(entry)) return tempTx.store.add(entry)
+    if (isExperience(entry)) return expTx.store.add(entry)
+    throw new Error('no  op')
+  })
+  const ids = await Promise.all([...promises, expTx.done, bloTx.done, tempTx.done])
   return ids.filter(Boolean)
 }
 
 // update
 export async function update(args: { entry: Experience | Block | Template }) {
-  if (isBlock(args.entry)) {
-    args.entry
-  }
   const tx = db.transaction(args.entry.store, 'readwrite')
   const [id] = await Promise.all([tx.store.put(args.entry), tx.done])
   return id
 }
 
 // updateMany
-export async function updateMany(args: { entries: Array<Experience | Block> }) {
+export async function updateMany(args: { entries: Array<Experience | Block | Template> }) {
   const expTx = db.transaction('experiences', 'readwrite')
   const bloTx = db.transaction('blocks', 'readwrite')
-  const promises = args.entries.map((entry) => (isBlock(entry) ? bloTx.store.put(entry) : expTx.store.put(entry)))
-  const ids = await Promise.all([...promises, expTx.done, bloTx.done])
+  const tempTx = db.transaction('templates', 'readwrite')
+  const promises = args.entries.map((entry) => {
+    if (isBlock(entry)) return bloTx.store.put(entry)
+    if (isTemplate(entry)) return tempTx.store.put(entry)
+    if (isExperience(entry)) return expTx.store.put(entry)
+    throw new Error('no  op')
+  })
+  const ids = await Promise.all([...promises, expTx.done, bloTx.done, tempTx.done])
   return ids.filter(Boolean)
 }
 
 // remove
-export async function remove(args: { entry: Experience | Block }) {
+export async function remove(args: { entry: Experience | Block | Template }) {
   const tx = db.transaction(args.entry.store, 'readwrite')
   await Promise.all([tx.store.delete(args.entry.id), tx.done])
 }
 
 // removeMany
-export async function removeMany(args: { entries: Array<Experience | Block> }) {
+export async function removeMany(args: { entries: Array<Experience | Block | Template> }) {
   const expTx = db.transaction('experiences', 'readwrite')
   const bloTx = db.transaction('blocks', 'readwrite')
-  const promises = args.entries.map((entry) => (isBlock(entry) ? bloTx.store.delete(entry.id) : expTx.store.delete(entry.id)))
-  await Promise.all([...promises, expTx.done, bloTx.done])
+  const tempTx = db.transaction('templates', 'readwrite')
+  const promises = args.entries.map((entry) => {
+    if (isBlock(entry)) return bloTx.store.delete(entry.id)
+    if (isTemplate(entry)) return tempTx.store.delete(entry.id)
+    if (isExperience(entry)) return expTx.store.delete(entry.id)
+    throw new Error('no  op')
+  })
+  await Promise.all([...promises, expTx.done, bloTx.done, tempTx.done])
 }
 
 export function isBlock(args: Omit<Block | Experience | Template, 'id'>): args is Block {

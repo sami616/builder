@@ -20,12 +20,12 @@ export const db = await openDB<MyDB>('experienceManager', 1, {
       const store = db.createObjectStore('templates', { keyPath: 'id', autoIncrement: true })
       store.createIndex('createdAt', 'createdAt', { unique: false })
       store.createIndex('updatedAt', 'updatedAt', { unique: false })
-      store.createIndex('order', 'order', { unique: true })
+      store.createIndex('order', 'order', { unique: false })
     }
   },
 })
 
-export interface MyDB extends DBSchema {
+export type DB = {
   templates: {
     key: Template['id']
     value: Template
@@ -53,11 +53,7 @@ export interface MyDB extends DBSchema {
   }
 }
 
-export type Indexes = {
-  Block: keyof MyDB['blocks']['indexes']
-  Experience: keyof MyDB['experiences']['indexes']
-  Template: keyof MyDB['templates']['indexes']
-}
+export interface MyDB extends DB, DBSchema {}
 
 export type Sys = {
   id: number
@@ -84,5 +80,5 @@ export type Template = {
   store: 'templates'
   order: number
   name: string
-  block: Block['id']
+  slots: { [index: string]: Array<Block['id']> }
 } & Sys

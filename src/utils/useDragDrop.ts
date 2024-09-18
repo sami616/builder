@@ -3,13 +3,14 @@ import { draggable, dropTargetForElements } from '@atlaskit/pragmatic-drag-and-d
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine'
 import { setCustomNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview'
 import { Template, type Block, type Experience } from '../db'
-import { type Input } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types'
+import { ElementDragPayload, type Input } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types'
 import { isBlock, isExperience, isTemplate } from '../api'
 
 export function useDragDrop(props: {
   dragRef: RefObject<HTMLLIElement | HTMLDivElement>
   dropRef: RefObject<HTMLLIElement | HTMLDivElement>
   disableDrag?: boolean
+  disableDrop?: (data: { source: ElementDragPayload; element: Element }) => boolean
   data: Data
 }) {
   const [dragPreviewContainer, setDragPreviewContainer] = useState<HTMLElement | null>(null)
@@ -66,6 +67,9 @@ export function useDragDrop(props: {
 
           // stop dragging inside child droppables
           if (sourceEl?.contains(element)) return false
+
+          if (props.disableDrop?.({ source: source, element })) return false
+
           return true
         },
       }),
@@ -132,14 +136,14 @@ export const isDragDrop = {
     },
   },
   template: {
-    source(args: Record<string, any>): args is DragDrop['Block']['Source'] {
+    source(args: Record<string, any>): args is DragDrop['Template']['Source'] {
       if (args.id !== 'templateDragDrop') return false
       if (typeof args.index !== 'number') return false
       if (!isTemplate(args.node)) return false
       if (args.edge !== undefined) return false
       return true
     },
-    target(args: Record<string, any>): args is DragDrop['Block']['Target'] {
+    target(args: Record<string, any>): args is DragDrop['Template']['Target'] {
       if (args.id !== 'templateDragDrop') return false
       if (typeof args.index !== 'number') return false
       if (!isTemplate(args.node)) return false

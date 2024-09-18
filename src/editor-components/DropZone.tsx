@@ -2,12 +2,20 @@ import './DropZone.css'
 import { useRef } from 'react'
 import { useDrop } from '../utils/useDrop'
 
-export function DropZone(props: { label: string } & Pick<Parameters<typeof useDrop>[0], 'data'>) {
+export function DropZone<D extends { id: string }>(
+  props: { label: string } & Pick<Parameters<typeof useDrop<D>>[0], 'data' | 'disableDrop' | 'onDrop'>,
+) {
   const ref = useRef<HTMLDivElement>(null)
-  const { isDraggingOver } = useDrop({ dropRef: ref, data: props.data })
+  const { isDraggingOver } = useDrop<D>({ dropRef: ref, data: props.data, disableDrop: props.disableDrop, onDrop: props.onDrop })
 
   return (
-    <div data-over={isDraggingOver} ref={ref} style={{ outline: isDraggingOver ? '2px solid red' : '2px solid #efefef' }} data-component="DropZone">
+    <div
+      id={props.data.id}
+      data-over={isDraggingOver}
+      ref={ref}
+      style={{ outline: isDraggingOver ? '2px solid red' : '2px solid #efefef' }}
+      data-component="DropZone"
+    >
       {props.label}
     </div>
   )

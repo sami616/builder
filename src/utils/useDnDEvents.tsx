@@ -6,26 +6,114 @@ import { isDragDrop, type DragDrop } from '../utils/useDragDrop'
 import { useMutation } from '@tanstack/react-query'
 import { useRouteContext } from '@tanstack/react-router'
 import { monitorForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
+import { db } from '../db'
+import { duplicateTree, getTree } from '../api'
 
 export function useDnDEvents() {
   const context = useRouteContext({ from: '/experiences/$id' })
+
+  const handleApplyTemplate = useMutation({
+    mutationFn: async (args: { source: DragDrop['Template']['Source']; target: DragDrop['Block']['Target'] | Drop['Block']['Target'] }) => {
+      const clonedParentNode = structuredClone(args.target.parent.node)
+      const tree = await getTree({ root: { id: args.source.node.slots.root[0], store: 'blocks' } })
+      const rootEntry = await duplicateTree({ tree })
+
+      const addSlot = args.target.parent.slot
+
+      if ('index' in args.target) {
+        let addIndex = args.target.index
+        let { edge } = args.target
+        if (edge === 'bottom') addIndex += 1
+        clonedParentNode.slots[addSlot].splice(addIndex, 0, rootEntry.id)
+      } else {
+        clonedParentNode.slots[addSlot].push(rootEntry.id)
+      }
+
+      return context.update({ entry: clonedParentNode })
+    },
+
+    onSuccess: (data, vars) => {
+      context.queryClient.invalidateQueries({ queryKey: [vars.target.parent.node.store, data] })
+    },
+  })
+
+  const handleReorderTemplates = useMutation({
+    mutationFn: async (args: { source: DragDrop['Template']['Source']; target: DragDrop['Template']['Target'] }) => {
+      const tx = db.transaction('templates', 'readwrite')
+      const clonedSource = structuredClone(args.source.node)
+      const { edge } = args.target
+      let addIndex = args.target.index
+      let removeIndex = args.source.index
+      let range: IDBKeyRange
+      let direction: IDBCursorDirection
+      const index = tx.store.index('order')
+      let op: '+' | '-'
+
+      function shiftCursor(val: number, op: '+' | '-') {
+        return op === '+' ? val + 1 : val - 1
+      }
+
+      if (removeIndex < addIndex) {
+        if (edge === 'top') addIndex -= 1
+        range = IDBKeyRange.bound(removeIndex + 1, addIndex)
+        direction = 'next'
+        op = '-'
+      } else {
+        if (edge === 'bottom') addIndex += 1
+        range = IDBKeyRange.bound(addIndex, removeIndex - 1)
+        direction = 'prev'
+        op = '+'
+      }
+
+      let cursor = await index.openCursor(range, direction)
+      while (cursor) {
+        const item = cursor.value
+        item.order = shiftCursor(item.order, op)
+        await cursor.update(item)
+        cursor = await cursor.continue()
+      }
+
+      clonedSource.order = addIndex
+      return tx.store.put(clonedSource)
+    },
+    onSuccess: () => {
+      context.queryClient.invalidateQueries({ queryKey: ['templates'] })
+    },
+  })
 
   const handleAddTemplate = useMutation({
     mutationFn: async (args: { source: DragDrop['Block']['Source']; target: Drop['Template']['Target'] | DragDrop['Template']['Target'] }) => {
       const tree = await context.getTree({ root: { store: 'blocks', id: args.source.node.id } })
       const rootEntry = await context.duplicateTree({ tree })
+      const tx = db.transaction('templates', 'readwrite')
 
       const date = new Date()
       const template = {
         name: args.source.node.name,
-        store: 'templates',
         createdAt: date,
         updatedAt: date,
-        block: rootEntry.id,
-        order: Math.random(),
-      } as const
+        slots: { root: [rootEntry.id] },
+      }
 
-      return context.add({ entry: template })
+      if (isDragDrop.template.target(args.target)) {
+        let addIndex = args.target.index
+        let { edge } = args.target
+        if (edge === 'bottom') addIndex += 1
+
+        const index = tx.store.index('order')
+        const range = IDBKeyRange.lowerBound(addIndex)
+        let cursor = await index.openCursor(range, 'prev')
+
+        while (cursor) {
+          const item = cursor.value
+          item.order += 1
+          await cursor.update(item)
+          cursor = await cursor.continue()
+        }
+        return context.add({ entry: { ...template, store: 'templates', order: addIndex } })
+      } else {
+        return context.add({ entry: { ...template, store: 'templates', order: 0 } })
+      }
     },
     onSuccess: () => {
       context.queryClient.invalidateQueries({ queryKey: ['templates'] })
@@ -140,8 +228,13 @@ export function useDnDEvents() {
           if (isComponentItemSource(source.data)) {
             handleAddBlock.mutate({ source: source.data, target: target.data })
           }
+          if (isDragDrop.template.source(source.data)) {
+            handleApplyTemplate.mutate({ source: source.data, target: target.data })
+          }
           if (isDragDrop.block.source(source.data)) {
-            const sameParent = source.data.parent.node.id === target.data.parent.node.id
+            const sameParent =
+              source.data.parent.node.id === target.data.parent.node.id && source.data.parent.node.store === target.data.parent.node.store
+
             if (sameParent) {
               handleReorderBlock.mutate({ source: source.data, target: target.data })
             } else {
@@ -149,12 +242,15 @@ export function useDnDEvents() {
             }
           }
         }
-        if (isDragDrop.block.source(source.data)) {
-          if (isDrop.template.target(target.data)) {
-            handleAddTemplate.mutate({ source: source.data, target: target.data })
+
+        if (isDragDrop.template.target(target.data)) {
+          if (isDragDrop.template.source(source.data)) {
+            handleReorderTemplates.mutate({ source: source.data, target: target.data })
           }
-          if (isDragDrop.template.target(target.data)) {
-            console.log('woohoo')
+        }
+        if (isDrop.template.target(target.data) || isDragDrop.template.target(target.data)) {
+          if (isDragDrop.block.source(source.data)) {
+            handleAddTemplate.mutate({ source: source.data, target: target.data })
           }
         }
       },

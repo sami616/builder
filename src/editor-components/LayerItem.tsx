@@ -162,6 +162,11 @@ function LayerItemSlot(props: {
 
   const { isDraggingOver } = useDrop({
     dropRef: ref,
+    disableDrop: ({ source, element }) => {
+      const sourceEl = source.element.closest('[data-drop-target-for-element="true"]')
+      return sourceEl?.parentElement?.closest('[data-drop-target-for-element="true"]') === element
+    },
+
     data: { id: 'blockDrop', parent: { slot: props.slot, node: props.block } },
   })
 
