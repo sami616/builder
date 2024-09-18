@@ -1,4 +1,3 @@
-import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
 import { Experience, type Block } from '../db'
 import { useRouteContext } from '@tanstack/react-router'
 import { ComponentProps, useEffect, useRef, useState } from 'react'
@@ -7,8 +6,10 @@ import { DropIndicator } from './DropIndicator'
 import { useDragDrop } from '../utils/useDragDrop'
 import { useDrop } from '../utils/useDrop'
 import { DragPreview } from './DragPreview'
-import { useRemoveBlock } from '../utils/useRemoveBlock'
-import { useDuplicateBlock } from '../utils/useDuplicateBlock'
+import { useBlockDelete } from '../utils/useBlockDelete'
+import { useBlockCopy } from '../utils/useBlockCopy'
+import { useBlockUpdateName } from '../utils/useBlockUpdateName'
+import { useBlock } from '../utils/useBlock'
 
 export function LayerItem(props: {
   blockId: Block['id']
@@ -20,22 +21,19 @@ export function LayerItem(props: {
   activeBlockId?: Block['id']
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
-  const context = useRouteContext({ from: '/experiences/$id' })
   const dragRef = useRef<HTMLLIElement>(null)
   const dropRef = useRef<HTMLLIElement>(null)
-  const query = useSuspenseQuery({
-    queryKey: ['blocks', props.blockId],
-    queryFn: () => context.get({ id: props.blockId, store: 'blocks' }),
-  })
+
+  const query = useBlock({ id: props.blockId })
 
   const [isRenaming, setIsRenaming] = useState(false)
-  const duplicateBlock = useDuplicateBlock()
-  const removeBlock = useRemoveBlock()
+  const blockCopy = useBlockCopy()
+  const blockDelete = useBlockDelete()
 
   useEffect(() => {
     async function handleClickOutside(e: MouseEvent) {
       if (inputRef.current && !inputRef.current.contains(e.target as Node)) {
-        await updateLayerName.mutateAsync({ block: query.data, name: inputRef.current.value })
+        await blockUpdateName.mutateAsync({ block: query.data, name: inputRef.current.value })
         setIsRenaming(false)
       }
     }
@@ -45,16 +43,7 @@ export function LayerItem(props: {
     }
   }, [])
 
-  const updateLayerName = useMutation({
-    mutationFn: async (args: { block: Block; name: string }) => {
-      const clonedEntry = structuredClone(args.block)
-      clonedEntry.name = args.name
-      return context.update({ entry: clonedEntry })
-    },
-    onSuccess: (id) => {
-      context.queryClient.invalidateQueries({ queryKey: ['blocks', id] })
-    },
-  })
+  const blockUpdateName = useBlockUpdateName()
 
   const isHoveredBlock = props.hoveredBlockId === props.blockId
   const isActiveBlock = props.activeBlockId === props.blockId
@@ -102,7 +91,7 @@ export function LayerItem(props: {
               e.preventDefault()
               const formData = new FormData(e.currentTarget)
               const updatedName = formData.get('name') as string
-              await updateLayerName.mutateAsync({ block: query.data, name: updatedName })
+              await blockUpdateName.mutateAsync({ block: query.data, name: updatedName })
               setIsRenaming(false)
             }}
           >
@@ -122,8 +111,8 @@ export function LayerItem(props: {
         {!isRenaming && (
           <>
             {query.data.name}
-            <button onClick={() => removeBlock.mutate({ blockId: query.data.id, index: props.index, parent: props.parent })}>del</button>
-            <button onClick={() => duplicateBlock.mutate({ index: props.index, root: { store: 'blocks', id: props.blockId }, parent: props.parent })}>
+            <button onClick={() => blockDelete.mutate({ blockId: query.data.id, index: props.index, parent: props.parent })}>del</button>
+            <button onClick={() => blockCopy.mutate({ index: props.index, root: { store: 'blocks', id: props.blockId }, parent: props.parent })}>
               dup
             </button>
             <span ref={dragRef}>move</span>

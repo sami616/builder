@@ -1,18 +1,15 @@
-import { useMutation, useSuspenseQuery } from '@tanstack/react-query'
+import { useMutation } from '@tanstack/react-query'
 import { useRouteContext } from '@tanstack/react-router'
 import './PropsPanel.css'
+import { useBlock } from '../utils/useBlock'
 
 export function PropsPanel(props: { activeBlockId: number; setActiveBlockId: (id: number | undefined) => void }) {
   const context = useRouteContext({ from: '/experiences/$id' })
-
-  const { data: activeBlock } = useSuspenseQuery({
-    queryKey: ['blocks', props.activeBlockId],
-    queryFn: () => context.get({ id: props.activeBlockId, store: 'blocks' }),
-  })
+  const query = useBlock({ id: props.activeBlockId })
 
   const updateBlock = useMutation({
     mutationFn: context.update,
-    mutationKey: ['updateBlock', activeBlock.id],
+    mutationKey: ['updateBlock', query.data.id],
     onError: (err, _data) => {
       // Todo: show some kind of notification error
       console.error(err)
@@ -24,7 +21,7 @@ export function PropsPanel(props: { activeBlockId: number; setActiveBlockId: (id
     },
   })
 
-  const AB = updateBlock.isPending ? updateBlock.variables.entry : activeBlock
+  const AB = updateBlock.isPending ? updateBlock.variables.entry : query.data
 
   return (
     <div data-component="PropsPanel">

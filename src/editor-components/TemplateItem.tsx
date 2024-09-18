@@ -1,34 +1,25 @@
 import './TemplateItem.css'
-import { type Template, db } from '../db'
+import { type Template } from '../db'
 import { useDragDrop } from '../utils/useDragDrop'
 import { useEffect, useRef, useState } from 'react'
 import { DropIndicator } from './DropIndicator'
 import { DragPreview } from './DragPreview'
-import { useMutation } from '@tanstack/react-query'
-import { useRouteContext } from '@tanstack/react-router'
+import { useTemplateDelete } from '../utils/useTemplateDelete'
+import { useTemplateUpdateName } from '../utils/useTemplateUpdateName'
 
 export function TemplateItem(props: { template: Template; index: number; isCanvasUpdatePending: boolean }) {
   const dragDropSourceRef = useRef<HTMLLIElement>(null)
   const dragDropTargetRef = useRef<HTMLLIElement>(null)
-  const context = useRouteContext({ from: '/experiences/$id' })
   const [isRenaming, setIsRenaming] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const updateTemplateName = useMutation({
-    mutationFn: async (args: { template: Template; name: string }) => {
-      const clonedEntry = structuredClone(args.template)
-      clonedEntry.name = args.name
-      return context.update({ entry: clonedEntry })
-    },
-    onSuccess: () => {
-      context.queryClient.invalidateQueries({ queryKey: ['templates'] })
-    },
-  })
+  const templateDelete = useTemplateDelete()
+  const templateUpdateName = useTemplateUpdateName()
 
   useEffect(() => {
     async function handleClickOutside(e: MouseEvent) {
       if (inputRef.current && !inputRef.current.contains(e.target as Node)) {
-        await updateTemplateName.mutateAsync({ template: props.template, name: inputRef.current.value })
+        await templateUpdateName.mutateAsync({ template: props.template, name: inputRef.current.value })
         setIsRenaming(false)
       }
     }
@@ -52,29 +43,6 @@ export function TemplateItem(props: { template: Template; index: number; isCanva
     data: { id: 'templateDragDrop', index: props.index, node: props.template },
   })
 
-  const removeTemplate = useMutation({
-    mutationFn: async (args: { template: Template }) => {
-      const tx = db.transaction('templates', 'readwrite')
-      const order = args.template.order
-      const index = tx.store.index('order')
-      const range = IDBKeyRange.lowerBound(order)
-      let cursor = await index.openCursor(range, 'next')
-
-      while (cursor) {
-        const item = cursor.value
-        item.order = item.order - 1
-        await cursor.update(item)
-        cursor = await cursor.continue()
-      }
-
-      const tree = await context.getTree({ root: { store: 'templates', id: args.template.id } })
-      return context.removeMany({ entries: tree })
-    },
-    onSuccess: () => {
-      context.queryClient.invalidateQueries({ queryKey: ['templates'] })
-    },
-  })
-
   return (
     <li
       data-component="TemplateItem"
@@ -91,7 +59,7 @@ export function TemplateItem(props: { template: Template; index: number; isCanva
             e.preventDefault()
             const formData = new FormData(e.currentTarget)
             const updatedName = formData.get('name') as string
-            await updateTemplateName.mutateAsync({ template: props.template, name: updatedName })
+            await templateUpdateName.mutateAsync({ template: props.template, name: updatedName })
             setIsRenaming(false)
           }}
         >
@@ -112,7 +80,7 @@ export function TemplateItem(props: { template: Template; index: number; isCanva
       {!isRenaming && (
         <>
           {props.template.name}
-          <button onClick={() => removeTemplate.mutate({ template: props.template })}>del</button>
+          <button onClick={() => templateDelete.mutate({ template: props.template })}>del</button>
           <span ref={dragDropSourceRef}>move</span>
         </>
       )}

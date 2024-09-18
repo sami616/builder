@@ -1,15 +1,16 @@
 import { useRef } from 'react'
 import { DropIndicator } from './DropIndicator'
 import { type Block, type Experience } from '../db'
-import { useMutationState, useSuspenseQuery } from '@tanstack/react-query'
+import { useMutationState } from '@tanstack/react-query'
 import { useRouteContext } from '@tanstack/react-router'
 
 import './BlockItem.css'
 import { DragPreview } from './DragPreview'
 import { DropZone } from './DropZone'
 import { useDragDrop } from '../utils/useDragDrop'
-import { useRemoveBlock } from '../utils/useRemoveBlock'
-import { useDuplicateBlock } from '../utils/useDuplicateBlock'
+import { useBlockDelete } from '../utils/useBlockDelete'
+import { useBlockCopy } from '../utils/useBlockCopy'
+import { useBlock } from '../utils/useBlock'
 
 export function BlockItem(props: {
   index: number
@@ -26,11 +27,7 @@ export function BlockItem(props: {
   const dragRef = useRef<HTMLDivElement>(null)
   const popoverRef = useRef<HTMLDivElement>(null)
   const context = useRouteContext({ from: '/experiences/$id' })
-
-  const query = useSuspenseQuery({
-    queryKey: ['blocks', props.blockId],
-    queryFn: () => context.get({ id: props.blockId, store: 'blocks' }),
-  })
+  const query = useBlock({ id: props.blockId })
 
   const mutationState = useMutationState<Block>({
     filters: {
@@ -40,8 +37,8 @@ export function BlockItem(props: {
     select: (data) => (data.state.variables as Record<'block', Block>).block,
   })?.at(-1)
 
-  const duplicateBlock = useDuplicateBlock()
-  const removeBlock = useRemoveBlock()
+  const blockCopy = useBlockCopy()
+  const blockDelete = useBlockDelete()
 
   const isActiveBlock = props.activeBlockId === props.blockId
   const isHoveredBlock = props.hoveredBlockId === props.blockId
@@ -125,14 +122,14 @@ export function BlockItem(props: {
           <span ref={dragRef}>Move</span>
           <button
             onClick={() => {
-              duplicateBlock.mutate({ index: props.index, root: { store: 'blocks', id: props.blockId }, parent: props.parent })
+              blockCopy.mutate({ index: props.index, root: { store: 'blocks', id: props.blockId }, parent: props.parent })
             }}
           >
             Duplicate
           </button>
           <button
             onClick={() => {
-              removeBlock.mutate({
+              blockDelete.mutate({
                 index: props.index,
                 blockId: props.blockId,
                 parent: props.parent,

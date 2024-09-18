@@ -3,10 +3,10 @@ import { type ComponentProps } from 'react'
 import { BlockItem } from '../editor-components/BlockItem'
 import { useRouteContext } from '@tanstack/react-router'
 
-export function useDuplicateBlock() {
+export function useBlockCopy() {
   const context = useRouteContext({ from: '/experiences/$id' })
 
-  const duplicateBlock = useMutation({
+  return useMutation({
     mutationFn: async (args: {
       index: number
       root: Parameters<typeof context.getTree>[0]['root']
@@ -23,6 +23,4 @@ export function useDuplicateBlock() {
       context.queryClient.invalidateQueries({ queryKey: [store, id] })
     },
   })
-
-  return duplicateBlock
 }

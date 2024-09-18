@@ -4,9 +4,9 @@ import { useRouteContext } from '@tanstack/react-router'
 import { type Block } from '../db'
 import { BlockItem } from '../editor-components/BlockItem'
 
-export function useRemoveBlock() {
+export function useBlockDelete() {
   const context = useRouteContext({ from: '/experiences/$id' })
-  const removeBlock = useMutation({
+  return useMutation({
     mutationFn: async (args: { blockId: Block['id']; index: number; parent: ComponentProps<typeof BlockItem>['parent'] }) => {
       const entries = await context.getTree({ root: { id: args.blockId, store: 'blocks' } })
       await context.removeMany({ entries })
@@ -19,6 +19,4 @@ export function useRemoveBlock() {
       context.queryClient.invalidateQueries({ queryKey: [store, id] })
     },
   })
-
-  return removeBlock
 }

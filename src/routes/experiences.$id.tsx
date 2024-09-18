@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useSuspenseQuery, useMutation } from '@tanstack/react-query'
+import { useSuspenseQuery } from '@tanstack/react-query'
 import { type Context } from '../main'
 import { type Experience, type Block } from '../db'
 import { Suspense, useState } from 'react'
@@ -11,6 +11,7 @@ import { LayerPanel } from '../editor-components/LayerPanel'
 import { DropZone } from '../editor-components/DropZone'
 import { BlockItem } from '../editor-components/BlockItem'
 import { TemplatePanel } from '../editor-components/TemplatesPanel'
+import { usePageUpdateName } from '../utils/usePageUpdateName'
 
 export const Route = createFileRoute('/experiences/$id')({
   component: Experience,
@@ -33,21 +34,9 @@ function Experience() {
 
   const { data: experience } = useSuspenseQuery(experienceOpts(Number(id), context.get))
   const { data: templates } = useSuspenseQuery(templateOpts(context.getMany))
+  const pageUpdateName = usePageUpdateName()
 
   const blocks = Object.values(experience.slots)[0]
-
-  const updateExperienceMeta = useMutation({
-    mutationFn: (args: { experience: Experience; name: string }) => {
-      const clonedEntry = structuredClone(args.experience)
-      clonedEntry.name = args.name
-      return context.update({ entry: clonedEntry })
-    },
-    onSuccess: (id) => {
-      context.queryClient.invalidateQueries({
-        queryKey: ['experiences', id],
-      })
-    },
-  })
 
   const { pending } = useDnDEvents()
 
@@ -61,17 +50,17 @@ function Experience() {
             e.preventDefault()
             const form = e.currentTarget
             const formData = new FormData(form)
-            updateExperienceMeta.mutate({ experience, name: formData.get('name') as string })
+            pageUpdateName.mutate({ experience, name: formData.get('name') as string })
           }}
         >
-          <fieldset disabled={updateExperienceMeta.isPending}>
+          <fieldset disabled={pageUpdateName.isPending}>
             <input type="text" name="name" defaultValue={experience.name} />
             <button type="submit">Update</button>
           </fieldset>
         </form>
       </div>
-      {updateExperienceMeta.isPending && <p>Updating...</p>}
-      {updateExperienceMeta.error && <p>{updateExperienceMeta.error.message}</p>}
+      {pageUpdateName.isPending && <p>Updating...</p>}
+      {pageUpdateName.error && <p>{pageUpdateName.error.message}</p>}
 
       <Suspense fallback={<p>Loading...</p>}>
         <main>
