@@ -4,9 +4,9 @@ import { type Block, type Experience } from '../db'
 import { isBlock, isExperience } from '../api'
 import { DropTargetRecord } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types'
 
-export type Target<D extends { id: string }> = Omit<DropTargetRecord, 'data'> & { data: D }
+export type Target<D extends Record<string, any>> = Omit<DropTargetRecord, 'data'> & { data: D }
 
-export function useDrop<D extends { id: string }>(props: {
+export function useDrop<D extends Record<string, any>>(props: {
   dropRef: RefObject<HTMLDivElement | HTMLDetailsElement>
   data: D
   onDrop?: (args: { source: ElementDragPayload; target: Target<D> }) => void | undefined

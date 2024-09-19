@@ -35,13 +35,13 @@ export function Experiences() {
           const form = e.currentTarget
           const formData = new FormData(form)
           const id = await pageAdd.mutateAsync({
-            entry: {
+            entry: { 
               store: 'experiences',
               name: formData.get('name') as string,
               createdAt: new Date(),
               updatedAt: new Date(),
               slots: { root: [] },
-              status: 'draft',
+              status: 'draft'
             },
           })
           form.reset()

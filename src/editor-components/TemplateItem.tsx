@@ -41,6 +41,9 @@ export function TemplateItem(props: { template: Template; index: number; isCanva
     disableDrag: props.isCanvasUpdatePending,
     disableDrop: ({ source, element }) => source.data.id === 'componentItem' && element.getAttribute('data-component') === 'TemplateItem',
     data: { id: 'templateDragDrop', index: props.index, node: props.template },
+    onDrop: ({source, target}) => {
+
+    }
   })
 
   return (
