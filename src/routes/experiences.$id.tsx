@@ -1,6 +1,4 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { useSuspenseQuery } from '@tanstack/react-query'
-import { type Context } from '../main'
 import { type Experience, type Block } from '../db'
 import { Suspense, useState } from 'react'
 import { ComponentPanel } from '../editor-components/ComponentPanel'
@@ -12,12 +10,14 @@ import { DropZone } from '../editor-components/DropZone'
 import { BlockItem } from '../editor-components/BlockItem'
 import { TemplatePanel } from '../editor-components/TemplatesPanel'
 import { usePageUpdateName } from '../utils/usePageUpdateName'
+import { usePageGet, pageGetOpts } from '../utils/usePageGet'
+import { templateGetManyOpts, useTemplateGetMany } from '../utils/useTemplateGetMany'
 
 export const Route = createFileRoute('/experiences/$id')({
   component: Experience,
   loader: async ({ context, params }) => {
-    const experiences = context.queryClient.ensureQueryData(experienceOpts(Number(params.id), context.get))
-    const templates = context.queryClient.ensureQueryData(templateOpts(context.getMany))
+    const experiences = context.queryClient.ensureQueryData(pageGetOpts({ id: Number(params.id), context }))
+    const templates = context.queryClient.ensureQueryData(templateGetManyOpts({context}))
     const data = await Promise.all([experiences, templates])
     return { experiences: data.at(0), templates: data.at(1) }
   },
@@ -26,18 +26,14 @@ export const Route = createFileRoute('/experiences/$id')({
 })
 
 function Experience() {
-  const { id } = Route.useParams()
-  const context = Route.useRouteContext()
 
+  const { id } = Route.useParams()
   const [activeBlockId, setActiveBlockId] = useState<Block['id'] | undefined>()
   const [hoveredBlockId, setHoveredBlockId] = useState<Block['id'] | undefined>()
-
-  const { data: experience } = useSuspenseQuery(experienceOpts(Number(id), context.get))
-  const { data: templates } = useSuspenseQuery(templateOpts(context.getMany))
+  const { data: experience } = usePageGet({ id: Number(id) })
+  const { data: templates } = useTemplateGetMany()
   const pageUpdateName = usePageUpdateName()
-
   const blocks = Object.values(experience.slots)[0]
-
   const { pending } = useDnDEvents()
 
   return (
@@ -114,12 +110,4 @@ function Experience() {
       </Suspense>
     </div>
   )
-}
-
-function experienceOpts(id: number, get: Context['get']) {
-  return { queryKey: ['experiences', id], queryFn: () => get({ id, store: 'experiences' }) }
-}
-
-function templateOpts(getMany: Context['getMany']) {
-  return { queryKey: ['templates'], queryFn: () => getMany({ store: 'templates', sortBy: ['order', 'descending'] }) }
 }

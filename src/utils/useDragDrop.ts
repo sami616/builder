@@ -3,15 +3,18 @@ import { draggable, dropTargetForElements } from '@atlaskit/pragmatic-drag-and-d
 import { combine } from '@atlaskit/pragmatic-drag-and-drop/combine'
 import { setCustomNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview'
 import { Template, type Block, type Experience } from '../db'
-import { ElementDragPayload, type Input } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types'
+import { DropTargetRecord, ElementDragPayload, type Input } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types'
 import { isBlock, isExperience, isTemplate } from '../api'
 
-export function useDragDrop(props: {
+export type Target<D extends { id: string }> = Omit<DropTargetRecord, 'data'> & { data: D }
+
+export function useDragDrop<D extends { id: string }>(props: {
   dragRef: RefObject<HTMLLIElement | HTMLDivElement>
   dropRef: RefObject<HTMLLIElement | HTMLDivElement>
   disableDrag?: boolean
+  onDrop?: (args: { source: ElementDragPayload; target: Target<D> }) => void | undefined
   disableDrop?: (data: { source: ElementDragPayload; element: Element }) => boolean
-  data: Data
+  data: D
 }) {
   const [dragPreviewContainer, setDragPreviewContainer] = useState<HTMLElement | null>(null)
   const [isDraggingSource, setIsDraggingSource] = useState(false)
@@ -39,7 +42,9 @@ export function useDragDrop(props: {
       }),
       dropTargetForElements({
         element: dropElement,
-        onDrop: () => {
+        onDrop: ({ source, location }) => {
+          const target = location.current.dropTargets[0] as Target<D>
+          props.onDrop?.({ source, target })
           setClosestEdge(null)
         },
         onDrag: ({ self, location }) => {

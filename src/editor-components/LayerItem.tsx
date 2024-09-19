@@ -9,7 +9,7 @@ import { DragPreview } from './DragPreview'
 import { useBlockDelete } from '../utils/useBlockDelete'
 import { useBlockCopy } from '../utils/useBlockCopy'
 import { useBlockUpdateName } from '../utils/useBlockUpdateName'
-import { useBlock } from '../utils/useBlock'
+import { useBlockGet } from '../utils/useBlockGet'
 
 export function LayerItem(props: {
   blockId: Block['id']
@@ -24,7 +24,7 @@ export function LayerItem(props: {
   const dragRef = useRef<HTMLLIElement>(null)
   const dropRef = useRef<HTMLLIElement>(null)
 
-  const query = useBlock({ id: props.blockId })
+  const query = useBlockGet({ id: props.blockId })
 
   const [isRenaming, setIsRenaming] = useState(false)
   const blockCopy = useBlockCopy()

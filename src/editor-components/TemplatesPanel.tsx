@@ -8,10 +8,10 @@ export function TemplatePanel(props: { templates: Template[]; isCanvasUpdatePend
     return (
       <DropZone
         data={{ id: 'templateDrop' } as const}
-        onDrop={({ source, target }) => {
-          target.data.id
-          // source
-        }}
+        // onDrop={({ source, target }) => {
+        // target.data.id
+        // source
+        // }}
         disableDrop={({ source, element }) => source.data.id === 'componentItem' && element.id === 'templateDrop'}
         label="Create template"
       />

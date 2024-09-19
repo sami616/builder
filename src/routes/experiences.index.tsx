@@ -1,27 +1,24 @@
 import { createFileRoute, Link } from '@tanstack/react-router'
-import { useSuspenseQuery, queryOptions } from '@tanstack/react-query'
-import { type Context } from '../main'
 import { usePageAdd } from '../utils/usePageAdd'
 import { usePageExport } from '../utils/usePageExport'
 import { usePageExportMany } from '../utils/usePageExportMany'
 import { usePageImport } from '../utils/usePageImport'
 import { usePageCopy } from '../utils/usePageCopy'
 import { usePageDelete } from '../utils/usePageDelete'
+import { pageGetManyOpts, usePageGetMany } from '../utils/usePageGetMany'
 
 // Route
 export const Route = createFileRoute('/experiences/')({
   component: Experiences,
-  loader: ({ context }) => context.queryClient.ensureQueryData(queryOpts(context.getMany)),
+  loader: ({ context }) => context.queryClient.ensureQueryData(pageGetManyOpts({ context })),
   pendingComponent: () => <p>Loading..</p>,
   errorComponent: () => <p>Error!</p>,
 })
 
 // Route Component
 export function Experiences() {
-  const context = Route.useRouteContext()
   const navigate = Route.useNavigate()
-  const { data: experiences, isRefetching } = useSuspenseQuery(queryOpts(context.getMany))
-
+  const { data: experiences, isRefetching } = usePageGetMany()
   const pageAdd = usePageAdd()
   const pageExport = usePageExport()
   const pageExportMany = usePageExportMany()
@@ -101,11 +98,4 @@ export function Experiences() {
       </ul>
     </>
   )
-}
-
-function queryOpts(getMany: Context['getMany']) {
-  return queryOptions({
-    queryKey: ['experiences'],
-    queryFn: () => getMany({ store: 'experiences', sortBy: ['createdAt', 'descending'] }),
-  })
 }

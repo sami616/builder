@@ -10,7 +10,7 @@ import { DropZone } from './DropZone'
 import { useDragDrop } from '../utils/useDragDrop'
 import { useBlockDelete } from '../utils/useBlockDelete'
 import { useBlockCopy } from '../utils/useBlockCopy'
-import { useBlock } from '../utils/useBlock'
+import { useBlockGet } from '../utils/useBlockGet'
 
 export function BlockItem(props: {
   index: number
@@ -27,7 +27,7 @@ export function BlockItem(props: {
   const dragRef = useRef<HTMLDivElement>(null)
   const popoverRef = useRef<HTMLDivElement>(null)
   const context = useRouteContext({ from: '/experiences/$id' })
-  const query = useBlock({ id: props.blockId })
+  const query = useBlockGet({ id: props.blockId })
 
   const mutationState = useMutationState<Block>({
     filters: {
