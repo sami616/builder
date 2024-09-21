@@ -12,5 +12,5 @@ export function pageGetOpts(args: { id: Experience['id']; context: Context }) {
 
 export function usePageGet(args: { id: Experience['id'] }) {
   const context = useRouteContext({ from: '/experiences/$id' })
-  return useSuspenseQuery(pageGetOpts({ id: args.id, context }))
+  return { pageGet: useSuspenseQuery(pageGetOpts({ id: args.id, context })) }
 }

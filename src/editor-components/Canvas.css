@@ -1,6 +1,0 @@
-@scope ([data-component="Canvas"]) to ([data-component]) {
-  & {
-    padding: 10px;
-    border: 1px solid black;
-  }
-}

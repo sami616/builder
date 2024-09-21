@@ -1,6 +1,0 @@
-@scope ([data-component="LayerItem"]) to ([data-component]) {
-  & {
-    position: relative;
-    padding: 5px;
-  }
-}

@@ -1,20 +1,25 @@
-import './TemplateItem.css'
 import { type Template } from '../db'
-import { useDragDrop } from '../utils/useDragDrop'
+import { isDragData } from '../utils/useDrag'
 import { useEffect, useRef, useState } from 'react'
 import { DropIndicator } from './DropIndicator'
 import { DragPreview } from './DragPreview'
 import { useTemplateDelete } from '../utils/useTemplateDelete'
 import { useTemplateUpdateName } from '../utils/useTemplateUpdateName'
+import { useTemplateAdd } from '../utils/useTemplateAdd'
+import { useTemplateReorder } from '../utils/useTemplateReorder'
+import { useDrag } from '../utils/useDrag'
+import { useDrop } from '../utils/useDrop'
 
-export function TemplateItem(props: { template: Template; index: number; isCanvasUpdatePending: boolean }) {
-  const dragDropSourceRef = useRef<HTMLLIElement>(null)
-  const dragDropTargetRef = useRef<HTMLLIElement>(null)
+export function TemplateItem(props: { template: Template; index: number }) {
+  const dragRef = useRef<HTMLSpanElement>(null)
+  const dropRef = useRef<HTMLLIElement>(null)
   const [isRenaming, setIsRenaming] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
-  const templateDelete = useTemplateDelete()
-  const templateUpdateName = useTemplateUpdateName()
+  const { templateDelete } = useTemplateDelete()
+  const { templateUpdateName } = useTemplateUpdateName()
+  const { templateAdd } = useTemplateAdd()
+  const { templateReorder } = useTemplateReorder()
 
   useEffect(() => {
     async function handleClickOutside(e: MouseEvent) {
@@ -35,15 +40,20 @@ export function TemplateItem(props: { template: Template; index: number; isCanva
     }
   }, [isRenaming])
 
-  const { isDraggingSource, closestEdge, dragPreviewContainer } = useDragDrop({
-    dragRef: dragDropSourceRef,
-    dropRef: dragDropTargetRef,
-    disableDrag: props.isCanvasUpdatePending,
-    disableDrop: ({ source, element }) => source.data.id === 'componentItem' && element.getAttribute('data-component') === 'TemplateItem',
-    data: { id: 'templateDragDrop', index: props.index, node: props.template },
-    onDrop: ({source, target}) => {
+  const { dragPreviewContainer, isDraggingSource } = useDrag({ dragRef, data: { id: 'template', index: props.index, node: props.template } })
 
-    }
+  const { closestEdge } = useDrop({
+    dropRef,
+    disableDrop: ({ source, element }) => source.data.id === 'componentItem' && element.getAttribute('data-component') === 'TemplateItem',
+    data: { index: props.index, node: props.template },
+    onDrop: ({ source, target }) => {
+      if (isDragData['block'](source.data)) {
+        templateAdd.mutate({ source: source.data, target: target.data })
+      }
+      if (isDragData['template'](source.data)) {
+        templateReorder.mutate({ source: source.data, target: target.data })
+      }
+    },
   })
 
   return (
@@ -53,7 +63,7 @@ export function TemplateItem(props: { template: Template; index: number; isCanva
         e.stopPropagation()
         setIsRenaming(true)
       }}
-      ref={dragDropTargetRef}
+      ref={dropRef}
       style={{ opacity: isDraggingSource ? 0.5 : 1 }}
     >
       {isRenaming && (
@@ -84,7 +94,7 @@ export function TemplateItem(props: { template: Template; index: number; isCanva
         <>
           {props.template.name}
           <button onClick={() => templateDelete.mutate({ template: props.template })}>del</button>
-          <span ref={dragDropSourceRef}>move</span>
+          <span ref={dragRef}>move</span>
         </>
       )}
 

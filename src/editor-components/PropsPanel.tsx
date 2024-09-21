@@ -1,15 +1,14 @@
 import { useMutation } from '@tanstack/react-query'
 import { useRouteContext } from '@tanstack/react-router'
-import './PropsPanel.css'
 import { useBlockGet } from '../utils/useBlockGet'
 
 export function PropsPanel(props: { activeBlockId: number; setActiveBlockId: (id: number | undefined) => void }) {
   const context = useRouteContext({ from: '/experiences/$id' })
-  const query = useBlockGet({ id: props.activeBlockId })
+  const { blockGet } = useBlockGet({ id: props.activeBlockId })
 
   const updateBlock = useMutation({
     mutationFn: context.update,
-    mutationKey: ['updateBlock', query.data.id],
+    mutationKey: ['updateBlock', blockGet.data.id],
     onError: (err, _data) => {
       // Todo: show some kind of notification error
       console.error(err)
@@ -21,7 +20,7 @@ export function PropsPanel(props: { activeBlockId: number; setActiveBlockId: (id
     },
   })
 
-  const AB = updateBlock.isPending ? updateBlock.variables.entry : query.data
+  const AB = updateBlock.isPending ? updateBlock.variables.entry : blockGet.data
 
   return (
     <div data-component="PropsPanel">

@@ -3,19 +3,21 @@ import { DropIndicator } from './DropIndicator'
 import { type Block, type Experience } from '../db'
 import { useMutationState } from '@tanstack/react-query'
 import { useRouteContext } from '@tanstack/react-router'
-
-import './BlockItem.css'
 import { DragPreview } from './DragPreview'
 import { DropZone } from './DropZone'
-import { useDragDrop } from '../utils/useDragDrop'
+import { isDragData } from '../utils/useDrag'
 import { useBlockDelete } from '../utils/useBlockDelete'
 import { useBlockCopy } from '../utils/useBlockCopy'
 import { useBlockGet } from '../utils/useBlockGet'
+import { useBlockAdd } from '../utils/useBlockAdd'
+import { useTemplateApply } from '../utils/useTemplateApply'
+import { useDrop } from '../utils/useDrop'
+import { useDrag } from '../utils/useDrag'
+import { useBlockMove } from '../utils/useBlockMove'
 
 export function BlockItem(props: {
   index: number
   experience: Experience
-  isCanvasUpdatePending: boolean
   parent: { slot: string; node: Block | Experience }
   blockId: Block['id']
   activeBlockId?: Block['id']
@@ -27,7 +29,7 @@ export function BlockItem(props: {
   const dragRef = useRef<HTMLDivElement>(null)
   const popoverRef = useRef<HTMLDivElement>(null)
   const context = useRouteContext({ from: '/experiences/$id' })
-  const query = useBlockGet({ id: props.blockId })
+  const { blockGet } = useBlockGet({ id: props.blockId })
 
   const mutationState = useMutationState<Block>({
     filters: {
@@ -37,32 +39,59 @@ export function BlockItem(props: {
     select: (data) => (data.state.variables as Record<'block', Block>).block,
   })?.at(-1)
 
-  const blockCopy = useBlockCopy()
-  const blockDelete = useBlockDelete()
+  const block = mutationState ?? blockGet.data
+  const { blockAdd } = useBlockAdd()
+  const { blockCopy } = useBlockCopy()
+  const { blockDelete } = useBlockDelete()
+  const { blockMove } = useBlockMove()
 
+  const componentProps = block.props
+  const { templateApply } = useTemplateApply()
   const isActiveBlock = props.activeBlockId === props.blockId
   const isHoveredBlock = props.hoveredBlockId === props.blockId
 
-  const block = mutationState ?? query.data
-  const componentProps = block.props
-
-  const { isDraggingSource, closestEdge, dragPreviewContainer } = useDragDrop({
-    dragRef,
-    dropRef,
-    disableDrag: props.isCanvasUpdatePending,
-    data: {
-      id: 'blockDragDrop',
-      index: props.index,
-      parent: props.parent,
-      node: block,
+  const { closestEdge } = useDrop({
+    dropRef: dropRef,
+    data: { index: props.index, parent: props.parent, node: block },
+    onDrop: ({ source, target }) => {
+      if (isDragData['component'](source.data)) {
+        blockAdd.mutate({ source: source.data, target: target.data })
+      }
+      if (isDragData['template'](source.data)) {
+        templateApply.mutate({ source: source.data, target: target.data })
+      }
+      if (isDragData['block'](source.data)) {
+        blockMove.mutate({ source: source.data, target: target.data })
+      }
     },
+  })
+
+  const { isDraggingSource, dragPreviewContainer } = useDrag({
+    dragRef,
+    data: { id: 'block', index: props.index, parent: props.parent, node: block },
   })
 
   const componentBlocks = Object.keys(block.slots).reduce<{
     [key: string]: JSX.Element[] | JSX.Element
   }>((acc, slot) => {
     if (block.slots[slot].length === 0) {
-      acc[slot] = <DropZone label={context.config[block.type].slots[slot].name} data={{ id: 'blockDrop', parent: { slot, node: block } }} />
+      acc[slot] = (
+        <DropZone
+          label={context.config[block.type].slots[slot].name}
+          data={{ parent: { slot, node: block } }}
+          onDrop={({ source, target }) => {
+            if (isDragData['component'](source.data)) {
+              blockAdd.mutate({ source: source.data, target: target.data })
+            }
+            if (isDragData['template'](source.data)) {
+              templateApply.mutate({ source: source.data, target: target.data })
+            }
+            if (isDragData['block'](source.data)) {
+              blockMove.mutate({ source: source.data, target: target.data })
+            }
+          }}
+        />
+      )
     } else {
       acc[slot] = block.slots[slot].map((blockId, index) => {
         return (
@@ -75,7 +104,6 @@ export function BlockItem(props: {
             activeBlockId={props.activeBlockId}
             setActiveBlockId={props.setActiveBlockId}
             key={blockId}
-            isCanvasUpdatePending={props.isCanvasUpdatePending}
             blockId={blockId}
           />
         )

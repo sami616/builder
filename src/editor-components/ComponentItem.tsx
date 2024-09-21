@@ -1,23 +1,19 @@
-import { Experience } from '../db'
-import { setCustomNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview'
-import { Config, config } from '../main'
-import { useEffect, useRef, useState } from 'react'
-import { draggable } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
-import { type Block } from '../db'
-import './ComponentItem.css'
+import { type Experience, type Block } from '../db'
+import { Config } from '../main'
+import { useRef } from 'react'
 import { DragPreview } from './DragPreview'
 import { NestedStructure } from './ComponentPanel'
+import { useDrag } from '../utils/useDrag'
 
-export function ComponentItem(props: {
-  experience: Experience
-  type: Block['type']
-  isCanvasUpdatePending: boolean
-  value: NestedStructure | Config[keyof Config]
-}) {
-  const ref = useRef<HTMLLIElement>(null)
-  const [isDragging, setDragging] = useState<boolean>(false)
-
-  const [dragPreviewContainer, setDragPreviewContainer] = useState<HTMLElement | null>(null)
+export function ComponentItem(props: { experience: Experience; type: Block['type']; value: NestedStructure | Config[keyof Config] }) {
+  const dragRef = useRef<HTMLLIElement>(null)
+  const { isDraggingSource, dragPreviewContainer } = useDrag({
+    dragRef,
+    data: {
+      id: 'componentItem',
+      type: props.type,
+    },
+  })
 
   const isLeaf = typeof props.value === 'object' && 'component' in props.value
 
@@ -27,60 +23,22 @@ export function ComponentItem(props: {
         <summary>{props.type}</summary>
         <ul>
           {Object.entries(props.value as NestedStructure).map(([key, value]) => (
-            <ComponentItem
-              value={value}
-              isCanvasUpdatePending={props.isCanvasUpdatePending}
-              key={key}
-              type={key as Block['type']}
-              experience={props.experience}
-            />
+            <ComponentItem value={value} key={key} type={key as Block['type']} experience={props.experience} />
           ))}
         </ul>
       </details>
     )
 
-  useEffect(() => {
-    if (!ref.current) return
-    return draggable({
-      element: ref.current,
-      getInitialData: (): ComponentItemSource => ({
-        type: props.type,
-        id: 'componentItem',
-      }),
-      onGenerateDragPreview: ({ nativeSetDragImage }) => {
-        setCustomNativeDragPreview({
-          nativeSetDragImage,
-          render({ container }) {
-            setDragPreviewContainer(container)
-          },
-        })
-      },
-      onDragStart: () => setDragging(true),
-      onDrop: () => setDragging(false),
-      canDrag: () => !props.isCanvasUpdatePending,
-    })
-  }, [props.type, props.isCanvasUpdatePending])
-
   const style = {
-    opacity: isDragging || props.isCanvasUpdatePending ? 0.5 : 1,
+    opacity: isDraggingSource ? 0.5 : 1,
   }
 
   return (
     <>
-      <li data-component="ComponentItem" ref={ref} style={style} key={props.type}>
+      <li data-component="ComponentItem" ref={dragRef} style={style} key={props.type}>
         {props.type}
       </li>
       <DragPreview dragPreviewContainer={dragPreviewContainer}>Add {props.type} ➕</DragPreview>
     </>
   )
-}
-
-export type ComponentItemSource = {
-  type: Block['type']
-  id: 'componentItem'
-}
-
-export function isComponentItemSource(args: Record<string, unknown>): args is ComponentItemSource {
-  if (typeof args.type !== 'string') return false
-  return Object.keys(config).includes(args.type)
 }

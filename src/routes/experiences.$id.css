@@ -1,3 +1,8 @@
+li {
+  position: relative;
+  padding: 5px;
+}
+
 @scope ([data-component="experiences.$id"]) to ([data-component]) {
   main {
     font-family: sans-serif;
@@ -6,6 +11,106 @@
     grid-template-columns: 300px 1fr;
     &:has(> :nth-child(3):last-child) {
       grid-template-columns: 300px 1fr 300px;
+    }
+  }
+}
+
+@scope ([data-component="DropIndicator"]) to ([data-component]) {
+  & {
+    /* background: #ff004c; */
+    background: green;
+    position: absolute;
+    z-index: 2;
+  }
+  &.vertical {
+    width: 2px;
+    height: 100%;
+  }
+  &.horizontal {
+    width: 100%;
+    height: 2px;
+  }
+
+  &.bottom {
+    bottom: 0;
+  }
+
+  &.top {
+    top: 0;
+  }
+}
+
+@scope ([data-component="DragPreview"]) to ([data-component]) {
+  & {
+    opacity: 1;
+    background: #efefef;
+    border-radius: 1rem;
+    font-family: sans-serif;
+    padding: 10px;
+  }
+}
+
+@scope ([data-component="DropZone"]) to ([data-component]) {
+  & {
+    border-radius: 1rem;
+    margin: 1rem;
+    background: rgba(255, 255, 255, 0.5);
+    text-align: center;
+    padding: 1rem;
+    flex: 1 1 100%;
+  }
+}
+
+@scope ([data-component="BlockItem"]) to ([data-component]) {
+  & {
+    --highlightColor: #ff004c;
+    position: relative;
+
+    &[data-hovered='true'] {
+      --highlightColor: #ff004c;
+      outline: 2px solid var(--highlightColor);
+      z-index: 99999999;
+    }
+
+    &[data-active='true'] {
+      --highlightColor: blue;
+      outline: 2px solid var(--highlightColor);
+      z-index: 99999999;
+    }
+
+    &[data-dragging='true'] {
+      opacity: 0.5;
+    }
+  }
+
+  [data-context][popover] {
+    margin: 0;
+    padding: 0;
+    border: none;
+    inset: auto;
+    bottom: anchor(top);
+    right: calc(anchor(right) - 2px);
+    div {
+      display: flex;
+      button,
+      span {
+        &:hover {
+          background: black;
+        }
+        display: flex;
+        align-items: center;
+        background: var(--highlightColor);
+        padding: 1rem;
+        justify-content: center;
+        appearance: none;
+        margin: 0;
+        font-size: 14px;
+        border: none;
+        color: white;
+        &:disabled {
+          opacity: 0.5;
+        }
+      }
     }
   }
 }

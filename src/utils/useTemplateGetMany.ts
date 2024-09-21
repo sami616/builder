@@ -11,5 +11,5 @@ export function templateGetManyOpts(args: { context: Context }) {
 
 export function useTemplateGetMany() {
   const context = useRouteContext({ from: '/experiences/$id' })
-  return useSuspenseQuery(templateGetManyOpts({ context }))
+  return { templateGetMany: useSuspenseQuery(templateGetManyOpts({ context })) }
 }

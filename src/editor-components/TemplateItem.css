@@ -1,6 +1,0 @@
-@scope ([data-component="TemplateItem"]) to ([data-component]) {
-  & {
-    position: relative;
-    padding: 5px;
-  }
-}

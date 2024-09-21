@@ -11,5 +11,6 @@ export function pageGetManyOpts(args: { context: Context }) {
 
 export function usePageGetMany() {
   const context = useRouteContext({ from: '/experiences/' })
-  return useSuspenseQuery(pageGetManyOpts({ context }))
+  const pageGetMany = useSuspenseQuery(pageGetManyOpts({ context }))
+  return { pageGetMany }
 }
