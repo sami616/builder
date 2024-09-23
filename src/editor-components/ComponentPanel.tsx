@@ -1,16 +1,16 @@
 import { useRouteContext } from '@tanstack/react-router'
-import { type Experience, type Block } from '../db'
+import { type Page, type Block } from '../db'
 import { ComponentItem } from './ComponentItem'
 import { Config } from '../main'
 
-export function ComponentPanel(props: { experience: Experience }) {
-  const context = useRouteContext({ from: '/experiences/$id' })
+export function ComponentPanel(props: { page: Page }) {
+  const context = useRouteContext({ from: '/pages/$id' })
   const structure = nestFolders(context.config)
 
   return (
     <ul data-component="ComponentPanel">
       {Object.entries(structure).map(([key, value]) => {
-        return <ComponentItem value={value} key={key} type={key as Block['type']} experience={props.experience} />
+        return <ComponentItem value={value} key={key} type={key as Block['type']} page={props.page} />
       })}
     </ul>
   )

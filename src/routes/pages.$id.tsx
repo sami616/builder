@@ -1,8 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { type Experience, type Block } from '../db'
+import { type Page, type Block } from '../db'
 import { Suspense, useState } from 'react'
 import { ComponentPanel } from '../editor-components/ComponentPanel'
-import './experiences.$id.css'
 import { PropsPanel } from '../editor-components/PropsPanel'
 import { BlockLayerPanel } from '../editor-components/BlockLayerPanel'
 import { DropZone } from '../editor-components/DropZone'
@@ -15,20 +14,21 @@ import { isDragData } from '../utils/useDrag'
 import { useBlockAdd } from '../utils/useBlockAdd'
 import { useTemplateApply } from '../utils/useTemplateApply'
 import { useIsMutating } from '@tanstack/react-query'
+import './pages.$id.css'
 
-export const Route = createFileRoute('/experiences/$id')({
-  component: Experience,
+export const Route = createFileRoute('/pages/$id')({
+  component: Page,
   loader: async ({ context, params }) => {
-    const experiences = context.queryClient.ensureQueryData(pageGetOpts({ id: Number(params.id), context }))
+    const pages = context.queryClient.ensureQueryData(pageGetOpts({ id: Number(params.id), context }))
     const templates = context.queryClient.ensureQueryData(templateGetManyOpts({ context }))
-    const data = await Promise.all([experiences, templates])
-    return { experiences: data.at(0), templates: data.at(1) }
+    const data = await Promise.all([pages, templates])
+    return { pages: data.at(0), templates: data.at(1) }
   },
   pendingComponent: () => <p>Loading..</p>,
   errorComponent: () => <p>Error!</p>,
 })
 
-function Experience() {
+function Page() {
   const { id } = Route.useParams()
   const [activeBlockId, setActiveBlockId] = useState<Block['id'] | undefined>()
   const [hoveredBlockId, setHoveredBlockId] = useState<Block['id'] | undefined>()
@@ -42,8 +42,8 @@ function Experience() {
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
 
   return (
-    <div data-component="experiences.$id">
-      {/* Edit experience meta data */}
+    <div data-component="pages.$id">
+      {/* Edit page meta data */}
       <div>
         <p>{pageGet.data.name}</p>
         <form
@@ -51,7 +51,7 @@ function Experience() {
             e.preventDefault()
             const form = e.currentTarget
             const formData = new FormData(form)
-            pageUpdateName.mutate({ experience: pageGet.data, name: formData.get('name') as string })
+            pageUpdateName.mutate({ page: pageGet.data, name: formData.get('name') as string })
           }}
         >
           <fieldset disabled={pageUpdateName.isPending}>
@@ -68,7 +68,7 @@ function Experience() {
           <aside>
             <details open name="components">
               <summary>Components</summary>
-              <ComponentPanel experience={pageGet.data} />
+              <ComponentPanel page={pageGet.data} />
             </details>
             <details open name="layers">
               <summary>Layers</summary>
@@ -76,7 +76,7 @@ function Experience() {
                 activeBlockId={activeBlockId}
                 hoveredBlockId={hoveredBlockId}
                 setHoveredBlockId={setHoveredBlockId}
-                experience={pageGet.data}
+                page={pageGet.data}
               />
             </details>
             <details open name="templates">
@@ -107,7 +107,7 @@ function Experience() {
                   blockId={blockId}
                   parent={{ node: pageGet.data, slot: 'root' }}
                   index={index}
-                  experience={pageGet.data}
+                  page={pageGet.data}
                   activeBlockId={activeBlockId}
                   setActiveBlockId={setActiveBlockId}
                   hoveredBlockId={hoveredBlockId}

@@ -5,7 +5,7 @@ import { type Block } from '../db'
 import { BlockItem } from '../editor-components/BlockItem'
 
 export function useBlockDelete() {
-  const context = useRouteContext({ from: '/experiences/$id' })
+  const context = useRouteContext({ from: '/pages/$id' })
   return {
     blockDelete: useMutation({
       mutationKey: ['canvas', 'block', 'delete'],

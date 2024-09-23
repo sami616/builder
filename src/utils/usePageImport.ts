@@ -2,7 +2,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouteContext } from '@tanstack/react-router'
 
 export function usePageImport() {
-  const context = useRouteContext({ from: '/experiences/' })
+  const context = useRouteContext({ from: '/pages/' })
   return {
     pageImport: useMutation({
       mutationKey: ['page', 'import'],
@@ -22,7 +22,7 @@ export function usePageImport() {
         await context.duplicateTree({ tree })
       },
       onSuccess: () => {
-        context.queryClient.invalidateQueries({ queryKey: ['experiences'] })
+        context.queryClient.invalidateQueries({ queryKey: ['pages'] })
       },
     }),
   }

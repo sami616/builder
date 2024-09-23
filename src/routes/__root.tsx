@@ -7,7 +7,7 @@ export const Route = createRootRouteWithContext<Context>()({
     <>
       <ul>
         <li>
-          <Link to="/experiences">Experiences</Link>
+          <Link to="/pages">Pages</Link>
         </li>
         <li>
           <Link to="/profile">Profile</Link>

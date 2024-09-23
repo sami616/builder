@@ -4,7 +4,7 @@ import { BlockItem } from '../editor-components/BlockItem'
 import { useRouteContext } from '@tanstack/react-router'
 
 export function useBlockCopy() {
-  const context = useRouteContext({ from: '/experiences/$id' })
+  const context = useRouteContext({ from: '/pages/$id' })
 
   return {
     blockCopy: useMutation({

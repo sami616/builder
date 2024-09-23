@@ -1,10 +1,10 @@
 import { openDB, type DBSchema } from 'idb'
 
-export const db = await openDB<MyDB>('experienceManager', 1, {
+export const db = await openDB<MyDB>('pageManager', 1, {
   upgrade(db) {
     // create a store of objects if it doesnt already exist
-    if (!db.objectStoreNames.contains('experiences')) {
-      const store = db.createObjectStore('experiences', { keyPath: 'id', autoIncrement: true })
+    if (!db.objectStoreNames.contains('pages')) {
+      const store = db.createObjectStore('pages', { keyPath: 'id', autoIncrement: true })
 
       store.createIndex('createdAt', 'createdAt', { unique: false })
       store.createIndex('updatedAt', 'updatedAt', { unique: false })
@@ -35,12 +35,12 @@ export type DB = {
       order: Template['order']
     }
   }
-  experiences: {
-    key: Experience['id']
-    value: Experience
+  pages: {
+    key: Page['id']
+    value: Page
     indexes: {
-      createdAt: Experience['createdAt']
-      updatedAt: Experience['updatedAt']
+      createdAt: Page['createdAt']
+      updatedAt: Page['updatedAt']
     }
   }
   blocks: {
@@ -61,8 +61,8 @@ export type Sys = {
   updatedAt: Date
 }
 
-export type Experience = {
-  store: 'experiences'
+export type Page = {
+  store: 'pages'
   name: string
   status: 'published' | 'draft' | 'changed'
   slots: { [index: string]: Array<Block['id']> }
@@ -80,5 +80,6 @@ export type Template = {
   store: 'templates'
   order: number
   name: string
+  rootNode: Block
   slots: { [index: string]: Array<Block['id']> }
 } & Sys

@@ -3,7 +3,7 @@ import { Block } from '../db'
 import { useRouteContext } from '@tanstack/react-router'
 
 export function useBlockUpdateName() {
-  const context = useRouteContext({ from: '/experiences/$id' })
+  const context = useRouteContext({ from: '/pages/$id' })
   return {
     blockUpdateName: useMutation({
       mutationKey: ['canvas', 'block', 'update', 'name'],

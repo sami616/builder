@@ -1,4 +1,4 @@
-import { type Experience, type Block } from '../db'
+import { type Page, type Block } from '../db'
 import { useEffect, useRef, useState } from 'react'
 import { DropIndicator } from './DropIndicator'
 import { isDragData } from '../utils/useDrag'
@@ -13,11 +13,13 @@ import { useDrag } from '../utils/useDrag'
 import { BlockLayerItemSlot } from './BlockLayerItemSlot'
 import { useBlockAdd } from '../utils/useBlockAdd'
 import { useBlockMove } from '../utils/useBlockMove'
+import { isBlock } from '../api'
+import { validateComponentSlots } from './BlockItem'
 
 export function BlockLayerItem(props: {
   blockId: Block['id']
   index: number
-  parent: { slot: string; node: Block } | { slot: string; node: Experience }
+  parent: { slot: string; node: Block } | { slot: string; node: Page }
   hoveredBlockId?: Block['id']
   setHoveredBlockId: (id: Block['id'] | undefined) => void
   activeBlockId?: Block['id']
@@ -66,6 +68,15 @@ export function BlockLayerItem(props: {
       }
       if (isDragData['block'](source.data)) {
         blockMove.mutate({ source: source.data, target: target.data })
+      }
+    },
+    disableDrop: ({ source, element }) => {
+      if (isBlock(props.parent.node)) {
+        try {
+          validateComponentSlots({ source, element, node: props.parent.node, slot: props.parent.slot })
+        } catch (e) {
+          return true
+        }
       }
     },
   })

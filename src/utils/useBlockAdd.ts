@@ -1,18 +1,18 @@
 import { useMutation } from '@tanstack/react-query'
 import { type Edge } from './useDrop'
 import { useRouteContext } from '@tanstack/react-router'
-import { type Block, type Experience } from '../db'
+import { type Block, type Page } from '../db'
 import { DragData } from './useDrag'
 
 export function useBlockAdd() {
-  const context = useRouteContext({ from: '/experiences/$id' })
+  const context = useRouteContext({ from: '/pages/$id' })
   return {
     blockAdd: useMutation({
       mutationKey: ['canvas', 'block', 'add'],
       mutationFn: async (args: {
         source: DragData['component']
         target: {
-          parent: { slot: string; node: Experience | Block }
+          parent: { slot: string; node: Page | Block }
           index?: number
           edge: Edge
         }

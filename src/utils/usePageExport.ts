@@ -1,21 +1,21 @@
 import { useMutation } from '@tanstack/react-query'
-import { Experience } from '../db'
+import { Page } from '../db'
 import { useRouteContext } from '@tanstack/react-router'
 
 export function usePageExport() {
-  const context = useRouteContext({ from: '/experiences/' })
+  const context = useRouteContext({ from: '/pages/' })
   return {
     pageExport: useMutation({
       mutationKey: ['page', 'export'],
-      mutationFn: async (args: { experience: Experience }) => {
+      mutationFn: async (args: { page: Page }) => {
         if (!('showSaveFilePicker' in window)) throw new Error('Save File API not supported')
         // @ts-ignore: no types for this api yet :(
         const handle = await window.showSaveFilePicker({
           types: [{ description: 'JSON File', accept: { 'application/json': ['.json'] } }],
-          suggestedName: `${args.experience.name}.json`,
+          suggestedName: `${args.page.name}.json`,
         })
         const writableStream = await handle.createWritable()
-        const tree = await context.getTree({ root: { store: 'experiences', id: args.experience.id } })
+        const tree = await context.getTree({ root: { store: 'pages', id: args.page.id } })
         await writableStream.write(JSON.stringify(tree, null, 2))
         await writableStream.close()
         return tree

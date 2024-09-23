@@ -13,8 +13,8 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as ProfileImport } from './routes/profile'
 import { Route as IndexImport } from './routes/index'
-import { Route as ExperiencesIndexImport } from './routes/experiences.index'
-import { Route as ExperiencesIdImport } from './routes/experiences.$id'
+import { Route as PagesIndexImport } from './routes/pages.index'
+import { Route as PagesIdImport } from './routes/pages.$id'
 
 // Create/Update Routes
 
@@ -28,13 +28,13 @@ const IndexRoute = IndexImport.update({
   getParentRoute: () => rootRoute,
 } as any)
 
-const ExperiencesIndexRoute = ExperiencesIndexImport.update({
-  path: '/experiences/',
+const PagesIndexRoute = PagesIndexImport.update({
+  path: '/pages/',
   getParentRoute: () => rootRoute,
 } as any)
 
-const ExperiencesIdRoute = ExperiencesIdImport.update({
-  path: '/experiences/$id',
+const PagesIdRoute = PagesIdImport.update({
+  path: '/pages/$id',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -56,18 +56,18 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ProfileImport
       parentRoute: typeof rootRoute
     }
-    '/experiences/$id': {
-      id: '/experiences/$id'
-      path: '/experiences/$id'
-      fullPath: '/experiences/$id'
-      preLoaderRoute: typeof ExperiencesIdImport
+    '/pages/$id': {
+      id: '/pages/$id'
+      path: '/pages/$id'
+      fullPath: '/pages/$id'
+      preLoaderRoute: typeof PagesIdImport
       parentRoute: typeof rootRoute
     }
-    '/experiences/': {
-      id: '/experiences/'
-      path: '/experiences'
-      fullPath: '/experiences'
-      preLoaderRoute: typeof ExperiencesIndexImport
+    '/pages/': {
+      id: '/pages/'
+      path: '/pages'
+      fullPath: '/pages'
+      preLoaderRoute: typeof PagesIndexImport
       parentRoute: typeof rootRoute
     }
   }
@@ -78,8 +78,8 @@ declare module '@tanstack/react-router' {
 export const routeTree = rootRoute.addChildren({
   IndexRoute,
   ProfileRoute,
-  ExperiencesIdRoute,
-  ExperiencesIndexRoute,
+  PagesIdRoute,
+  PagesIndexRoute,
 })
 
 /* prettier-ignore-end */
@@ -92,8 +92,8 @@ export const routeTree = rootRoute.addChildren({
       "children": [
         "/",
         "/profile",
-        "/experiences/$id",
-        "/experiences/"
+        "/pages/$id",
+        "/pages/"
       ]
     },
     "/": {
@@ -102,11 +102,11 @@ export const routeTree = rootRoute.addChildren({
     "/profile": {
       "filePath": "profile.tsx"
     },
-    "/experiences/$id": {
-      "filePath": "experiences.$id.tsx"
+    "/pages/$id": {
+      "filePath": "pages.$id.tsx"
     },
-    "/experiences/": {
-      "filePath": "experiences.index.tsx"
+    "/pages/": {
+      "filePath": "pages.index.tsx"
     }
   }
 }

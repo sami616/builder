@@ -3,7 +3,7 @@ import { db, type Template } from '../db'
 import { useRouteContext } from '@tanstack/react-router'
 
 export function useTemplateDelete() {
-  const context = useRouteContext({ from: '/experiences/$id' })
+  const context = useRouteContext({ from: '/pages/$id' })
   return {
     templateDelete: useMutation({
       mutationKey: ['canvas', 'template', 'delete'],

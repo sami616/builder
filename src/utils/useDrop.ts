@@ -9,7 +9,7 @@ export function useDrop<Data extends Record<string, any>>(props: {
   dropRef: RefObject<HTMLDivElement | HTMLDetailsElement | HTMLLIElement>
   data?: Data
   onDrop?: (args: { source: ElementDragPayload; target: Target<Data> }) => void | undefined
-  disableDrop?: (data: { source: ElementDragPayload; element: Element; input: Input }) => boolean
+  disableDrop?: (data: { source: ElementDragPayload; element: Element; input: Input }) => boolean | undefined
 }) {
   const [isDraggingOver, setIsDraggingOver] = useState(false)
   const [closestEdge, setClosestEdge] = useState<Edge>(null)
@@ -28,7 +28,6 @@ export function useDrop<Data extends Record<string, any>>(props: {
         setIsDraggingOver(false)
         setClosestEdge(null)
       },
-
       onDrag: ({ self, location }) => {
         const extractedEdge = self.data.edge as ReturnType<typeof getEdge>
         if (self.element === location.current.dropTargets[0].element) {
@@ -62,8 +61,10 @@ export function useDrop<Data extends Record<string, any>>(props: {
         if (sourceEl?.contains(element)) return false
 
         if (isCanvasMutating) return false
+
         // Custom
         if (props.disableDrop?.({ source, element, input })) return false
+
         return true
       },
     })
@@ -73,19 +74,13 @@ export function useDrop<Data extends Record<string, any>>(props: {
 
 function getEdge(input: Input, element: Element): Edge {
   const rect = element.getBoundingClientRect()
-  const thresh = 10
-  const bottomThresh = rect.bottom - thresh
-  const topThresh = rect.top + thresh
+  const middle = rect.top + (rect.bottom - rect.top) / 2
 
-  if (input.clientY > bottomThresh && input.clientY < rect.bottom) {
+  if (input.clientY < middle) {
+    return 'top'
+  } else {
     return 'bottom'
   }
-
-  if (input.clientY < topThresh && input.clientY > rect.top) {
-    return 'top'
-  }
-
-  return null
 }
 
 type WithEdge<T> = T & { edge: Edge }

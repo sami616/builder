@@ -1,11 +1,11 @@
 import { useMutation } from '@tanstack/react-query'
 import { useRouteContext } from '@tanstack/react-router'
-import { db } from '../db'
+import { Block, db } from '../db'
 import { DragData } from './useDrag'
 import { Edge } from './useDrop'
 
 export function useTemplateAdd() {
-  const context = useRouteContext({ from: '/experiences/$id' })
+  const context = useRouteContext({ from: '/pages/$id' })
   return {
     templateAdd: useMutation({
       mutationKey: ['canvas', 'template', 'add'],
@@ -24,6 +24,8 @@ export function useTemplateAdd() {
           name: args.source.node.name,
           createdAt: date,
           updatedAt: date,
+          // Todo: can this be properly inferred based on the store prop we pass to gerTree?
+          rootNode: rootEntry as Block,
           slots: { root: [rootEntry.id] },
         }
 

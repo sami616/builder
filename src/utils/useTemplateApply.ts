@@ -3,17 +3,17 @@ import { duplicateTree, getTree } from '../api'
 import { useRouteContext } from '@tanstack/react-router'
 import { DragData } from './useDrag'
 import { Edge } from './useDrop'
-import { Block, Experience } from '../db'
+import { Block, Page } from '../db'
 
 export function useTemplateApply() {
-  const context = useRouteContext({ from: '/experiences/$id' })
+  const context = useRouteContext({ from: '/pages/$id' })
   return {
     templateApply: useMutation({
       mutationKey: ['canvas', 'template', 'apply'],
       mutationFn: async (args: {
         source: DragData['template']
         target: {
-          parent: { slot: string; node: Experience | Block }
+          parent: { slot: string; node: Page | Block }
           index?: number
           edge: Edge
         }

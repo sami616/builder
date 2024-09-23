@@ -3,7 +3,7 @@ import { useRouteContext } from '@tanstack/react-router'
 import { useBlockGet } from '../utils/useBlockGet'
 
 export function PropsPanel(props: { activeBlockId: number; setActiveBlockId: (id: number | undefined) => void }) {
-  const context = useRouteContext({ from: '/experiences/$id' })
+  const context = useRouteContext({ from: '/pages/$id' })
   const { blockGet } = useBlockGet({ id: props.activeBlockId })
 
   const updateBlock = useMutation({

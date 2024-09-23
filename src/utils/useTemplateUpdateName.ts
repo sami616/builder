@@ -3,7 +3,7 @@ import { useRouteContext } from '@tanstack/react-router'
 import { Template } from '../db'
 
 export function useTemplateUpdateName() {
-  const context = useRouteContext({ from: '/experiences/$id' })
+  const context = useRouteContext({ from: '/pages/$id' })
 
   return {
     templateUpdateName: useMutation({

@@ -2,7 +2,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouteContext } from '@tanstack/react-router'
 
 export function usePageCopy() {
-  const context = useRouteContext({ from: '/experiences/' })
+  const context = useRouteContext({ from: '/pages/' })
   return {
     pageCopy: useMutation({
       mutationKey: ['page', 'copy'],
@@ -28,7 +28,7 @@ export function usePageCopy() {
         }
       },
       onSuccess: async () => {
-        context.queryClient.invalidateQueries({ queryKey: ['experiences'] })
+        context.queryClient.invalidateQueries({ queryKey: ['pages'] })
       },
     }),
   }

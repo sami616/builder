@@ -1,11 +1,11 @@
-import { type Experience, type Block } from '../db'
+import { type Page, type Block } from '../db'
 import { Config } from '../main'
 import { useRef } from 'react'
 import { DragPreview } from './DragPreview'
 import { NestedStructure } from './ComponentPanel'
 import { useDrag } from '../utils/useDrag'
 
-export function ComponentItem(props: { experience: Experience; type: Block['type']; value: NestedStructure | Config[keyof Config] }) {
+export function ComponentItem(props: { page: Page; type: Block['type']; value: NestedStructure | Config[keyof Config] }) {
   const dragRef = useRef<HTMLLIElement>(null)
   const { isDraggingSource, dragPreviewContainer } = useDrag({
     dragRef,
@@ -23,7 +23,7 @@ export function ComponentItem(props: { experience: Experience; type: Block['type
         <summary>{props.type}</summary>
         <ul>
           {Object.entries(props.value as NestedStructure).map(([key, value]) => (
-            <ComponentItem value={value} key={key} type={key as Block['type']} experience={props.experience} />
+            <ComponentItem value={value} key={key} type={key as Block['type']} page={props.page} />
           ))}
         </ul>
       </details>

@@ -7,6 +7,7 @@ import { useBlockAdd } from '../utils/useBlockAdd'
 import { useTemplateApply } from '../utils/useTemplateApply'
 import { BlockLayerItem } from './BlockLayerItem'
 import { useBlockMove } from '../utils/useBlockMove'
+import { validateComponentSlots } from './BlockItem'
 
 export function BlockLayerItemSlot(props: {
   block: Block
@@ -23,11 +24,14 @@ export function BlockLayerItemSlot(props: {
 
   const { isDraggingOver } = useDrop({
     dropRef: ref,
-    disableDrop: ({ source, element }) => {
-      const sourceEl = source.element.closest('[data-drop-target-for-element="true"]')
-      return sourceEl?.parentElement?.closest('[data-drop-target-for-element="true"]') === element
-    },
     data: { parent: { slot: props.slot, node: props.block } },
+    disableDrop: ({ source, element }) => {
+      try {
+        validateComponentSlots({ source, element, node: props.block, slot: props.slot })
+      } catch (e) {
+        return true
+      }
+    },
     onDrop: ({ source, target }) => {
       if (isDragData['component'](source.data)) {
         blockAdd.mutate({ source: source.data, target: target.data })
@@ -41,7 +45,7 @@ export function BlockLayerItemSlot(props: {
     },
   })
 
-  const context = useRouteContext({ from: '/experiences/$id' })
+  const context = useRouteContext({ from: '/pages/$id' })
 
   const hasSlotEntries = props.block.slots[props.slot].length > 0
 

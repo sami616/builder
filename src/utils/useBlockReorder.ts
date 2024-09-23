@@ -2,16 +2,16 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouteContext } from '@tanstack/react-router'
 import { type DragData } from './useDrag'
 import { type Edge } from './useDrop'
-import { type Block, type Experience } from '../db'
+import { type Block, type Page } from '../db'
 
 export function useBlockReorder() {
-  const context = useRouteContext({ from: '/experiences/$id' })
+  const context = useRouteContext({ from: '/pages/$id' })
   return {
     blockReorder: useMutation({
       mutationKey: ['canvas', 'block', 'reorder'],
       mutationFn: async (args: {
         source: DragData['block']
-        target: { parent: { slot: string; node: Experience | Block }; edge: Edge; index?: number }
+        target: { parent: { slot: string; node: Page | Block }; edge: Edge; index?: number }
       }) => {
         const clonedParentNode = structuredClone(args.target.parent.node)
         const addSlot = args.target.parent.slot

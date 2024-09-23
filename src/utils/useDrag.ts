@@ -1,8 +1,8 @@
 import { type RefObject, useEffect, useState } from 'react'
 import { draggable } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { setCustomNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview'
-import { Template, type Block, type Experience } from '../db'
-import { isBlock, isExperience, isTemplate } from '../api'
+import { Template, type Block, type Page } from '../db'
+import { isBlock, isPage, isTemplate } from '../api'
 import { config } from '../main'
 import { Input } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types'
 import { useIsMutating } from '@tanstack/react-query'
@@ -47,7 +47,7 @@ export type DragData = {
     id: 'block'
     index: number
     node: Block
-    parent: { slot: string; node: Experience | Block }
+    parent: { slot: string; node: Page | Block }
   }
   template: {
     id: 'template'
@@ -73,7 +73,7 @@ export const isDragData = {
     if (typeof args.index !== 'number') return false
     if (!isBlock(args.node)) return false
     if (typeof args.parent?.slot !== 'string') return false
-    if (!isBlock(args.parent?.node) && !isExperience(args.parent?.node)) return false
+    if (!isBlock(args.parent?.node) && !isPage(args.parent?.node)) return false
     if (args.edge !== undefined) return false
     return true
   },

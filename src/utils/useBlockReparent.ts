@@ -1,17 +1,17 @@
 import { useMutation } from '@tanstack/react-query'
 import { useRouteContext } from '@tanstack/react-router'
 import { DragData } from './useDrag'
-import { Block, Experience } from '../db'
+import { Block, Page } from '../db'
 import { Edge } from './useDrop'
 
 export function useBlockReparent() {
-  const context = useRouteContext({ from: '/experiences/$id' })
+  const context = useRouteContext({ from: '/pages/$id' })
   return {
     blockReparent: useMutation({
       mutationKey: ['canvas', 'block', 'reparent'],
       mutationFn: async (args: {
         source: DragData['block']
-        target: { parent: { slot: string; node: Block | Experience }; edge: Edge; index?: number }
+        target: { parent: { slot: string; node: Block | Page }; edge: Edge; index?: number }
       }) => {
         const clonedSourceParentNode = structuredClone(args.source.parent.node)
         const clonedTargetParentNode = structuredClone(args.target.parent.node)

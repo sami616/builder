@@ -3,7 +3,7 @@ li {
   padding: 5px;
 }
 
-@scope ([data-component="experiences.$id"]) to ([data-component]) {
+@scope ([data-component="pages.$id"]) to ([data-component]) {
   main {
     font-family: sans-serif;
     display: grid;

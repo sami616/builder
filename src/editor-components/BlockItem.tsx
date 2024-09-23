@@ -1,6 +1,6 @@
 import { useRef } from 'react'
 import { DropIndicator } from './DropIndicator'
-import { type Block, type Experience } from '../db'
+import { type Block, type Page } from '../db'
 import { useMutationState } from '@tanstack/react-query'
 import { useRouteContext } from '@tanstack/react-router'
 import { DragPreview } from './DragPreview'
@@ -14,11 +14,13 @@ import { useTemplateApply } from '../utils/useTemplateApply'
 import { useDrop } from '../utils/useDrop'
 import { useDrag } from '../utils/useDrag'
 import { useBlockMove } from '../utils/useBlockMove'
+import { config } from '../main'
+import { isBlock } from '../api'
 
 export function BlockItem(props: {
   index: number
-  experience: Experience
-  parent: { slot: string; node: Block | Experience }
+  page: Page
+  parent: { slot: string; node: Block | Page }
   blockId: Block['id']
   activeBlockId?: Block['id']
   setActiveBlockId: (id: Block['id'] | undefined) => void
@@ -28,8 +30,16 @@ export function BlockItem(props: {
   const dropRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<HTMLDivElement>(null)
   const popoverRef = useRef<HTMLDivElement>(null)
-  const context = useRouteContext({ from: '/experiences/$id' })
+  const context = useRouteContext({ from: '/pages/$id' })
+  const isActiveBlock = props.activeBlockId === props.blockId
+  const isHoveredBlock = props.hoveredBlockId === props.blockId
+
   const { blockGet } = useBlockGet({ id: props.blockId })
+  const { blockAdd } = useBlockAdd()
+  const { blockCopy } = useBlockCopy()
+  const { blockDelete } = useBlockDelete()
+  const { blockMove } = useBlockMove()
+  const { templateApply } = useTemplateApply()
 
   const mutationState = useMutationState<Block>({
     filters: {
@@ -40,19 +50,20 @@ export function BlockItem(props: {
   })?.at(-1)
 
   const block = mutationState ?? blockGet.data
-  const { blockAdd } = useBlockAdd()
-  const { blockCopy } = useBlockCopy()
-  const { blockDelete } = useBlockDelete()
-  const { blockMove } = useBlockMove()
-
   const componentProps = block.props
-  const { templateApply } = useTemplateApply()
-  const isActiveBlock = props.activeBlockId === props.blockId
-  const isHoveredBlock = props.hoveredBlockId === props.blockId
 
   const { closestEdge } = useDrop({
     dropRef: dropRef,
     data: { index: props.index, parent: props.parent, node: block },
+    disableDrop: ({ source, element }) => {
+      if (isBlock(props.parent.node)) {
+        try {
+          validateComponentSlots({ source, element, node: props.parent.node, slot: props.parent.slot })
+        } catch (e) {
+          return true
+        }
+      }
+    },
     onDrop: ({ source, target }) => {
       if (isDragData['component'](source.data)) {
         blockAdd.mutate({ source: source.data, target: target.data })
@@ -79,6 +90,13 @@ export function BlockItem(props: {
         <DropZone
           label={context.config[block.type].slots[slot].name}
           data={{ parent: { slot, node: block } }}
+          disableDrop={({ source, element }) => {
+            try {
+              validateComponentSlots({ source, element, node: block, slot })
+            } catch (e) {
+              return true
+            }
+          }}
           onDrop={({ source, target }) => {
             if (isDragData['component'](source.data)) {
               blockAdd.mutate({ source: source.data, target: target.data })
@@ -100,7 +118,7 @@ export function BlockItem(props: {
             setHoveredBlockId={props.setHoveredBlockId}
             index={index}
             parent={{ slot, node: block }}
-            experience={props.experience}
+            page={props.page}
             activeBlockId={props.activeBlockId}
             setActiveBlockId={props.setActiveBlockId}
             key={blockId}
@@ -174,4 +192,38 @@ export function BlockItem(props: {
       <DragPreview dragPreviewContainer={dragPreviewContainer}>Move {block.name} ↕</DragPreview>
     </div>
   )
+}
+
+export function validateComponentSlots(args: { source: Record<string, any>; node: Block; slot: string; element: Element }) {
+  const disabledComponents = config[args.node.type].slots[args.slot].validation?.disabledComponents
+  const maxItems = config[args.node.type].slots[args.slot].validation?.maxItems
+  const itemsLength = args.node.slots[args.slot].length
+  const sourceEl = args.source.element.closest('[data-drop-target-for-element="true"]')
+
+  if (sourceEl?.parentElement?.closest('[data-drop-target-for-element="true"]') === args.element) {
+    throw new Error(`Component is already in this slot`)
+  }
+
+  if (maxItems) {
+    if (itemsLength >= maxItems) {
+      throw new Error(`Max items in `)
+    }
+  }
+  if (disabledComponents) {
+    if (isDragData['component'](args.source.data)) {
+      if (disabledComponents.includes(args.source.data.type)) {
+        throw new Error(`${args.source.data.type} cannot be dropped here`)
+      }
+    }
+    if (isDragData['block'](args.source.data)) {
+      if (disabledComponents.includes(args.source.data.node.type)) {
+        throw new Error(`${args.source.data.node.type} cannot be dropped here`)
+      }
+    }
+    if (isDragData['template'](args.source.data)) {
+      if (disabledComponents.includes(args.source.data.node.rootNode.type)) {
+        throw new Error(`${args.source.data.node.rootNode.type} cannot be dropped here`)
+      }
+    }
+  }
 }

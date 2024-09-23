@@ -1,6 +1,6 @@
 import { buttonConfig, headingConfig, containerConfig } from './components'
 import { StrictMode } from 'react'
-import { get, getMany, add, update, updateMany, addMany, remove, removeMany, getTree, isExperience, isBlock, duplicateTree } from './api'
+import { get, getMany, add, update, updateMany, addMany, remove, removeMany, getTree, isPage, isBlock, duplicateTree } from './api'
 import ReactDOM from 'react-dom/client'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
@@ -16,7 +16,16 @@ export type Config = {
     component: (props: any) => JSX.Element
     name: string
     folder?: Array<string>
-    slots: { [key: string]: { default: Array<Block['id']>; name: string } }
+    slots: {
+      [key: string]: {
+        default: Array<Block['id']>
+        name: string
+        validation?: {
+          disabledComponents?: Array<string>
+          maxItems?: number
+        }
+      }
+    }
     props: { [key: string]: { default: any; type: string } }
   }
 }
@@ -35,7 +44,7 @@ const context = {
   getTree,
   duplicateTree,
   isBlock,
-  isExperience,
+  isPage,
   add,
   addMany,
   update,

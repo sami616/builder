@@ -5,7 +5,7 @@ import { DragData } from './useDrag'
 import { Edge } from './useDrop'
 
 export function useTemplateReorder() {
-  const context = useRouteContext({ from: '/experiences/$id' })
+  const context = useRouteContext({ from: '/pages/$id' })
   return {
     templateReorder: useMutation({
       mutationKey: ['canvas', 'template', 'reorder'],
