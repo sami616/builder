@@ -19,17 +19,25 @@ export function useBlockAdd() {
       }) => {
         const clonedParentNode = structuredClone(args.target.parent.node)
         const configItem = context.config[args.source.type]
-        const propKeys = Object.keys(configItem.props)
-        const slotKeys = Object.keys(configItem.slots)
         const slot = args.target.parent.slot
 
-        const defaultProps = propKeys.reduce((props, propKey) => {
-          return { ...props, [propKey]: configItem.props[propKey].default }
-        }, {})
+        let defaultProps: Record<string, any> = {}
 
-        const defaultSlots = slotKeys.reduce((blocks, slot) => {
-          return { ...blocks, [slot]: configItem.slots[slot].default }
-        }, {})
+        if (configItem.props) {
+          const propKeys = Object.keys(configItem.props)
+          defaultProps = propKeys.reduce((props, propKey) => {
+            return { ...props, [propKey]: configItem.props?.[propKey].default }
+          }, {})
+        }
+
+        let defaultSlots: Record<string, Array<Block['id']>> = {}
+
+        if (configItem.slots) {
+          const slotKeys = Object.keys(configItem.slots)
+          defaultSlots = slotKeys.reduce((blocks, slot) => {
+            return { ...blocks, [slot]: configItem.slots?.[slot].default }
+          }, {})
+        }
 
         const date = new Date()
         const blockId = await context.add({

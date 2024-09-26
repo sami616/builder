@@ -8,17 +8,21 @@ import { routeTree } from './routeTree.gen'
 import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Block } from './db'
+import './index.css'
+import { Toaster } from '@/components/ui/toaster'
 
 const queryClient = new QueryClient()
+
+export type PropTypes = 'string' | 'number'
 
 export type Config = {
   [key: string]: {
     component: (props: any) => JSX.Element
     name: string
     folder?: Array<string>
-    slots: {
+    slots?: {
       [key: string]: {
-        default: Array<Block['id']>
+        default?: Array<Block['id']>
         name: string
         validation?: {
           disabledComponents?: Array<string>
@@ -26,7 +30,7 @@ export type Config = {
         }
       }
     }
-    props: { [key: string]: { default: any; type: string } }
+    props?: { [key: string]: { name: string; default?: any; type: PropTypes } }
   }
 }
 
@@ -70,6 +74,7 @@ if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement)
   root.render(
     <StrictMode>
+      <Toaster />
       <QueryClientProvider client={queryClient}>
         <RouterProvider router={router} />
         <TanStackRouterDevtools initialIsOpen={false} router={router} />

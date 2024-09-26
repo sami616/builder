@@ -1,16 +1,16 @@
 import { useMutation } from '@tanstack/react-query'
 import { useRouteContext } from '@tanstack/react-router'
 import { useBlockGet } from '../utils/useBlockGet'
+import { Config, config, PropTypes } from '../main'
 
 export function PropsPanel(props: { activeBlockId: number; setActiveBlockId: (id: number | undefined) => void }) {
   const context = useRouteContext({ from: '/pages/$id' })
   const { blockGet } = useBlockGet({ id: props.activeBlockId })
 
-  const updateBlock = useMutation({
+  const updateBlockProps = useMutation({
     mutationFn: context.update,
-    mutationKey: ['updateBlock', blockGet.data.id],
+    mutationKey: ['block', 'update', 'props', blockGet.data.id],
     onError: (err, _data) => {
-      // Todo: show some kind of notification error
       console.error(err)
     },
     onSettled: async (id) => {
@@ -20,22 +20,48 @@ export function PropsPanel(props: { activeBlockId: number; setActiveBlockId: (id
     },
   })
 
-  const AB = updateBlock.isPending ? updateBlock.variables.entry : blockGet.data
+  // const AB = updateBlock.isPending ? updateBlock.variables.entry : blockGet.data
+
+  const block = blockGet.data
+  const configItem = config[block.type]
+  const configItemProps = configItem?.props
+
+  function renderInput(type: PropTypes, key: string) {
+    const defaultValue = block.props?.[key]
+    switch (type) {
+      case 'string': {
+        return (
+          <input
+            onChange={(e) => {
+              if (e.target.value.trim() === '') {
+                updateBlockProps.mutate({ entry: { ...block, props: { ...block.props, [key]: undefined } } })
+              } else {
+                updateBlockProps.mutate({ entry: { ...block, props: { ...block.props, [key]: e.target.value } } })
+              }
+            }}
+            defaultValue={defaultValue}
+            type="text"
+          />
+        )
+      }
+      case 'number': {
+        return <input defaultValue={defaultValue} type="number" />
+      }
+    }
+  }
 
   return (
     <div data-component="PropsPanel">
       <button onClick={() => props.setActiveBlockId(undefined)}>Close</button>
-      {<pre>{JSON.stringify(AB, null, 2)}</pre>}
-      {/*
-        <input
-        type="text"
-        onChange={(e) => {
-          activeBlock.props.children = e.target.value
-          updateBlock.mutate({ block: activeBlockCopy })
-        }}
-        value={AB?.props.children}
-      />
-          */}
+      {<pre>{JSON.stringify(block.props, null, 2)}</pre>}
+
+      {configItemProps &&
+        Object.keys(configItemProps).map((key) => (
+          <div>
+            <label>{configItemProps?.[key].name}</label>
+            {renderInput(configItemProps?.[key].type, key)}
+          </div>
+        ))}
     </div>
   )
 }

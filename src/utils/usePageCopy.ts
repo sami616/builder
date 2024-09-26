@@ -1,15 +1,18 @@
+import { Page } from '@/db'
+import { useToast } from '@/hooks/use-toast'
 import { useMutation } from '@tanstack/react-query'
 import { useRouteContext } from '@tanstack/react-router'
 
 export function usePageCopy() {
   const context = useRouteContext({ from: '/pages/' })
+  const { toast } = useToast()
   return {
     pageCopy: useMutation({
       mutationKey: ['page', 'copy'],
-      mutationFn: async (args: { root: Parameters<typeof context.getTree>[0]['root'] }) => {
+      mutationFn: async (args: { id: Page['id'] }) => {
         const idMap = new Map()
         let rootId = null
-        const entries = await context.getTree({ root: args.root })
+        const entries = await context.getTree({ root: { store: 'pages', id: args.id } })
 
         for (const entry of entries) {
           const clonedEntry = structuredClone(entry)
@@ -29,6 +32,10 @@ export function usePageCopy() {
       },
       onSuccess: async () => {
         context.queryClient.invalidateQueries({ queryKey: ['pages'] })
+        toast({ description: 'Page copied' })
+      },
+      onError: (e) => {
+        toast({ title: 'Page copy failed', variant: 'destructive', description: e?.message })
       },
     }),
   }

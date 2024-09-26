@@ -1,7 +1,6 @@
 import { useRef } from 'react'
 import { DropIndicator } from './DropIndicator'
 import { type Block, type Page } from '../db'
-import { useMutationState } from '@tanstack/react-query'
 import { useRouteContext } from '@tanstack/react-router'
 import { DragPreview } from './DragPreview'
 import { DropZone } from './DropZone'
@@ -16,6 +15,7 @@ import { useDrag } from '../utils/useDrag'
 import { useBlockMove } from '../utils/useBlockMove'
 import { config } from '../main'
 import { isBlock } from '../api'
+// import { useMutationState } from '@tanstack/react-query'
 
 export function BlockItem(props: {
   index: number
@@ -41,15 +41,17 @@ export function BlockItem(props: {
   const { blockMove } = useBlockMove()
   const { templateApply } = useTemplateApply()
 
-  const mutationState = useMutationState<Block>({
-    filters: {
-      mutationKey: ['updateBlock', props.blockId],
-      status: 'pending',
-    },
-    select: (data) => (data.state.variables as Record<'block', Block>).block,
-  })?.at(-1)
+  // const mutationState = useMutationState<Block>({
+  //   filters: {
+  //     mutationKey: ['updateBlock', props.blockId],
+  //     status: 'pending',
+  //   },
+  //   select: (data) => (data.state.variables as Record<'block', Block>).block,
+  // })?.at(-1)
 
-  const block = mutationState ?? blockGet.data
+  // const block = mutationState ?? blockGet.data
+
+  const block = blockGet.data
   const componentProps = block.props
 
   const { closestEdge } = useDrop({
@@ -88,7 +90,7 @@ export function BlockItem(props: {
     if (block.slots[slot].length === 0) {
       acc[slot] = (
         <DropZone
-          label={context.config[block.type].slots[slot].name}
+          label={context.config[block.type].slots?.[slot].name}
           data={{ parent: { slot, node: block } }}
           disableDrop={({ source, element }) => {
             try {
@@ -195,8 +197,8 @@ export function BlockItem(props: {
 }
 
 export function validateComponentSlots(args: { source: Record<string, any>; node: Block; slot: string; element: Element }) {
-  const disabledComponents = config[args.node.type].slots[args.slot].validation?.disabledComponents
-  const maxItems = config[args.node.type].slots[args.slot].validation?.maxItems
+  const disabledComponents = config[args.node.type].slots?.[args.slot].validation?.disabledComponents
+  const maxItems = config[args.node.type].slots?.[args.slot].validation?.maxItems
   const itemsLength = args.node.slots[args.slot].length
   const sourceEl = args.source.element.closest('[data-drop-target-for-element="true"]')
 

@@ -2,9 +2,11 @@ import { useMutation } from '@tanstack/react-query'
 import JSZip from 'jszip'
 import { type Page } from '../db'
 import { useRouteContext } from '@tanstack/react-router'
+import { useToast } from '@/hooks/use-toast'
 
 export function usePageExportMany() {
   const context = useRouteContext({ from: '/pages/' })
+  const { toast } = useToast()
   return {
     pageExportMany: useMutation({
       mutationKey: ['page', 'export'],
@@ -28,6 +30,12 @@ export function usePageExportMany() {
         const writableStream = await handle.createWritable()
         await writableStream.write(zipBlob)
         await writableStream.close()
+      },
+      onSuccess: async () => {
+        toast({ description: 'Pages exported' })
+      },
+      onError: (e) => {
+        toast({ title: 'Pages exporting failed', variant: 'destructive', description: e?.message })
       },
     }),
   }

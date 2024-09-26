@@ -2,6 +2,7 @@ import { useMutation } from '@tanstack/react-query'
 import { type ComponentProps } from 'react'
 import { BlockItem } from '../editor-components/BlockItem'
 import { useRouteContext } from '@tanstack/react-router'
+import { Block } from '@/db'
 
 export function useBlockCopy() {
   const context = useRouteContext({ from: '/pages/$id' })
@@ -9,12 +10,8 @@ export function useBlockCopy() {
   return {
     blockCopy: useMutation({
       mutationKey: ['canvas', 'block', 'copy'],
-      mutationFn: async (args: {
-        index: number
-        root: Parameters<typeof context.getTree>[0]['root']
-        parent: ComponentProps<typeof BlockItem>['parent']
-      }) => {
-        const tree = await context.getTree({ root: args.root })
+      mutationFn: async (args: { index: number; id: Block['id']; parent: ComponentProps<typeof BlockItem>['parent'] }) => {
+        const tree = await context.getTree({ root: { store: 'blocks', id: args.id } })
         const rootEntry = await context.duplicateTree({ tree })
         const clonedParent = structuredClone(args.parent.node)
         clonedParent.slots[args.parent.slot].splice(args.index + 1, 0, rootEntry.id)

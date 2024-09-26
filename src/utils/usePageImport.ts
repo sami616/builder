@@ -1,8 +1,10 @@
+import { useToast } from '@/hooks/use-toast'
 import { useMutation } from '@tanstack/react-query'
 import { useRouteContext } from '@tanstack/react-router'
 
 export function usePageImport() {
   const context = useRouteContext({ from: '/pages/' })
+  const { toast } = useToast()
   return {
     pageImport: useMutation({
       mutationKey: ['page', 'import'],
@@ -23,6 +25,10 @@ export function usePageImport() {
       },
       onSuccess: () => {
         context.queryClient.invalidateQueries({ queryKey: ['pages'] })
+        toast({ description: 'Page imported' })
+      },
+      onError: (e) => {
+        toast({ title: 'Page import failed', variant: 'destructive', description: e?.message })
       },
     }),
   }

@@ -1,6 +1,16 @@
 import { type Block, type Page, Template, db, type DB } from './db'
 
+export async function slow(delay: number = 0) {
+  return new Promise((resolve) => setTimeout(resolve, delay))
+}
+
+export async function error(show: boolean = false) {
+  if (show) throw new Error('Something went wrong')
+}
+
 export async function get<Store extends keyof DB>(args: { store: Store; id: DB[Store]['value']['id'] }): Promise<DB[Store]['value']> {
+  await slow()
+  error()
   const tx = db.transaction(args.store, 'readonly')
   const [entry] = await Promise.all([tx.store.get(args.id), tx.done])
   if (!entry) throw new Error('Entry not found')
@@ -18,6 +28,8 @@ export async function getMany<Store extends keyof DB, Indexes extends keyof DB[S
   store: Store
   sortBy: [Indexes, SortBy]
 }): Promise<Array<DB[Store]['value']>> {
+  await slow()
+  error()
   const entries = []
   const tx = db.transaction(args.store, 'readonly')
 
@@ -36,6 +48,8 @@ type Root = { [K in keyof DB]: { store: K; id: DB[K]['value']['id'] } }[keyof DB
 
 // getTree
 export async function getTree({ entries = [], ...args }: { root: Root; entries?: Array<Block | Page | Template> }) {
+  await slow()
+  error()
   const entry = await get({ id: args.root.id, store: args.root.store })
   const slots = Object.keys(entry.slots)
   for (const key of slots) {
@@ -48,6 +62,8 @@ export async function getTree({ entries = [], ...args }: { root: Root; entries?:
 }
 
 export async function duplicateTree(args: { tree: Awaited<ReturnType<typeof getTree>> }) {
+  await slow()
+  error()
   const idMap = new Map()
   let rootEntry = null
 
@@ -74,6 +90,8 @@ export async function duplicateTree(args: { tree: Awaited<ReturnType<typeof getT
 
 // add
 export async function add(args: { entry: Omit<Page, 'id'> | Omit<Block, 'id'> | Omit<Template, 'id'> }) {
+  await slow()
+  error()
   const tx = db.transaction(args.entry.store, 'readwrite')
   const [id] = await Promise.all([tx.store.add(args.entry as Block | Page | Template), tx.done])
   return id
@@ -81,6 +99,8 @@ export async function add(args: { entry: Omit<Page, 'id'> | Omit<Block, 'id'> | 
 
 // addMany
 export async function addMany(args: { entries: Array<Page | Block | Template> }) {
+  await slow()
+  error()
   const expTx = db.transaction('pages', 'readwrite')
   const bloTx = db.transaction('blocks', 'readwrite')
   const tempTx = db.transaction('templates', 'readwrite')
@@ -96,6 +116,8 @@ export async function addMany(args: { entries: Array<Page | Block | Template> })
 
 // update
 export async function update(args: { entry: Page | Block | Template }) {
+  await slow()
+  error()
   const tx = db.transaction(args.entry.store, 'readwrite')
   const [id] = await Promise.all([tx.store.put(args.entry), tx.done])
   return id
@@ -103,6 +125,8 @@ export async function update(args: { entry: Page | Block | Template }) {
 
 // updateMany
 export async function updateMany(args: { entries: Array<Page | Block | Template> }) {
+  await slow()
+  error()
   const expTx = db.transaction('pages', 'readwrite')
   const bloTx = db.transaction('blocks', 'readwrite')
   const tempTx = db.transaction('templates', 'readwrite')
@@ -118,12 +142,15 @@ export async function updateMany(args: { entries: Array<Page | Block | Template>
 
 // remove
 export async function remove(args: { entry: Page | Block | Template }) {
+  await slow()
   const tx = db.transaction(args.entry.store, 'readwrite')
   await Promise.all([tx.store.delete(args.entry.id), tx.done])
 }
 
 // removeMany
 export async function removeMany(args: { entries: Array<Page | Block | Template> }) {
+  await slow()
+  error()
   const expTx = db.transaction('pages', 'readwrite')
   const bloTx = db.transaction('blocks', 'readwrite')
   const tempTx = db.transaction('templates', 'readwrite')

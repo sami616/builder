@@ -1,9 +1,11 @@
 import { useMutation } from '@tanstack/react-query'
+import { useToast } from '@/hooks/use-toast'
 import { Page } from '../db'
 import { useRouteContext } from '@tanstack/react-router'
 
 export function usePageExport() {
   const context = useRouteContext({ from: '/pages/' })
+  const { toast } = useToast()
   return {
     pageExport: useMutation({
       mutationKey: ['page', 'export'],
@@ -19,6 +21,12 @@ export function usePageExport() {
         await writableStream.write(JSON.stringify(tree, null, 2))
         await writableStream.close()
         return tree
+      },
+      onSuccess: async () => {
+        toast({ description: 'Page exported' })
+      },
+      onError: (e) => {
+        toast({ title: 'Page exporting failed', variant: 'destructive', description: e?.message })
       },
     }),
   }

@@ -51,7 +51,7 @@ export function BlockLayerItemSlot(props: {
 
   return (
     <details open={hasSlotEntries} style={{ outline: isDraggingOver ? '2px solid red' : 'none' }} ref={ref}>
-      <summary>{context.config[props.block.type].slots[props.slot].name}</summary>
+      <summary>{context.config[props.block.type].slots?.[props.slot].name}</summary>
       <ul>
         {props.block.slots[props.slot].map((blockId, index) => (
           <BlockLayerItem

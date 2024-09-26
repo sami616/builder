@@ -19,8 +19,8 @@ export const buttonConfig: Config = {
     folder: ['UI', 'Elements'],
     slots: {},
     props: {
-      children: { default: 'Button', type: 'string' },
-      icon: { default: undefined, type: 'string' },
+      children: { name: 'Children', type: 'string' },
+      icon: { name: 'Icon', default: undefined, type: 'string' },
     },
   },
 }

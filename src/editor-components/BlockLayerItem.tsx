@@ -133,9 +133,7 @@ export function BlockLayerItem(props: {
           <>
             {blockGet.data.name}
             <button onClick={() => blockDelete.mutate({ blockId: blockGet.data.id, index: props.index, parent: props.parent })}>del</button>
-            <button onClick={() => blockCopy.mutate({ index: props.index, root: { store: 'blocks', id: props.blockId }, parent: props.parent })}>
-              dup
-            </button>
+            <button onClick={() => blockCopy.mutate({ index: props.index, id: props.blockId, parent: props.parent })}>dup</button>
             <span ref={dragRef}>move</span>
           </>
         )}
