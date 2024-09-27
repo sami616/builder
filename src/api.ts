@@ -1,4 +1,4 @@
-import { type Block, type Page, Template, db, type DB } from './db'
+import { type Block, type Page, type Template, db, type DB } from './db'
 
 export async function slow(delay: number = 0) {
   return new Promise((resolve) => setTimeout(resolve, delay))
