@@ -1,19 +1,21 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { pageGetManyOpts, usePageGetMany } from '../utils/usePageGetMany'
+import { pageGetManyOpts, usePageGetMany } from '@/hooks/usePageGetMany'
 import { Skeleton } from '@/components/ui/skeleton'
-import { PageTable } from '@/editor-components/PageTable'
+import { PageTable } from '@/components/editor/PageTable'
 
 // Route
 export const Route = createFileRoute('/pages/')({
   component: Pages,
   loader: ({ context }) => context.queryClient.ensureQueryData(pageGetManyOpts({ context })),
+  // Todo: nice skeleton table
   pendingComponent: () => (
     <div className="m-2">
       <Skeleton className="w-full h-14 mt-4 mb-4" />
       <Skeleton className="w-full h-svh" />
     </div>
   ),
-  errorComponent: () => <p>Error!</p>,
+  // Todo: nice error ui
+  errorComponent: () => null,
 })
 
 // Route Component

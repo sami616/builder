@@ -5,9 +5,9 @@ export const db = await openDB<MyDB>('pageManager', 1, {
     // create a store of objects if it doesnt already exist
     if (!db.objectStoreNames.contains('pages')) {
       const store = db.createObjectStore('pages', { keyPath: 'id', autoIncrement: true })
-
       store.createIndex('createdAt', 'createdAt', { unique: false })
       store.createIndex('updatedAt', 'updatedAt', { unique: false })
+      store.createIndex('slug', 'slug', { unique: true })
     }
 
     if (!db.objectStoreNames.contains('blocks')) {
@@ -41,6 +41,7 @@ export type DB = {
     indexes: {
       createdAt: Page['createdAt']
       updatedAt: Page['updatedAt']
+      slug: Page['slug']
     }
   }
   blocks: {
@@ -65,6 +66,7 @@ export type Page = {
   store: 'pages'
   name: string
   status: 'published' | 'draft' | 'changed'
+  slug: string
   slots: { [index: string]: Array<Block['id']> }
 } & Sys
 

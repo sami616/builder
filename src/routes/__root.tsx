@@ -1,5 +1,5 @@
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
-import { type Context } from '../main'
+import { type Context } from '@/main'
 import {
   NavigationMenu,
   NavigationMenuItem,
