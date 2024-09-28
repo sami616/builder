@@ -8,6 +8,7 @@ import { useTemplateApply } from '@/hooks/useTemplateApply'
 import { BlockLayerItem } from '@/components/editor/BlockLayerItem'
 import { useBlockMove } from '@/hooks/useBlockMove'
 import { validateComponentSlots } from '@/components/editor/BlockItem'
+import { Missing } from './Missing'
 
 export function BlockLayerItemSlot(props: {
   block: Block
@@ -49,7 +50,7 @@ export function BlockLayerItemSlot(props: {
 
   const hasSlotEntries = props.block.slots[props.slot].length > 0
 
-  if (!context.config[props.block.type]?.slots?.[props.slot]) return <p>MISSING SLOT</p>
+  if (!context.config[props.block.type]?.slots?.[props.slot]) return <Missing node={{ type: 'slot', name: props.slot }} />
 
   return (
     <details open={hasSlotEntries} style={{ outline: isDraggingOver ? '2px solid red' : 'none' }} ref={ref}>

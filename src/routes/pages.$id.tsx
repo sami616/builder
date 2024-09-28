@@ -42,7 +42,7 @@ function Page() {
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
 
   return (
-    <div data-component="pages.$id">
+    <div data-component="pages.$id" className="p-4">
       {/* Edit page meta data */}
       <div>
         <p>{pageGet.data.name}</p>
@@ -65,11 +65,8 @@ function Page() {
 
       <Suspense fallback={<p>Loading...</p>}>
         <main>
-          <aside>
-            <details open name="components">
-              <summary>Components</summary>
-              <ComponentPanel page={pageGet.data} />
-            </details>
+          <aside className="grid gap-4">
+            <ComponentPanel page={pageGet.data} />
             <details open name="layers">
               <summary>Layers</summary>
               <BlockLayerPanel

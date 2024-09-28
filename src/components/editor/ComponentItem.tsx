@@ -1,12 +1,16 @@
 import { type Page, type Block } from '@/db'
 import { Config } from '@/main'
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { DragPreview } from '@/components/editor/DragPreview'
 import { NestedStructure } from '@/components/editor/ComponentPanel'
 import { useDrag } from '@/hooks/useDrag'
+import { Tree } from '@/components/ui/tree'
+import { Folder, FolderOpen, Component } from 'lucide-react'
 
 export function ComponentItem(props: { page: Page; type: Block['type']; value: NestedStructure | Config[keyof Config] }) {
   const dragRef = useRef<HTMLLIElement>(null)
+  const [isOpen, setIsOpen] = useState(false)
+  const treeRef = useRef<HTMLDetailsElement>(null)
   const { isDraggingSource, dragPreviewContainer } = useDrag({
     dragRef,
     data: {
@@ -15,13 +19,37 @@ export function ComponentItem(props: { page: Page; type: Block['type']; value: N
     },
   })
 
+  useEffect(() => {
+    const detailsElement = treeRef.current
+
+    if (detailsElement) {
+      setIsOpen(detailsElement?.open)
+      const handleToggle = () => setIsOpen(detailsElement.open)
+
+      // Add event listener to the <details> element
+      detailsElement.addEventListener('toggle', handleToggle)
+
+      // Clean up event listener on unmount
+      return () => {
+        detailsElement.removeEventListener('toggle', handleToggle)
+      }
+    }
+  }, [])
+
   const isLeaf = typeof props.value === 'object' && 'component' in props.value
 
   if (!isLeaf)
     return (
-      <details>
-        <summary>{props.type}</summary>
-        <ul>
+      <details ref={treeRef}>
+        <summary className="group p-1 flex gap-2 items-center">
+          {isOpen ? (
+            <FolderOpen className="size-4 opacity-40 group-hover:opacity-100" />
+          ) : (
+            <Folder className="size-4 opacity-40 group-hover:opacity-100" />
+          )}
+          {props.type}
+        </summary>
+        <ul className="ml-2 pl-2 border-l border-gray-200 border-dashed">
           {Object.entries(props.value as NestedStructure).map(([key, value]) => (
             <ComponentItem value={value} key={key} type={key as Block['type']} page={props.page} />
           ))}
@@ -35,7 +63,8 @@ export function ComponentItem(props: { page: Page; type: Block['type']; value: N
 
   return (
     <>
-      <li data-component="ComponentItem" ref={dragRef} style={style} key={props.type}>
+      <li className="group p-1 flex gap-2 items-center" data-component="ComponentItem" ref={dragRef} style={style} key={props.type}>
+        <Component className="group-hover:opacity-40 size-4 opacity-20" />
         {props.type}
       </li>
       <DragPreview dragPreviewContainer={dragPreviewContainer}>Add {props.type} ➕</DragPreview>

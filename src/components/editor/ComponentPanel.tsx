@@ -8,11 +8,14 @@ export function ComponentPanel(props: { page: Page }) {
   const structure = nestFolders(context.config)
 
   return (
-    <ul data-component="ComponentPanel">
-      {Object.entries(structure).map(([key, value]) => {
-        return <ComponentItem value={value} key={key} type={key as Block['type']} page={props.page} />
-      })}
-    </ul>
+    <div>
+      <h3>Components</h3>
+      <ul data-component="ComponentPanel">
+        {Object.entries(structure).map(([key, value]) => {
+          return <ComponentItem value={value} key={key} type={key as Block['type']} page={props.page} />
+        })}
+      </ul>
+    </div>
   )
 }
 
