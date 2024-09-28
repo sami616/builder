@@ -1,12 +1,23 @@
-import { ReactNode, useEffect, useRef, useState } from 'react'
+import { HTMLProps, ReactNode, RefObject, useEffect, useRef, useState } from 'react'
 
-export function Tree(props: { label: ReactNode; openIcon: JSX.Element; closedIcon: JSX.Element; children: JSX.Element }) {
+export function Tree(props: {
+  label: ReactNode
+  openIcon: JSX.Element
+  closedIcon: JSX.Element
+  children: JSX.Element
+  detailsProps?: HTMLProps<HTMLDetailsElement>
+  detailsRef?: RefObject<HTMLDetailsElement>
+  summaryProps?: HTMLProps<HTMLElement>
+  summaryRef?: RefObject<HTMLElement>
+}) {
   const treeRef = useRef<HTMLDetailsElement>(null)
+
+  const ref = props.detailsRef ?? treeRef
 
   const [isOpen, setIsOpen] = useState(false)
 
   useEffect(() => {
-    const detailsElement = treeRef.current
+    const detailsElement = ref.current
 
     if (detailsElement) {
       setIsOpen(detailsElement?.open)
@@ -22,12 +33,12 @@ export function Tree(props: { label: ReactNode; openIcon: JSX.Element; closedIco
     }
   }, [])
   return (
-    <details ref={treeRef}>
-      <summary className="group p-1 flex gap-2 items-center">
+    <details {...props.detailsProps} ref={ref} className={`${props.detailsProps?.className ?? ''}`}>
+      <summary ref={props.summaryRef} {...props.summaryProps} className={`${props.summaryProps?.className ?? ''} flex p-1 gap-2 items-center`}>
         {isOpen ? props.openIcon : props.closedIcon}
         {props.label}
       </summary>
-      {props.children}
+      <ul className="ml-2 pl-2 border-l border-gray-200 border-dashed">{props.children}</ul>
     </details>
   )
 }

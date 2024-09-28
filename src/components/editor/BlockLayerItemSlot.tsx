@@ -9,6 +9,8 @@ import { BlockLayerItem } from '@/components/editor/BlockLayerItem'
 import { useBlockMove } from '@/hooks/useBlockMove'
 import { validateComponentSlots } from '@/components/editor/BlockItem'
 import { Missing } from './Missing'
+import { Tree } from '../ui/tree'
+import { Folder, FolderOpen } from 'lucide-react'
 
 export function BlockLayerItemSlot(props: {
   block: Block
@@ -53,9 +55,15 @@ export function BlockLayerItemSlot(props: {
   if (!context.config[props.block.type]?.slots?.[props.slot]) return <Missing node={{ type: 'slot', name: props.slot }} />
 
   return (
-    <details open={hasSlotEntries} style={{ outline: isDraggingOver ? '2px solid red' : 'none' }} ref={ref}>
-      <summary>{context.config[props.block.type].slots?.[props.slot].name}</summary>
-      <ul>
+    <Tree
+      openIcon={<FolderOpen className="size-4 opacity-40 group-hover:opacity-100" />}
+      closedIcon={<Folder className="size-4 opacity-40 group-hover:opacity-100" />}
+      summaryProps={{ className: 'group' }}
+      detailsProps={{ open: hasSlotEntries }}
+      detailsRef={ref}
+      label={context.config[props.block.type].slots?.[props.slot].name}
+    >
+      <>
         {props.block.slots[props.slot].map((blockId, index) => (
           <BlockLayerItem
             activeBlockId={props.activeBlockId}
@@ -67,7 +75,7 @@ export function BlockLayerItemSlot(props: {
             key={blockId}
           />
         ))}
-      </ul>
-    </details>
+      </>
+    </Tree>
   )
 }

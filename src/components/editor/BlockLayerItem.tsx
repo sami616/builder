@@ -14,6 +14,7 @@ import { BlockLayerItemSlot } from '@/components/editor/BlockLayerItemSlot'
 import { useBlockAdd } from '@/hooks/useBlockAdd'
 import { useBlockMove } from '@/hooks/useBlockMove'
 import { isBlock } from '@/api'
+import { Layers2 } from 'lucide-react'
 import { validateComponentSlots } from '@/components/editor/BlockItem'
 
 export function BlockLayerItem(props: {
@@ -130,12 +131,13 @@ export function BlockLayerItem(props: {
           </form>
         )}
         {!isRenaming && (
-          <>
+          <div className="group flex gap-2 items-center">
+            <Layers2 className="size-4 opacity-40" />
             {blockGet.data.name}
             <button onClick={() => blockDelete.mutate({ blockId: blockGet.data.id, index: props.index, parent: props.parent })}>del</button>
             <button onClick={() => blockCopy.mutate({ index: props.index, id: props.blockId, parent: props.parent })}>dup</button>
             <span ref={dragRef}>move</span>
-          </>
+          </div>
         )}
       </>
 

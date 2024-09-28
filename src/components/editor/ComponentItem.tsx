@@ -38,24 +38,22 @@ export function ComponentItem(props: { page: Page; type: Block['type']; value: N
 
   const isLeaf = typeof props.value === 'object' && 'component' in props.value
 
-  if (!isLeaf)
+  if (!isLeaf) {
     return (
-      <details ref={treeRef}>
-        <summary className="group p-1 flex gap-2 items-center">
-          {isOpen ? (
-            <FolderOpen className="size-4 opacity-40 group-hover:opacity-100" />
-          ) : (
-            <Folder className="size-4 opacity-40 group-hover:opacity-100" />
-          )}
-          {props.type}
-        </summary>
-        <ul className="ml-2 pl-2 border-l border-gray-200 border-dashed">
+      <Tree
+        openIcon={<FolderOpen className="size-4 opacity-40 group-hover:opacity-100" />}
+        closedIcon={<Folder className="size-4 opacity-40 group-hover:opacity-100" />}
+        summaryProps={{ className: 'group' }}
+        label={props.type}
+      >
+        <>
           {Object.entries(props.value as NestedStructure).map(([key, value]) => (
             <ComponentItem value={value} key={key} type={key as Block['type']} page={props.page} />
           ))}
-        </ul>
-      </details>
+        </>
+      </Tree>
     )
+  }
 
   const style = {
     opacity: isDraggingSource ? 0.5 : 1,
