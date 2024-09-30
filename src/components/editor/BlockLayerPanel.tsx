@@ -9,6 +9,7 @@ export function BlockLayerPanel(props: {
   page: Page
   hoveredBlockId?: Block['id']
   setHoveredBlockId: (id: Block['id'] | undefined) => void
+  setActiveBlockId: (id: Block['id'] | undefined) => void
   activeBlockId?: Block['id']
 }) {
   const { blockAdd } = useBlockAdd()
@@ -37,6 +38,7 @@ export function BlockLayerPanel(props: {
         <BlockLayerItem
           activeBlockId={props.activeBlockId}
           setHoveredBlockId={props.setHoveredBlockId}
+          setActiveBlockId={props.setActiveBlockId}
           hoveredBlockId={props.hoveredBlockId}
           parent={{ node: props.page, slot: 'root' }}
           index={index}

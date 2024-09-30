@@ -146,6 +146,7 @@ export function BlockItem(props: {
       data-hovered={isHoveredBlock}
       data-dragging={isDraggingSource}
       data-component="BlockItem"
+      data-drop-id={`block-${blockGet.data.id}`}
       onDoubleClick={(e) => {
         e.stopPropagation()
         props.setActiveBlockId(props.blockId)
@@ -203,10 +204,23 @@ export function validateComponentSlots(args: { source: Record<string, any>; node
   const disabledComponents = config[args.node.type].slots?.[args.slot].validation?.disabledComponents
   const maxItems = config[args.node.type].slots?.[args.slot].validation?.maxItems
   const itemsLength = args.node.slots[args.slot].length
-  const sourceEl = args.source.element.closest('[data-drop-target-for-element="true"]')
 
-  if (sourceEl?.parentElement?.closest('[data-drop-target-for-element="true"]') === args.element) {
-    throw new Error(`Component is already in this slot`)
+  // disallow a component to be dropped into itself or any of its children
+  if (isDragData['block'](args.source.data)) {
+    const sourceId = args.source.element.closest('[data-drop-id^="block"]')?.getAttribute('data-drop-id')
+
+    const targetEl = args.element.closest('[data-drop-id^="block"]')
+    const targetId = targetEl?.getAttribute('data-drop-id')
+
+    const commonParent = targetEl?.closest(`[data-drop-id="${sourceId}"]`)
+    const dropSourceId = commonParent?.getAttribute('data-drop-id')
+
+    const commonChild = commonParent?.querySelector(`[data-drop-id="${targetId}"]`)
+    const childOrSelf = dropSourceId === targetId ? commonParent : commonChild
+
+    if (childOrSelf) {
+      if (commonParent?.contains(childOrSelf)) return false
+    }
   }
 
   if (maxItems) {

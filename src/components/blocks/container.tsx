@@ -18,14 +18,7 @@ export const containerConfig: Config = {
     name: 'Container',
     folder: ['UI', 'Elements', 'Layout'],
     slots: {
-      left: {
-        default: [],
-        name: 'Left',
-        validation: {
-          disabledComponents: Object.keys(headingConfig),
-          maxItems: 2,
-        },
-      },
+      left: { default: [], name: 'Left' },
       right: { default: [], name: 'Right' },
     },
     props: {

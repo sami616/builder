@@ -15,6 +15,8 @@ import { useBlockAdd } from '@/hooks/useBlockAdd'
 import { useTemplateApply } from '@/hooks/useTemplateApply'
 import { useIsMutating } from '@tanstack/react-query'
 import '@/routes/pages.$id.css'
+import { Separator } from '@/components/ui/separator'
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 
 export const Route = createFileRoute('/pages/$id')({
   component: Page,
@@ -38,6 +40,7 @@ function Page() {
   const { templateApply } = useTemplateApply()
   const { pageUpdateName } = usePageUpdateName()
   const blocks = Object.values(pageGet.data.slots)[0]
+  const [activeTab, setActiveTab] = useState('components')
 
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
 
@@ -66,22 +69,35 @@ function Page() {
       <Suspense fallback={<p>Loading...</p>}>
         <main>
           <aside className="grid gap-4">
-            <ComponentPanel page={pageGet.data} />
-            <details open name="layers">
-              <summary>Layers</summary>
-              <BlockLayerPanel
-                activeBlockId={activeBlockId}
-                hoveredBlockId={hoveredBlockId}
-                setHoveredBlockId={setHoveredBlockId}
-                page={pageGet.data}
-              />
-            </details>
-            <details open name="templates">
-              <summary>Templates</summary>
-              {<TemplatePanel templates={templateGetMany.data} />}
-            </details>
+            <Tabs defaultValue="components" value={activeTab} onValueChange={setActiveTab} className="w-full">
+              <TabsList className="w-full">
+                <TabsTrigger className="grow" value="components">
+                  Components
+                </TabsTrigger>
+                <TabsTrigger className="grow" value="layers">
+                  Layers
+                </TabsTrigger>
+                <TabsTrigger className="grow" value="templates">
+                  Templates
+                </TabsTrigger>
+              </TabsList>
+              <TabsContent hidden={activeTab !== 'components'} forceMount value="components">
+                <ComponentPanel page={pageGet.data} />
+              </TabsContent>
+              <TabsContent hidden={activeTab !== 'layers'} forceMount value="layers">
+                <BlockLayerPanel
+                  activeBlockId={activeBlockId}
+                  hoveredBlockId={hoveredBlockId}
+                  setActiveBlockId={setActiveBlockId}
+                  setHoveredBlockId={setHoveredBlockId}
+                  page={pageGet.data}
+                />
+              </TabsContent>
+              <TabsContent hidden={activeTab !== 'templates'} forceMount value="templates">
+                <TemplatePanel templates={templateGetMany.data} />
+              </TabsContent>
+            </Tabs>
           </aside>
-          {}
           <div>
             {isCanvasMutating && <div>Updating...</div>}
             {blocks.length === 0 && (

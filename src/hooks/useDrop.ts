@@ -2,6 +2,7 @@ import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element
 import { useState, useEffect, type RefObject } from 'react'
 import { DropTargetRecord, ElementDragPayload, type Input } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types'
 import { useIsMutating } from '@tanstack/react-query'
+import { isDragData } from './useDrag'
 
 export type Target<Data extends Record<string, any>> = Omit<DropTargetRecord, 'data'> & { data: WithEdge<Data> }
 
@@ -54,11 +55,26 @@ export function useDrop<Data extends Record<string, any>>(props: {
         setClosestEdge(null)
       },
       canDrop: ({ source, element, input }) => {
-        const sourceEl = source.element.closest('[data-drop-target-for-element="true"]')
+        if (isDragData['block'](source.data)) {
+          const sourceId = source.element.closest('[data-drop-id^="block"]')?.getAttribute('data-drop-id')
+
+          const targetEl = element.closest('[data-drop-id^="block"]')
+          const targetId = targetEl?.getAttribute('data-drop-id')
+
+          const commonParent = targetEl?.closest(`[data-drop-id="${sourceId}"]`)
+          const dropSourceId = commonParent?.getAttribute('data-drop-id')
+
+          const commonChild = commonParent?.querySelector(`[data-drop-id="${targetId}"]`)
+          const childOrSelf = dropSourceId === targetId ? commonParent : commonChild
+
+          if (childOrSelf) {
+            if (commonParent?.contains(childOrSelf)) return false
+          }
+        }
 
         // Common
         // - stop dragging inside child droppables
-        if (sourceEl?.contains(element)) return false
+        //   if (sourceEl?.contains(element)) return false
 
         if (isCanvasMutating) return false
 

@@ -14,8 +14,23 @@ import { BlockLayerItemSlot } from '@/components/editor/BlockLayerItemSlot'
 import { useBlockAdd } from '@/hooks/useBlockAdd'
 import { useBlockMove } from '@/hooks/useBlockMove'
 import { isBlock } from '@/api'
-import { Layers2 } from 'lucide-react'
+import {
+  Folder,
+  ChevronDown,
+  ChevronUp,
+  ChevronRight,
+  FolderOpen,
+  Layers2,
+  Trash,
+  FileDown,
+  Copy,
+  Loader2,
+  GripVertical,
+  FolderPlus,
+} from 'lucide-react'
 import { validateComponentSlots } from '@/components/editor/BlockItem'
+import { Tree } from '../ui/tree'
+import { Button } from '../ui/button'
 
 export function BlockLayerItem(props: {
   blockId: Block['id']
@@ -23,6 +38,7 @@ export function BlockLayerItem(props: {
   parent: { slot: string; node: Block } | { slot: string; node: Page }
   hoveredBlockId?: Block['id']
   setHoveredBlockId: (id: Block['id'] | undefined) => void
+  setActiveBlockId: (id: Block['id'] | undefined) => void
   activeBlockId?: Block['id']
 }) {
   const dragRef = useRef<HTMLLIElement>(null)
@@ -87,26 +103,10 @@ export function BlockLayerItem(props: {
       inputRef.current?.select()
     }
   }, [isRenaming])
-
-  return (
-    <li
-      style={{ opacity: isDraggingSource ? 0.5 : 1, color: isActiveBlock ? 'blue' : isHoveredBlock ? 'red' : 'unset' }}
-      data-component="BlockLayerItem"
-      onMouseOver={(e) => {
-        e.stopPropagation()
-        props.setHoveredBlockId(props.blockId)
-      }}
-      onMouseOut={(e) => {
-        e.stopPropagation()
-        props.setHoveredBlockId(undefined)
-      }}
-      onDoubleClick={(e) => {
-        e.stopPropagation()
-        setIsRenaming(true)
-      }}
-      ref={dropRef}
-    >
-      <>
+  const slotKeys = Object.keys(blockGet.data.slots)
+  const item = (
+    <div className="group flex gap-2 items-center justify-between w-full">
+      <div className="flex items-center gap-2">
         {isRenaming && (
           <form
             onSubmit={async (e) => {
@@ -130,28 +130,89 @@ export function BlockLayerItem(props: {
             />
           </form>
         )}
+
         {!isRenaming && (
-          <div className="group flex gap-2 items-center">
-            <Layers2 className="size-4 opacity-40" />
+          <span
+            onDoubleClick={(e) => {
+              e.stopPropagation()
+              setIsRenaming(true)
+            }}
+          >
             {blockGet.data.name}
-            <button onClick={() => blockDelete.mutate({ blockId: blockGet.data.id, index: props.index, parent: props.parent })}>del</button>
-            <button onClick={() => blockCopy.mutate({ index: props.index, id: props.blockId, parent: props.parent })}>dup</button>
-            <span ref={dragRef}>move</span>
-          </div>
+          </span>
         )}
+      </div>
+      <div className="group-hover:opacity-100 opacity-100 flex items-center">
+        {
+          // <Button
+          //   variant="ghost"
+          //   size="icon"
+          //   onClick={() => blockDelete.mutate({ blockId: blockGet.data.id, index: props.index, parent: props.parent })}
+          // >
+          //   <Trash
+          //     onClick={() => blockDelete.mutate({ blockId: blockGet.data.id, index: props.index, parent: props.parent })}
+          //     className="size-4 opacity-40"
+          //   />
+          // </Button>
+          // <Button variant="ghost" size="icon" onClick={() => blockCopy.mutate({ index: props.index, id: props.blockId, parent: props.parent })}>
+          //   <Copy className="size-4 opacity-40" />
+          // </Button>
+        }
+        <span ref={dragRef} className="cursor-move">
+          <GripVertical className="size-4 opacity-40" />
+        </span>
+      </div>
+    </div>
+  )
+
+  return (
+    <li
+      data-drop-id={`block-${blockGet.data.id}`}
+      // style={{ opacity: isDraggingSource ? 0.5 : 1, color: isActiveBlock ? 'blue' : isHoveredBlock ? 'red' : 'unset' }}
+      className={`hover:bg-gray-100 ${isActiveBlock ? 'hover:bg-gray-300' : ''} text-sm ${isDraggingSource ? 'opacity-50' : 'opacity-100'} ${isActiveBlock ? 'bg-gray-200' : 'bg-white'} rounded-lg p-2`}
+      data-component="BlockLayerItem"
+      onClick={(e) => {
+        e.stopPropagation()
+        props.setActiveBlockId(props.blockId)
+      }}
+      onMouseOver={(e) => {
+        e.stopPropagation()
+        props.setHoveredBlockId(props.blockId)
+      }}
+      onMouseOut={(e) => {
+        e.stopPropagation()
+        props.setHoveredBlockId(undefined)
+      }}
+      ref={dropRef}
+    >
+      <>
+        {slotKeys.length > 0 && (
+          <Tree
+            openIcon={<ChevronDown className="size-4 opacity-40" />}
+            closedIcon={<ChevronRight className="opacity-40 size-4" />}
+            key={blockGet.data.id}
+            label={item}
+          >
+            <>
+              {Object.keys(blockGet.data.slots).map((slot) => (
+                <BlockLayerItemSlot
+                  activeBlockId={props.activeBlockId}
+                  setActiveBlockId={props.setActiveBlockId}
+                  hoveredBlockId={props.hoveredBlockId}
+                  setHoveredBlockId={props.setHoveredBlockId}
+                  key={slot}
+                  slot={slot}
+                  block={blockGet.data}
+                  parent={props.parent}
+                />
+              ))}
+            </>
+          </Tree>
+        )}
+
+        {slotKeys.length === 0 && item}
       </>
 
-      {Object.keys(blockGet.data.slots).map((slot) => (
-        <BlockLayerItemSlot
-          activeBlockId={props.activeBlockId}
-          hoveredBlockId={props.hoveredBlockId}
-          setHoveredBlockId={props.setHoveredBlockId}
-          key={slot}
-          slot={slot}
-          block={blockGet.data}
-          parent={props.parent}
-        />
-      ))}
       <DropIndicator closestEdge={closestEdge} variant="horizontal" />
       <DragPreview dragPreviewContainer={dragPreviewContainer}>Move {blockGet.data.name} ↕</DragPreview>
     </li>

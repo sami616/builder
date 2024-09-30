@@ -10,7 +10,7 @@ import { useBlockMove } from '@/hooks/useBlockMove'
 import { validateComponentSlots } from '@/components/editor/BlockItem'
 import { Missing } from './Missing'
 import { Tree } from '../ui/tree'
-import { Folder, FolderOpen } from 'lucide-react'
+import { ChevronUp, ChevronRight, ChevronDown, Folder, FolderClosed, FolderOpen, FolderPlus } from 'lucide-react'
 
 export function BlockLayerItemSlot(props: {
   block: Block
@@ -18,6 +18,7 @@ export function BlockLayerItemSlot(props: {
   parent: ComponentProps<typeof BlockLayerItem>['parent']
   hoveredBlockId?: Block['id']
   setHoveredBlockId: (id: Block['id'] | undefined) => void
+  setActiveBlockId: (id: Block['id'] | undefined) => void
   activeBlockId?: Block['id']
 }) {
   const ref = useRef<HTMLDetailsElement>(null)
@@ -56,9 +57,9 @@ export function BlockLayerItemSlot(props: {
 
   return (
     <Tree
-      openIcon={<FolderOpen className="size-4 opacity-40 group-hover:opacity-100" />}
-      closedIcon={<Folder className="size-4 opacity-40 group-hover:opacity-100" />}
-      summaryProps={{ className: 'group' }}
+      openIcon={<ChevronDown className="size-4 opacity-40 group-hover:opacity-100" />}
+      closedIcon={<ChevronRight className="size-4 opacity-40 group-hover:opacity-100" />}
+      summaryProps={{ className: `group ${isDraggingOver ? 'bg-slate-100' : ''}` }}
       detailsProps={{ open: hasSlotEntries }}
       detailsRef={ref}
       label={context.config[props.block.type].slots?.[props.slot].name}
@@ -66,6 +67,7 @@ export function BlockLayerItemSlot(props: {
       <>
         {props.block.slots[props.slot].map((blockId, index) => (
           <BlockLayerItem
+            setActiveBlockId={props.setActiveBlockId}
             activeBlockId={props.activeBlockId}
             hoveredBlockId={props.hoveredBlockId}
             setHoveredBlockId={props.setHoveredBlockId}
