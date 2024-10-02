@@ -14,7 +14,6 @@ export function useDrop<Data extends Record<string, any>>(props: {
 }) {
   const [isDraggingOver, setIsDraggingOver] = useState(false)
   const [closestEdge, setClosestEdge] = useState<Edge>(null)
-
   const isCanvasMutating = useIsMutating({ mutationKey: ['canvas'] })
 
   useEffect(() => {
@@ -22,11 +21,14 @@ export function useDrop<Data extends Record<string, any>>(props: {
     if (!element) return
     dropTargetForElements({
       element,
-      onDragEnter: () => {
-        setIsDraggingOver(true)
+      onDropTargetChange({ self, location }) {
+        if (self.element === location.current.dropTargets[0].element) {
+          setIsDraggingOver(true)
+        } else {
+          setIsDraggingOver(false)
+        }
       },
       onDragLeave: () => {
-        setIsDraggingOver(false)
         setClosestEdge(null)
       },
       onDrag: ({ self, location }) => {
@@ -71,10 +73,6 @@ export function useDrop<Data extends Record<string, any>>(props: {
             if (commonParent?.contains(childOrSelf)) return false
           }
         }
-
-        // Common
-        // - stop dragging inside child droppables
-        //   if (sourceEl?.contains(element)) return false
 
         if (isCanvasMutating) return false
 

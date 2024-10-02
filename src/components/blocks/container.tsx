@@ -1,6 +1,5 @@
 import { type ReactNode } from '@tanstack/react-router'
 import { type Config } from '@/main'
-import { headingConfig } from '@/components/blocks/heading'
 
 export function Container(props: { left?: ReactNode; right?: ReactNode; title?: string }) {
   return (
@@ -16,7 +15,7 @@ export const containerConfig: Config = {
   Container: {
     component: Container,
     name: 'Container',
-    folder: ['UI', 'Elements', 'Layout'],
+    // folder: ['UI', 'Elements', 'Layout'],
     slots: {
       left: { default: [], name: 'Left' },
       right: { default: [], name: 'Right' },

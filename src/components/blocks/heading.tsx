@@ -8,7 +8,7 @@ export const headingConfig: Config = {
   Heading: {
     component: Heading,
     name: 'Heading',
-    folder: ['UI', 'Elements'],
+    folder: ['Elements', 'Text'],
     slots: {},
     props: {},
   },

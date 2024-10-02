@@ -15,8 +15,20 @@ import { useBlockAdd } from '@/hooks/useBlockAdd'
 import { useTemplateApply } from '@/hooks/useTemplateApply'
 import { useIsMutating } from '@tanstack/react-query'
 import '@/routes/pages.$id.css'
-import { Separator } from '@/components/ui/separator'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
+import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable'
+import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
+import { Scroll } from 'lucide-react'
+
+// export default function Example() {
+// return (
+//   <ResizablePanelGroup direction="vertical">
+//     <ResizablePanel>One</ResizablePanel>
+//     <ResizableHandle />
+//     <ResizablePanel>Two</ResizablePanel>
+//   </ResizablePanelGroup>
+// )
+// }
 
 export const Route = createFileRoute('/pages/$id')({
   component: Page,
@@ -45,96 +57,120 @@ function Page() {
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
 
   return (
-    <div data-component="pages.$id" className="p-4">
+    <div data-component="pages.$id">
       {/* Edit page meta data */}
-      <div>
-        <p>{pageGet.data.name}</p>
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            const form = e.currentTarget
-            const formData = new FormData(form)
-            pageUpdateName.mutate({ page: pageGet.data, name: formData.get('name') as string })
-          }}
-        >
-          <fieldset disabled={pageUpdateName.isPending}>
-            <input type="text" name="name" defaultValue={pageGet.data.name} />
-            <button type="submit">Update</button>
-          </fieldset>
-        </form>
-      </div>
-      {pageUpdateName.isPending && <p>Updating...</p>}
-      {pageUpdateName.error && <p>{pageUpdateName.error.message}</p>}
+      {/* <div> */}
+      {/*   <p>{pageGet.data.name}</p> */}
+      {/*   <form */}
+      {/*     onSubmit={(e) => { */}
+      {/*       e.preventDefault() */}
+      {/*       const form = e.currentTarget */}
+      {/*       const formData = new FormData(form) */}
+      {/*       pageUpdateName.mutate({ page: pageGet.data, name: formData.get('name') as string }) */}
+      {/*     }} */}
+      {/*   > */}
+      {/*     <fieldset disabled={pageUpdateName.isPending}> */}
+      {/*       <input type="text" name="name" defaultValue={pageGet.data.name} /> */}
+      {/*       <button type="submit">Update</button> */}
+      {/*     </fieldset> */}
+      {/*   </form> */}
+      {/* </div> */}
+      {/* {pageUpdateName.isPending && <p>Updating...</p>} */}
+      {/* {pageUpdateName.error && <p>{pageUpdateName.error.message}</p>} */}
 
       <Suspense fallback={<p>Loading...</p>}>
-        <main>
-          <aside className="grid gap-4">
-            <Tabs defaultValue="components" value={activeTab} onValueChange={setActiveTab} className="w-full">
-              <TabsList className="w-full">
-                <TabsTrigger className="grow" value="components">
-                  Components
-                </TabsTrigger>
-                <TabsTrigger className="grow" value="layers">
-                  Layers
-                </TabsTrigger>
-                <TabsTrigger className="grow" value="templates">
-                  Templates
-                </TabsTrigger>
-              </TabsList>
-              <TabsContent hidden={activeTab !== 'components'} forceMount value="components">
-                <ComponentPanel page={pageGet.data} />
-              </TabsContent>
-              <TabsContent hidden={activeTab !== 'layers'} forceMount value="layers">
-                <BlockLayerPanel
-                  activeBlockId={activeBlockId}
-                  hoveredBlockId={hoveredBlockId}
-                  setActiveBlockId={setActiveBlockId}
-                  setHoveredBlockId={setHoveredBlockId}
-                  page={pageGet.data}
-                />
-              </TabsContent>
-              <TabsContent hidden={activeTab !== 'templates'} forceMount value="templates">
-                <TemplatePanel templates={templateGetMany.data} />
-              </TabsContent>
-            </Tabs>
-          </aside>
-          <div>
-            {isCanvasMutating && <div>Updating...</div>}
-            {blocks.length === 0 && (
-              <DropZone
-                label="Start building"
-                data={{ parent: { slot: 'root', node: pageGet.data } }}
-                onDrop={({ source, target }) => {
-                  if (isDragData['template'](source.data)) {
-                    templateApply.mutate({ source: source.data, target: target.data })
-                  }
-                  if (isDragData['component'](source.data)) {
-                    blockAdd.mutate({ source: source.data, target: target.data })
-                  }
-                }}
-              />
+        <main className="h-[calc(100vh-62px)]">
+          <ResizablePanelGroup direction="horizontal">
+            <ResizablePanel minSize={20} defaultSize={20}>
+              <ResizablePanelGroup direction="vertical">
+                <ResizablePanel>
+                  <ScrollArea className="h-full w-full">
+                    <Tabs defaultValue="components" value={activeTab} onValueChange={setActiveTab} className="w-full">
+                      <TabsList className="w-full rounded-none">
+                        <TabsTrigger className="grow" value="components">
+                          Components
+                        </TabsTrigger>
+                        <TabsTrigger className="grow" value="templates">
+                          Templates
+                        </TabsTrigger>
+                      </TabsList>
+                      <TabsContent hidden={activeTab !== 'components'} forceMount value="components">
+                        <ComponentPanel page={pageGet.data} />
+                      </TabsContent>
+                      <TabsContent hidden={activeTab !== 'templates'} forceMount value="templates">
+                        <TemplatePanel templates={templateGetMany.data} />
+                      </TabsContent>
+                    </Tabs>
+
+                    <ScrollBar orientation="horizontal" />
+                  </ScrollArea>
+                </ResizablePanel>
+                <ResizableHandle />
+                <ResizablePanel>
+                  <ScrollArea className="h-full w-full">
+                    <h4 className="p-4">Layers</h4>
+                    <BlockLayerPanel
+                      activeBlockId={activeBlockId}
+                      hoveredBlockId={hoveredBlockId}
+                      setActiveBlockId={setActiveBlockId}
+                      setHoveredBlockId={setHoveredBlockId}
+                      page={pageGet.data}
+                    />
+                    <ScrollBar orientation="horizontal" />
+                  </ScrollArea>
+                </ResizablePanel>
+              </ResizablePanelGroup>
+            </ResizablePanel>
+            <ResizableHandle />
+            <ResizablePanel>
+              <ScrollArea className="h-full w-full">
+                <div>
+                  {isCanvasMutating && <div>Updating...</div>}
+                  {blocks.length === 0 && (
+                    <DropZone
+                      label="Start building"
+                      data={{ parent: { slot: 'root', node: pageGet.data } }}
+                      onDrop={({ source, target }) => {
+                        if (isDragData['template'](source.data)) {
+                          templateApply.mutate({ source: source.data, target: target.data })
+                        }
+                        if (isDragData['component'](source.data)) {
+                          blockAdd.mutate({ source: source.data, target: target.data })
+                        }
+                      }}
+                    />
+                  )}
+                  {blocks.map((blockId, index) => {
+                    return (
+                      <BlockItem
+                        blockId={blockId}
+                        parent={{ node: pageGet.data, slot: 'root' }}
+                        index={index}
+                        page={pageGet.data}
+                        activeBlockId={activeBlockId}
+                        setActiveBlockId={setActiveBlockId}
+                        hoveredBlockId={hoveredBlockId}
+                        setHoveredBlockId={setHoveredBlockId}
+                        key={blockId}
+                      />
+                    )
+                  })}
+                </div>
+                <ScrollBar orientation="horizontal" />
+              </ScrollArea>
+            </ResizablePanel>
+            {activeBlockId !== undefined && (
+              <>
+                <ResizableHandle />
+                <ResizablePanel minSize={20} defaultSize={20}>
+                  <ScrollArea className="h-full w-full">
+                    <PropsPanel activeBlockId={activeBlockId} setActiveBlockId={setActiveBlockId} />
+                    <ScrollBar orientation="horizontal" />
+                  </ScrollArea>
+                </ResizablePanel>
+              </>
             )}
-            {blocks.map((blockId, index) => {
-              return (
-                <BlockItem
-                  blockId={blockId}
-                  parent={{ node: pageGet.data, slot: 'root' }}
-                  index={index}
-                  page={pageGet.data}
-                  activeBlockId={activeBlockId}
-                  setActiveBlockId={setActiveBlockId}
-                  hoveredBlockId={hoveredBlockId}
-                  setHoveredBlockId={setHoveredBlockId}
-                  key={blockId}
-                />
-              )
-            })}
-          </div>
-          {activeBlockId !== undefined && (
-            <aside>
-              <PropsPanel activeBlockId={activeBlockId} setActiveBlockId={setActiveBlockId} />
-            </aside>
-          )}
+          </ResizablePanelGroup>
         </main>
       </Suspense>
     </div>

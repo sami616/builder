@@ -195,7 +195,7 @@ export function BlockItem(props: {
       </div>
       <Component {...componentProps} {...componentBlocks} />
       <DropIndicator closestEdge={closestEdge} variant="horizontal" />
-      <DragPreview dragPreviewContainer={dragPreviewContainer}>Move {block.name} ↕</DragPreview>
+      <DragPreview dragPreviewContainer={dragPreviewContainer}>{block.name}</DragPreview>
     </div>
   )
 }

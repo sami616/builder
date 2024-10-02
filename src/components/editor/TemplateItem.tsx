@@ -9,9 +9,10 @@ import { useTemplateAdd } from '@/hooks/useTemplateAdd'
 import { useTemplateReorder } from '@/hooks/useTemplateReorder'
 import { useDrag } from '@/hooks/useDrag'
 import { useDrop } from '@/hooks/useDrop'
+import { Layout } from 'lucide-react'
 
 export function TemplateItem(props: { template: Template; index: number }) {
-  const dragRef = useRef<HTMLSpanElement>(null)
+  const dragRef = useRef<HTMLDivElement>(null)
   const dropRef = useRef<HTMLLIElement>(null)
   const [isRenaming, setIsRenaming] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
@@ -58,46 +59,59 @@ export function TemplateItem(props: { template: Template; index: number }) {
 
   return (
     <li
+      className={[
+        'cursor-move',
+        'select-none',
+        'grid',
+        'gap-2',
+        'p-2',
+        'text-sm',
+        'hover:bg-muted',
+        isDraggingSource ? 'opacity-50' : 'opacity-100',
+      ].join(' ')}
       data-component="TemplateItem"
-      onDoubleClick={(e) => {
-        e.stopPropagation()
-        setIsRenaming(true)
-      }}
       ref={dropRef}
-      style={{ opacity: isDraggingSource ? 0.5 : 1 }}
     >
-      {isRenaming && (
-        <form
-          onSubmit={async (e) => {
-            e.preventDefault()
-            const formData = new FormData(e.currentTarget)
-            const updatedName = formData.get('name') as string
-            await templateUpdateName.mutateAsync({ template: props.template, name: updatedName })
-            setIsRenaming(false)
-          }}
-        >
-          <input
-            ref={inputRef}
-            name="name"
-            autoFocus
-            onKeyDown={(e) => {
-              if (e.key === 'Escape') {
+      <div ref={dragRef} className="group flex gap-2 items-center justify-between w-full">
+        <div className="grow flex items-center gap-2">
+          <Layout size={14} className={['stroke-emerald-500'].join(' ')} />
+          {isRenaming && (
+            <form
+              onSubmit={async (e) => {
+                e.preventDefault()
+                const formData = new FormData(e.currentTarget)
+                const updatedName = formData.get('name') as string
+                await templateUpdateName.mutateAsync({ template: props.template, name: updatedName })
                 setIsRenaming(false)
-              }
-            }}
-            defaultValue={props.template.name}
-          />
-        </form>
-      )}
+              }}
+            >
+              <input
+                className="w-full bg-transparent"
+                ref={inputRef}
+                name="name"
+                autoFocus
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') {
+                    setIsRenaming(false)
+                  }
+                }}
+                defaultValue={props.template.name}
+              />
+            </form>
+          )}
 
-      {!isRenaming && (
-        <>
-          {props.template.name}
-          <button onClick={() => templateDelete.mutate({ template: props.template })}>del</button>
-          <span ref={dragRef}>move</span>
-        </>
-      )}
-
+          {!isRenaming && (
+            <span
+              onDoubleClick={(e) => {
+                e.stopPropagation()
+                setIsRenaming(true)
+              }}
+            >
+              {props.template.name}
+            </span>
+          )}
+        </div>
+      </div>
       <DropIndicator closestEdge={closestEdge} variant="horizontal" />
       <DragPreview dragPreviewContainer={dragPreviewContainer}>Move {props.template.name} ↕</DragPreview>
     </li>

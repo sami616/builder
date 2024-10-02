@@ -1,5 +1,5 @@
 import { type Page, type Block } from '@/db'
-import { useEffect, useRef, useState } from 'react'
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react'
 import { DropIndicator } from '@/components/editor/DropIndicator'
 import { isDragData } from '@/hooks/useDrag'
 import { useDrop } from '@/hooks/useDrop'
@@ -14,34 +14,20 @@ import { BlockLayerItemSlot } from '@/components/editor/BlockLayerItemSlot'
 import { useBlockAdd } from '@/hooks/useBlockAdd'
 import { useBlockMove } from '@/hooks/useBlockMove'
 import { isBlock } from '@/api'
-import {
-  Folder,
-  ChevronDown,
-  ChevronUp,
-  ChevronRight,
-  FolderOpen,
-  Layers2,
-  Trash,
-  FileDown,
-  Copy,
-  Loader2,
-  GripVertical,
-  FolderPlus,
-} from 'lucide-react'
+import { ChevronDown, ChevronRight, Trash, Copy, GripVertical, Component } from 'lucide-react'
 import { validateComponentSlots } from '@/components/editor/BlockItem'
-import { Tree } from '../ui/tree'
-import { Button } from '../ui/button'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible'
 
 export function BlockLayerItem(props: {
   blockId: Block['id']
   index: number
   parent: { slot: string; node: Block } | { slot: string; node: Page }
   hoveredBlockId?: Block['id']
-  setHoveredBlockId: (id: Block['id'] | undefined) => void
-  setActiveBlockId: (id: Block['id'] | undefined) => void
+  setHoveredBlockId: Dispatch<SetStateAction<Block['id'] | undefined>>
+  setActiveBlockId: Dispatch<SetStateAction<Block['id'] | undefined>>
   activeBlockId?: Block['id']
 }) {
-  const dragRef = useRef<HTMLLIElement>(null)
+  const dragRef = useRef<HTMLDivElement>(null)
   const dropRef = useRef<HTMLLIElement>(null)
   const inputRef = useRef<HTMLInputElement>(null)
   const [isRenaming, setIsRenaming] = useState(false)
@@ -54,6 +40,7 @@ export function BlockLayerItem(props: {
   const { blockMove } = useBlockMove()
   const { blockAdd } = useBlockAdd()
   const { templateApply } = useTemplateApply()
+  const [open, setOpen] = useState(false)
 
   useEffect(() => {
     async function handleClickOutside(e: MouseEvent) {
@@ -103,12 +90,16 @@ export function BlockLayerItem(props: {
       inputRef.current?.select()
     }
   }, [isRenaming])
+
   const slotKeys = Object.keys(blockGet.data.slots)
+
   const item = (
-    <div className="group flex gap-2 items-center justify-between w-full">
-      <div className="flex items-center gap-2">
+    <div ref={dragRef} className="group flex gap-2 items-center justify-between w-full">
+      <div className="grow flex items-center gap-2">
+        <Component size={14} className={['stroke-emerald-500'].join(' ')} />
         {isRenaming && (
           <form
+            className="grow"
             onSubmit={async (e) => {
               e.preventDefault()
               const formData = new FormData(e.currentTarget)
@@ -118,6 +109,7 @@ export function BlockLayerItem(props: {
             }}
           >
             <input
+              className="w-full bg-transparent"
               ref={inputRef}
               name="name"
               autoFocus
@@ -142,58 +134,66 @@ export function BlockLayerItem(props: {
           </span>
         )}
       </div>
-      <div className="group-hover:opacity-100 opacity-100 flex items-center">
-        {
-          // <Button
-          //   variant="ghost"
-          //   size="icon"
-          //   onClick={() => blockDelete.mutate({ blockId: blockGet.data.id, index: props.index, parent: props.parent })}
-          // >
-          //   <Trash
-          //     onClick={() => blockDelete.mutate({ blockId: blockGet.data.id, index: props.index, parent: props.parent })}
-          //     className="size-4 opacity-40"
-          //   />
-          // </Button>
-          // <Button variant="ghost" size="icon" onClick={() => blockCopy.mutate({ index: props.index, id: props.blockId, parent: props.parent })}>
-          //   <Copy className="size-4 opacity-40" />
-          // </Button>
-        }
-        <span ref={dragRef} className="cursor-move">
-          <GripVertical className="size-4 opacity-40" />
-        </span>
-      </div>
+      <button
+        onClick={(e) => {
+          e.stopPropagation()
+          props.setActiveBlockId((id) => {
+            if (id === props.blockId) return undefined
+            return props.blockId
+          })
+        }}
+        className={['group', 'size-5', 'flex', 'items-center', 'justify-center'].join(' ')}
+      >
+        <div
+          className={[
+            'size-2',
+            'rounded-full',
+            isActiveBlock ? 'bg-emerald-500 group-hover:bg-emerald-600' : 'bg-gray-300 group-hover:bg-gray-400',
+          ].join(' ')}
+        />
+      </button>
     </div>
   )
 
-  return (
-    <li
-      data-drop-id={`block-${blockGet.data.id}`}
-      // style={{ opacity: isDraggingSource ? 0.5 : 1, color: isActiveBlock ? 'blue' : isHoveredBlock ? 'red' : 'unset' }}
-      className={`hover:bg-gray-100 ${isActiveBlock ? 'hover:bg-gray-300' : ''} text-sm ${isDraggingSource ? 'opacity-50' : 'opacity-100'} ${isActiveBlock ? 'bg-gray-200' : 'bg-white'} rounded-lg p-2`}
-      data-component="BlockLayerItem"
-      onClick={(e) => {
-        e.stopPropagation()
-        props.setActiveBlockId(props.blockId)
-      }}
-      onMouseOver={(e) => {
-        e.stopPropagation()
-        props.setHoveredBlockId(props.blockId)
-      }}
-      onMouseOut={(e) => {
-        e.stopPropagation()
-        props.setHoveredBlockId(undefined)
-      }}
-      ref={dropRef}
-    >
-      <>
-        {slotKeys.length > 0 && (
-          <Tree
-            openIcon={<ChevronDown className="size-4 opacity-40" />}
-            closedIcon={<ChevronRight className="opacity-40 size-4" />}
-            key={blockGet.data.id}
-            label={item}
-          >
-            <>
+  if (slotKeys.length > 0) {
+    return (
+      <Collapsible asChild open={open} onOpenChange={setOpen}>
+        <li
+          ref={dropRef}
+          data-drop-id={`block-${blockGet.data.id}`}
+          className={[
+            'cursor-move',
+            'select-none',
+            'grid',
+            'gap-2',
+            'p-2',
+            'text-sm',
+            isHoveredBlock && 'bg-gray-100',
+            isDraggingSource ? 'opacity-50' : 'opacity-100',
+            isActiveBlock && 'ring-inset ring-2 ring-emerald-500',
+          ].join(' ')}
+          data-component="BlockLayerItem"
+          onMouseOver={(e) => {
+            e.stopPropagation()
+            props.setHoveredBlockId(props.blockId)
+          }}
+          onMouseOut={(e) => {
+            e.stopPropagation()
+            props.setHoveredBlockId(undefined)
+          }}
+        >
+          <CollapsibleTrigger asChild>
+            <div className="group w-full flex gap-2 items-center">
+              {open ? (
+                <ChevronDown size={16} className="cursor-pointer opacity-40 group-hover:opacity-100" />
+              ) : (
+                <ChevronRight size={16} className="cursor-pointer opacity-40 group-hover:opacity-100" />
+              )}
+              {item}
+            </div>
+          </CollapsibleTrigger>
+          <CollapsibleContent asChild>
+            <ul className="pl-2 ml-2 border-l border-dashed">
               {Object.keys(blockGet.data.slots).map((slot) => (
                 <BlockLayerItemSlot
                   activeBlockId={props.activeBlockId}
@@ -206,13 +206,41 @@ export function BlockLayerItem(props: {
                   parent={props.parent}
                 />
               ))}
-            </>
-          </Tree>
-        )}
+            </ul>
+          </CollapsibleContent>
+          <DropIndicator closestEdge={closestEdge} variant="horizontal" />
+          <DragPreview dragPreviewContainer={dragPreviewContainer}>Move {blockGet.data.name} ↕</DragPreview>
+        </li>
+      </Collapsible>
+    )
+  }
 
-        {slotKeys.length === 0 && item}
-      </>
-
+  return (
+    <li
+      data-drop-id={`block-${blockGet.data.id}`}
+      className={[
+        'cursor-move',
+        'select-none',
+        'grid',
+        'gap-2',
+        'p-2',
+        'text-sm',
+        isHoveredBlock && 'bg-gray-100',
+        isDraggingSource ? 'opacity-50' : 'opacity-100',
+        isActiveBlock && 'ring-inset ring-2 ring-emerald-500',
+      ].join(' ')}
+      data-component="BlockLayerItem"
+      onMouseOver={(e) => {
+        e.stopPropagation()
+        props.setHoveredBlockId(props.blockId)
+      }}
+      onMouseOut={(e) => {
+        e.stopPropagation()
+        props.setHoveredBlockId(undefined)
+      }}
+      ref={dropRef}
+    >
+      {item}
       <DropIndicator closestEdge={closestEdge} variant="horizontal" />
       <DragPreview dragPreviewContainer={dragPreviewContainer}>Move {blockGet.data.name} ↕</DragPreview>
     </li>

@@ -3,17 +3,17 @@ li {
   padding: 5px;
 }
 
-@scope ([data-component="pages.$id"]) to ([data-component]) {
-  main {
-    font-family: sans-serif;
-    display: grid;
-    gap: 1rem;
-    grid-template-columns: 300px 1fr;
-    &:has(> :nth-child(3):last-child) {
-      grid-template-columns: 300px 1fr 300px;
-    }
-  }
-}
+/* @scope ([data-component="pages.$id"]) to ([data-component]) { */
+/*   main { */
+/*     font-family: sans-serif; */
+/*     display: grid; */
+/*     gap: 1rem; */
+/*     grid-template-columns: 300px 1fr; */
+/*     &:has(> :nth-child(3):last-child) { */
+/*       grid-template-columns: 300px 1fr 300px; */
+/*     } */
+/*   } */
+/* } */
 
 @scope ([data-component="DropIndicator"]) to ([data-component]) {
   & {
@@ -37,16 +37,6 @@ li {
 
   &.top {
     top: 0;
-  }
-}
-
-@scope ([data-component="DragPreview"]) to ([data-component]) {
-  & {
-    opacity: 1;
-    background: #efefef;
-    border-radius: 1rem;
-    font-family: sans-serif;
-    padding: 10px;
   }
 }
 

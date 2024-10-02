@@ -1,6 +1,6 @@
 import { type Block } from '@/db'
 import { useRouteContext } from '@tanstack/react-router'
-import { type ComponentProps, useRef } from 'react'
+import { type ComponentProps, Dispatch, SetStateAction, useEffect, useRef, useState } from 'react'
 import { isDragData } from '@/hooks/useDrag'
 import { useDrop } from '@/hooks/useDrop'
 import { useBlockAdd } from '@/hooks/useBlockAdd'
@@ -9,22 +9,23 @@ import { BlockLayerItem } from '@/components/editor/BlockLayerItem'
 import { useBlockMove } from '@/hooks/useBlockMove'
 import { validateComponentSlots } from '@/components/editor/BlockItem'
 import { Missing } from './Missing'
-import { Tree } from '../ui/tree'
-import { ChevronUp, ChevronRight, ChevronDown, Folder, FolderClosed, FolderOpen, FolderPlus } from 'lucide-react'
+import { ChevronRight, ChevronDown, CircleDashed } from 'lucide-react'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible'
 
 export function BlockLayerItemSlot(props: {
   block: Block
   slot: string
   parent: ComponentProps<typeof BlockLayerItem>['parent']
   hoveredBlockId?: Block['id']
-  setHoveredBlockId: (id: Block['id'] | undefined) => void
-  setActiveBlockId: (id: Block['id'] | undefined) => void
+  setHoveredBlockId: Dispatch<SetStateAction<Block['id'] | undefined>>
+  setActiveBlockId: Dispatch<SetStateAction<Block['id'] | undefined>>
   activeBlockId?: Block['id']
 }) {
-  const ref = useRef<HTMLDetailsElement>(null)
+  const ref = useRef<HTMLLIElement>(null)
   const { blockMove } = useBlockMove()
   const { blockAdd } = useBlockAdd()
   const { templateApply } = useTemplateApply()
+  const [open, setOpen] = useState(false)
 
   const { isDraggingOver } = useDrop({
     dropRef: ref,
@@ -51,33 +52,47 @@ export function BlockLayerItemSlot(props: {
 
   const context = useRouteContext({ from: '/pages/$id' })
 
-  const hasSlotEntries = props.block.slots[props.slot].length > 0
+  const slotLength = props.block.slots[props.slot].length
+  const hasSlotEntries = slotLength > 0
+
+  useEffect(() => {
+    if (hasSlotEntries) setOpen(true)
+  }, [hasSlotEntries])
 
   if (!context.config[props.block.type]?.slots?.[props.slot]) return <Missing node={{ type: 'slot', name: props.slot }} />
 
   return (
-    <Tree
-      openIcon={<ChevronDown className="size-4 opacity-40 group-hover:opacity-100" />}
-      closedIcon={<ChevronRight className="size-4 opacity-40 group-hover:opacity-100" />}
-      summaryProps={{ className: `group ${isDraggingOver ? 'bg-slate-100' : ''}` }}
-      detailsProps={{ open: hasSlotEntries }}
-      detailsRef={ref}
-      label={context.config[props.block.type].slots?.[props.slot].name}
-    >
-      <>
-        {props.block.slots[props.slot].map((blockId, index) => (
-          <BlockLayerItem
-            setActiveBlockId={props.setActiveBlockId}
-            activeBlockId={props.activeBlockId}
-            hoveredBlockId={props.hoveredBlockId}
-            setHoveredBlockId={props.setHoveredBlockId}
-            index={index}
-            parent={{ slot: props.slot, node: props.block }}
-            blockId={blockId}
-            key={blockId}
-          />
-        ))}
-      </>
-    </Tree>
+    <Collapsible asChild open={open} onOpenChange={setOpen}>
+      <li ref={ref} className={['select-none', 'grid', 'gap-2', 'p-2', 'text-sm', isDraggingOver && 'bg-gray-100'].join(' ')}>
+        <CollapsibleTrigger asChild>
+          <div className="group w-full flex gap-2 items-center cursor-pointer">
+            {open ? (
+              <ChevronDown size={16} className="opacity-40 group-hover:opacity-100" />
+            ) : (
+              <ChevronRight size={16} className="opacity-40 group-hover:opacity-100" />
+            )}
+            <CircleDashed size={14} className={['opacity-40'].join(' ')} /> {context.config[props.block.type].slots?.[props.slot].name}
+          </div>
+        </CollapsibleTrigger>
+        <CollapsibleContent asChild>
+          {hasSlotEntries && (
+            <ul className="pl-2 ml-2 border-l border-dashed">
+              {props.block.slots[props.slot].map((blockId, index) => (
+                <BlockLayerItem
+                  setActiveBlockId={props.setActiveBlockId}
+                  activeBlockId={props.activeBlockId}
+                  hoveredBlockId={props.hoveredBlockId}
+                  setHoveredBlockId={props.setHoveredBlockId}
+                  index={index}
+                  parent={{ slot: props.slot, node: props.block }}
+                  blockId={blockId}
+                  key={blockId}
+                />
+              ))}
+            </ul>
+          )}
+        </CollapsibleContent>
+      </li>
+    </Collapsible>
   )
 }
