@@ -16,6 +16,7 @@ import { useBlockMove } from '@/hooks/useBlockMove'
 import { config } from '@/main'
 import { isBlock } from '@/api'
 import { Missing } from './Missing'
+import { CircleDashed } from 'lucide-react'
 
 export function BlockItem(props: {
   index: number
@@ -93,7 +94,12 @@ export function BlockItem(props: {
         <Missing node={{ type: 'slot', name: slot }} />
       ) : (
         <DropZone
-          label={context.config[block.type].slots?.[slot].name}
+          children={
+            <>
+              <CircleDashed size={16} className="opacity-40" />
+              {context.config[block.type].slots?.[slot].name}
+            </>
+          }
           data={{ parent: { slot, node: block } }}
           disableDrop={({ source, element }) => {
             try {
@@ -142,9 +148,11 @@ export function BlockItem(props: {
     <div
       // @ts-ignore
       style={{ anchorName: `--${block.id}` }}
-      data-active={isActiveBlock}
-      data-hovered={isHoveredBlock}
-      data-dragging={isDraggingSource}
+      className={[
+        'relative',
+        isActiveBlock ? 'outline outline-2 outline-emerald-500 z-50' : '',
+        isHoveredBlock ? 'outline outline-2 outline-rose-500 z-50' : '',
+      ].join(' ')}
       data-component="BlockItem"
       data-drop-id={`block-${blockGet.data.id}`}
       onDoubleClick={(e) => {

@@ -9,7 +9,7 @@ import { useTemplateAdd } from '@/hooks/useTemplateAdd'
 import { useTemplateReorder } from '@/hooks/useTemplateReorder'
 import { useDrag } from '@/hooks/useDrag'
 import { useDrop } from '@/hooks/useDrop'
-import { Layout } from 'lucide-react'
+import { Layout, MoreVertical } from 'lucide-react'
 
 export function TemplateItem(props: { template: Template; index: number }) {
   const dragRef = useRef<HTMLDivElement>(null)
@@ -60,7 +60,6 @@ export function TemplateItem(props: { template: Template; index: number }) {
   return (
     <li
       className={[
-        'cursor-move',
         'select-none',
         'grid',
         'gap-2',
@@ -72,9 +71,9 @@ export function TemplateItem(props: { template: Template; index: number }) {
       data-component="TemplateItem"
       ref={dropRef}
     >
-      <div ref={dragRef} className="group flex gap-2 items-center justify-between w-full">
-        <div className="grow flex items-center gap-2">
-          <Layout size={14} className={['stroke-emerald-500'].join(' ')} />
+      <div className="flex gap-2 grow">
+        <div ref={dragRef} className="cursor-move flex gap-2 grow items-center">
+          <Layout size={14} className={['shrink-0', 'stroke-emerald-500'].join(' ')} />
           {isRenaming && (
             <form
               onSubmit={async (e) => {
@@ -102,6 +101,7 @@ export function TemplateItem(props: { template: Template; index: number }) {
 
           {!isRenaming && (
             <span
+              className="w-full"
               onDoubleClick={(e) => {
                 e.stopPropagation()
                 setIsRenaming(true)
@@ -111,9 +111,12 @@ export function TemplateItem(props: { template: Template; index: number }) {
             </span>
           )}
         </div>
+      <button>
+        <MoreVertical size={16} className="shrink-0 opacity-40 hover:opacity-100" />
+      </button>
       </div>
       <DropIndicator closestEdge={closestEdge} variant="horizontal" />
-      <DragPreview dragPreviewContainer={dragPreviewContainer}>Move {props.template.name} ↕</DragPreview>
+      <DragPreview dragPreviewContainer={dragPreviewContainer}>{props.template.name}</DragPreview>
     </li>
   )
 }

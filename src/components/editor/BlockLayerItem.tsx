@@ -14,9 +14,10 @@ import { BlockLayerItemSlot } from '@/components/editor/BlockLayerItemSlot'
 import { useBlockAdd } from '@/hooks/useBlockAdd'
 import { useBlockMove } from '@/hooks/useBlockMove'
 import { isBlock } from '@/api'
-import { ChevronDown, ChevronRight, Trash, Copy, GripVertical, Component } from 'lucide-react'
+import { ChevronDown, ChevronRight, MoreVertical, Component } from 'lucide-react'
 import { validateComponentSlots } from '@/components/editor/BlockItem'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible'
+import { Button } from '../ui/button'
 
 export function BlockLayerItem(props: {
   blockId: Block['id']
@@ -94,9 +95,19 @@ export function BlockLayerItem(props: {
   const slotKeys = Object.keys(blockGet.data.slots)
 
   const item = (
-    <div ref={dragRef} className="group flex gap-2 items-center justify-between w-full">
-      <div className="grow flex items-center gap-2">
-        <Component size={14} className={['stroke-emerald-500'].join(' ')} />
+    <div className="flex gap-2 grow">
+      <div
+        onClick={(e) => {
+          e.stopPropagation()
+          props.setActiveBlockId((id) => {
+            if (id === props.blockId) return undefined
+            return props.blockId
+          })
+        }}
+        ref={dragRef}
+        className="cursor-move flex grow gap-2 items-center"
+      >
+        <Component size={14} className={['shrink-0', 'stroke-emerald-500'].join(' ')} />
         {isRenaming && (
           <form
             className="grow"
@@ -122,9 +133,9 @@ export function BlockLayerItem(props: {
             />
           </form>
         )}
-
         {!isRenaming && (
           <span
+            className="w-full"
             onDoubleClick={(e) => {
               e.stopPropagation()
               setIsRenaming(true)
@@ -134,23 +145,8 @@ export function BlockLayerItem(props: {
           </span>
         )}
       </div>
-      <button
-        onClick={(e) => {
-          e.stopPropagation()
-          props.setActiveBlockId((id) => {
-            if (id === props.blockId) return undefined
-            return props.blockId
-          })
-        }}
-        className={['group', 'size-5', 'flex', 'items-center', 'justify-center'].join(' ')}
-      >
-        <div
-          className={[
-            'size-2',
-            'rounded-full',
-            isActiveBlock ? 'bg-emerald-500 group-hover:bg-emerald-600' : 'bg-gray-300 group-hover:bg-gray-400',
-          ].join(' ')}
-        />
+      <button>
+        <MoreVertical size={16} className="shrink-0 opacity-40 hover:opacity-100" />
       </button>
     </div>
   )
@@ -162,7 +158,6 @@ export function BlockLayerItem(props: {
           ref={dropRef}
           data-drop-id={`block-${blockGet.data.id}`}
           className={[
-            'cursor-move',
             'select-none',
             'grid',
             'gap-2',
@@ -182,16 +177,12 @@ export function BlockLayerItem(props: {
             props.setHoveredBlockId(undefined)
           }}
         >
-          <CollapsibleTrigger asChild>
-            <div className="group w-full flex gap-2 items-center">
-              {open ? (
-                <ChevronDown size={16} className="cursor-pointer opacity-40 group-hover:opacity-100" />
-              ) : (
-                <ChevronRight size={16} className="cursor-pointer opacity-40 group-hover:opacity-100" />
-              )}
-              {item}
-            </div>
-          </CollapsibleTrigger>
+          <div className="w-full flex gap-2 items-center">
+            <CollapsibleTrigger className="cursor-pointer shrink-0 opacity-40 hover:opacity-100" asChild>
+              {open ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+            </CollapsibleTrigger>
+            {item}
+          </div>
           <CollapsibleContent asChild>
             <ul className="pl-2 ml-2 border-l border-dashed">
               {Object.keys(blockGet.data.slots).map((slot) => (
@@ -209,7 +200,7 @@ export function BlockLayerItem(props: {
             </ul>
           </CollapsibleContent>
           <DropIndicator closestEdge={closestEdge} variant="horizontal" />
-          <DragPreview dragPreviewContainer={dragPreviewContainer}>Move {blockGet.data.name} ↕</DragPreview>
+          <DragPreview dragPreviewContainer={dragPreviewContainer}>{blockGet.data.name}</DragPreview>
         </li>
       </Collapsible>
     )
@@ -219,7 +210,6 @@ export function BlockLayerItem(props: {
     <li
       data-drop-id={`block-${blockGet.data.id}`}
       className={[
-        'cursor-move',
         'select-none',
         'grid',
         'gap-2',
@@ -238,11 +228,22 @@ export function BlockLayerItem(props: {
         e.stopPropagation()
         props.setHoveredBlockId(undefined)
       }}
+      // onClick={(e) => {
+      //   e.stopPropagation()
+      //   props.setActiveBlockId((id) => {
+      //     if (id === props.blockId) return undefined
+      //     return props.blockId
+      //   })
+      // }}
+      onDoubleClick={(e) => {
+        e.stopPropagation()
+        setIsRenaming(true)
+      }}
       ref={dropRef}
     >
       {item}
       <DropIndicator closestEdge={closestEdge} variant="horizontal" />
-      <DragPreview dragPreviewContainer={dragPreviewContainer}>Move {blockGet.data.name} ↕</DragPreview>
+      <DragPreview dragPreviewContainer={dragPreviewContainer}>{blockGet.data.name}</DragPreview>
     </li>
   )
 }

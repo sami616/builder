@@ -5,8 +5,10 @@ export function Container(props: { left?: ReactNode; right?: ReactNode; title?: 
   return (
     <div style={{ padding: '1rem', background: '#efefef' }}>
       <p>{props.title}</p>
-      <div>{props.left}</div>
-      <div>{props.right}</div>
+      <div className="grid grid-cols-2">
+        <div>{props.left}</div>
+        <div>{props.right}</div>
+      </div>
     </div>
   )
 }

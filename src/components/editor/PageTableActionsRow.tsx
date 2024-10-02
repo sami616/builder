@@ -26,7 +26,7 @@ export function PageTableActionsRow(props: { table: Table<Page>; page: Page; set
       <DropdownMenuTrigger disabled={pageCRUDPending} asChild>
         <Button disabled={pageCRUDPending} variant="ghost" className="h-8 w-8 p-0">
           <span className="sr-only">Open actions</span>
-          <MoreHorizontal className="h-4 w-4" />
+          <MoreHorizontal size={16} />
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
@@ -48,7 +48,7 @@ export function PageTableActionsRow(props: { table: Table<Page>; page: Page; set
             props.table.resetSorting()
           }}
         >
-          <CopyIcon className="opacity-40 size-4 mr-2" /> Duplicate
+          <CopyIcon size={14} className="opacity-40  mr-2" /> Duplicate
         </DropdownMenuItem>
 
         <DropdownMenuItem
@@ -59,7 +59,7 @@ export function PageTableActionsRow(props: { table: Table<Page>; page: Page; set
             props.setIsDeleteDialogOpen(true)
           }}
         >
-          <Trash className="opacity-40 size-4 mr-2" /> Delete
+          <Trash size={14} className="opacity-40 mr-2" /> Delete
         </DropdownMenuItem>
 
         <DropdownMenuItem
@@ -71,7 +71,7 @@ export function PageTableActionsRow(props: { table: Table<Page>; page: Page; set
             props.table.resetRowSelection()
           }}
         >
-          <FileDown className="opacity-40 size-4 mr-2" /> Export
+          <FileDown size={14} className="opacity-40 mr-2" /> Export
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={(e) => {
@@ -79,7 +79,7 @@ export function PageTableActionsRow(props: { table: Table<Page>; page: Page; set
             navigator.clipboard.writeText(String(props.page.id))
           }}
         >
-          <Clipboard className="opacity-40 size-4 mr-2" /> Copy ID
+          <Clipboard size={14} className="opacity-40  mr-2" /> Copy ID
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

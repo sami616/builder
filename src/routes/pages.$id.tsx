@@ -18,7 +18,7 @@ import '@/routes/pages.$id.css'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
-import { Scroll } from 'lucide-react'
+import { Blocks, Scroll } from 'lucide-react'
 
 // export default function Example() {
 // return (
@@ -128,7 +128,12 @@ function Page() {
                   {isCanvasMutating && <div>Updating...</div>}
                   {blocks.length === 0 && (
                     <DropZone
-                      label="Start building"
+                      children={
+                        <>
+                          <Blocks size={20} className="opacity-40" />
+                          Start building
+                        </>
+                      }
                       data={{ parent: { slot: 'root', node: pageGet.data } }}
                       onDrop={({ source, target }) => {
                         if (isDragData['template'](source.data)) {

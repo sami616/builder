@@ -21,14 +21,18 @@ export function useDrop<Data extends Record<string, any>>(props: {
     if (!element) return
     dropTargetForElements({
       element,
+      onDragEnter: () => {
+        // setIsDraggingOver(true)
+      },
       onDropTargetChange({ self, location }) {
-        if (self.element === location.current.dropTargets[0].element) {
+        if (self.element === location.current.dropTargets[0]?.element) {
           setIsDraggingOver(true)
         } else {
           setIsDraggingOver(false)
         }
       },
       onDragLeave: () => {
+        // setIsDraggingOver(false)
         setClosestEdge(null)
       },
       onDrag: ({ self, location }) => {

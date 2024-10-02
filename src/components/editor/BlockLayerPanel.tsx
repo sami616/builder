@@ -4,6 +4,7 @@ import { isDragData } from '@/hooks/useDrag'
 import { useBlockAdd } from '@/hooks/useBlockAdd'
 import { useTemplateApply } from '@/hooks/useTemplateApply'
 import { BlockLayerItem } from '@/components/editor/BlockLayerItem'
+import { Blocks } from 'lucide-react'
 
 export function BlockLayerPanel(props: {
   page: Page
@@ -19,7 +20,12 @@ export function BlockLayerPanel(props: {
   if (blocks.length === 0) {
     return (
       <DropZone
-        label="Start bulding"
+        children={
+          <>
+            <Blocks size={20} className="opacity-40" />
+            Start building
+          </>
+        }
         data={{ parent: { slot: 'root', node: props.page } }}
         onDrop={({ source, target }) => {
           if (isDragData['template'](source.data)) {

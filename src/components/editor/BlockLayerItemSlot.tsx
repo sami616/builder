@@ -9,7 +9,7 @@ import { BlockLayerItem } from '@/components/editor/BlockLayerItem'
 import { useBlockMove } from '@/hooks/useBlockMove'
 import { validateComponentSlots } from '@/components/editor/BlockItem'
 import { Missing } from './Missing'
-import { ChevronRight, ChevronDown, CircleDashed } from 'lucide-react'
+import { ChevronRight, ChevronDown, CircleDashed, Circle } from 'lucide-react'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible'
 
 export function BlockLayerItemSlot(props: {
@@ -64,16 +64,17 @@ export function BlockLayerItemSlot(props: {
   return (
     <Collapsible asChild open={open} onOpenChange={setOpen}>
       <li ref={ref} className={['select-none', 'grid', 'gap-2', 'p-2', 'text-sm', isDraggingOver && 'bg-gray-100'].join(' ')}>
-        <CollapsibleTrigger asChild>
-          <div className="group w-full flex gap-2 items-center cursor-pointer">
-            {open ? (
-              <ChevronDown size={16} className="opacity-40 group-hover:opacity-100" />
-            ) : (
-              <ChevronRight size={16} className="opacity-40 group-hover:opacity-100" />
-            )}
-            <CircleDashed size={14} className={['opacity-40'].join(' ')} /> {context.config[props.block.type].slots?.[props.slot].name}
+        <div className="flex gap-2 items-center">
+          <CollapsibleTrigger asChild className="cursor-pointer opacity-40 hover:opacity-100 shrink-0">
+            {open ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+          </CollapsibleTrigger>
+          <div className="flex gap-2 grow">
+            <div className="flex gap-2 grow items-center">
+              {hasSlotEntries ? <Circle size={14} className="opacity-40" /> : <CircleDashed size={14} className="opacity-40" />}
+              {context.config[props.block.type].slots?.[props.slot].name}
+            </div>
           </div>
-        </CollapsibleTrigger>
+        </div>
         <CollapsibleContent asChild>
           {hasSlotEntries && (
             <ul className="pl-2 ml-2 border-l border-dashed">
