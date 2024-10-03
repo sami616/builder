@@ -1,4 +1,5 @@
 import { type Template } from '@/db'
+import { ChevronDown, ChevronRight, MoreVertical, Component, CopyIcon, Trash, Pen, Layout } from 'lucide-react'
 import { isDragData } from '@/hooks/useDrag'
 import { useEffect, useRef, useState } from 'react'
 import { DropIndicator } from '@/components/editor/DropIndicator'
@@ -9,14 +10,24 @@ import { useTemplateAdd } from '@/hooks/useTemplateAdd'
 import { useTemplateReorder } from '@/hooks/useTemplateReorder'
 import { useDrag } from '@/hooks/useDrag'
 import { useDrop } from '@/hooks/useDrop'
-import { Layout, MoreVertical } from 'lucide-react'
 import { Tree } from '../ui/tree'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { useIsMutating } from '@tanstack/react-query'
 
 export function TemplateItem(props: { template: Template; index: number }) {
   const dragRef = useRef<HTMLDivElement>(null)
   const dropRef = useRef<HTMLLIElement>(null)
   const [isRenaming, setIsRenaming] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+  const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
 
   const { templateDelete } = useTemplateDelete()
   const { templateUpdateName } = useTemplateUpdateName()
@@ -103,9 +114,39 @@ export function TemplateItem(props: { template: Template; index: number }) {
         </>
       }
       action={
-        <button>
-          <MoreVertical size={16} className="shrink-0 opacity-40 hover:opacity-100" />
-        </button>
+        <DropdownMenu>
+          <DropdownMenuTrigger disabled={isCanvasMutating}>
+            <MoreVertical size={16} className="shrink-0 opacity-40 hover:opacity-100" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            onCloseAutoFocus={(e) => {
+              if (isRenaming) {
+                e.preventDefault()
+                inputRef.current?.focus()
+                inputRef.current?.select()
+              }
+            }}
+            className="w-56"
+            align="start"
+          >
+            <DropdownMenuLabel>Template actions</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem disabled={isCanvasMutating} onClick={() => setIsRenaming(true)}>
+              <Pen size={14} className="opacity-40 mr-2" /> Rename
+              <DropdownMenuShortcut>⌘R</DropdownMenuShortcut>
+            </DropdownMenuItem>
+
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation()
+                templateDelete.mutate({ template: props.template })
+              }}
+            >
+              <Trash size={14} className="opacity-40 mr-2" /> Delete
+              <DropdownMenuShortcut>⇧⌘D</DropdownMenuShortcut>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
       }
       drop={{ ref: dropRef, edge: closestEdge }}
       drag={{ ref: dragRef, isDragging: isDraggingSource, preview: { container: dragPreviewContainer, children: props.template.name } }}

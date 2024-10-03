@@ -1,9 +1,7 @@
 import { type Page, type Block } from '@/db'
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react'
-import { DropIndicator } from '@/components/editor/DropIndicator'
+import { ComponentType, Dispatch, ReactElement, ReactNode, SetStateAction, useEffect, useRef, useState } from 'react'
 import { isDragData } from '@/hooks/useDrag'
 import { useDrop } from '@/hooks/useDrop'
-import { DragPreview } from '@/components/editor/DragPreview'
 import { useBlockDelete } from '@/hooks/useBlockDelete'
 import { useBlockCopy } from '@/hooks/useBlockCopy'
 import { useBlockUpdateName } from '@/hooks/useBlockUpdateName'
@@ -15,10 +13,8 @@ import { useBlockAdd } from '@/hooks/useBlockAdd'
 import { useBlockMove } from '@/hooks/useBlockMove'
 import { useTemplateAdd } from '@/hooks/useTemplateAdd'
 import { isBlock } from '@/api'
-import { ChevronDown, ChevronRight, MoreVertical, Component, CopyIcon, Trash, Pen, Layout } from 'lucide-react'
+import { MoreVertical, Component, Trash, Pen, Layout, Copy } from 'lucide-react'
 import { validateComponentSlots } from '@/components/editor/BlockItem'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible'
-import { Button } from '../ui/button'
 import { Tree } from '../ui/tree'
 import {
   DropdownMenu,
@@ -30,7 +26,6 @@ import {
   DropdownMenuTrigger,
 } from '@/components/ui/dropdown-menu'
 import { useIsMutating } from '@tanstack/react-query'
-import { Input } from '../ui/input'
 
 export function BlockLayerItem(props: {
   blockId: Block['id']
@@ -57,6 +52,88 @@ export function BlockLayerItem(props: {
   const { templateApply } = useTemplateApply()
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
   const [open, setOpen] = useState(false)
+
+  type Action = {
+    label: string
+    id: string
+    icon: ComponentType<{ className?: string; size?: number | string }>
+    action: () => void
+    shortcut: { label: string; modifiers?: Array<'ctrlKey' | 'shiftKey'>; key: string }
+  }
+
+  const blockActions: Array<Action> = [
+    {
+      id: 'createTemplate',
+      label: 'Create template',
+      shortcut: {
+        label: '⇧⌥T',
+        modifiers: ['ctrlKey', 'shiftKey'],
+        key: 'T',
+      },
+      icon: Layout,
+      action: () => {
+        templateAdd.mutate({ source: { id: 'block', index: props.index, node: blockGet.data, parent: props.parent } })
+      },
+    },
+    {
+      id: 'duplicate',
+      label: 'Duplicate',
+      shortcut: {
+        label: '⇧⌥D',
+        modifiers: ['ctrlKey', 'shiftKey'],
+        key: 'D',
+      },
+      icon: Copy,
+      action: () => {
+        blockCopy.mutate({ index: props.index, id: props.blockId, parent: props.parent })
+      },
+    },
+    {
+      id: 'rename',
+      label: 'Rename',
+      shortcut: {
+        label: '⇧⌥R',
+        modifiers: ['ctrlKey', 'shiftKey'],
+        key: 'R',
+      },
+      icon: Pen,
+      action: () => {
+        setIsRenaming(true)
+      },
+    },
+    {
+      id: 'delete',
+      label: 'Delete',
+      shortcut: {
+        key: 'Backspace',
+        label: '⌫',
+      },
+      icon: Trash,
+      action: async () => {
+        await blockDelete.mutateAsync({ index: props.index, blockId: props.blockId, parent: props.parent })
+        props.setActiveBlockId(undefined)
+      },
+    },
+  ]
+
+  useEffect(() => {
+    const handleKeyDown = async (e: KeyboardEvent) => {
+      if (!isActiveBlock) return
+
+      for (const action of blockActions) {
+        const { shortcut, action: performAction } = action
+        const isShortcutPressed = shortcut.modifiers ? shortcut.modifiers?.every((key) => e[key]) && shortcut.key === e.key : shortcut.key === e.key
+        if (isShortcutPressed) {
+          e.preventDefault()
+          performAction()
+        }
+      }
+    }
+    window.addEventListener('keydown', handleKeyDown)
+    return () => {
+      window.removeEventListener('keydown', handleKeyDown)
+    }
+  }, [isActiveBlock, blockActions])
 
   useEffect(() => {
     async function handleClickOutside(e: MouseEvent) {
@@ -135,52 +212,25 @@ export function BlockLayerItem(props: {
             className="w-56"
             align="start"
           >
-            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuLabel>Layer actions</DropdownMenuLabel>
             <DropdownMenuSeparator />
-            <DropdownMenuItem
-              disabled={isCanvasMutating}
-              onClick={async (e) => {
-                e.stopPropagation()
-                blockCopy.mutate({ index: props.index, id: props.blockId, parent: props.parent })
-              }}
-            >
-              <CopyIcon size={14} className="opacity-40  mr-2" /> Duplicate
-              <DropdownMenuShortcut>⌘C</DropdownMenuShortcut>
-            </DropdownMenuItem>
 
-            <DropdownMenuItem disabled={isCanvasMutating} onClick={() => setIsRenaming(true)}>
-              <Pen size={14} className="opacity-40 mr-2" /> Rename
-              <DropdownMenuShortcut>⌘R</DropdownMenuShortcut>
-            </DropdownMenuItem>
-
-            <DropdownMenuItem
-              disabled={isCanvasMutating}
-              onClick={(e) => {
-                e.stopPropagation()
-                templateAdd.mutate({ source: { id: 'block', index: props.index, node: blockGet.data, parent: props.parent } })
-              }}
-            >
-              <Layout size={14} className="opacity-40 mr-2" />
-              Template
-              <DropdownMenuShortcut>⌘T</DropdownMenuShortcut>
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              onClick={(e) => {
-                e.stopPropagation()
-                blockDelete.mutate({ index: props.index, blockId: props.blockId, parent: props.parent })
-                props.setActiveBlockId(undefined)
-              }}
-            >
-              <Trash size={14} className="opacity-40 mr-2" /> Delete
-              <DropdownMenuShortcut>⇧⌘D</DropdownMenuShortcut>
-            </DropdownMenuItem>
+            {blockActions.map((action) => {
+              const Icon = action.icon
+              return (
+                <DropdownMenuItem onClick={() => action.action()} key={action.id} disabled={isCanvasMutating}>
+                  {<Icon className="opacity-40 mr-2" size={14} />} {action.label}
+                  <DropdownMenuShortcut>{action.shortcut.label}</DropdownMenuShortcut>
+                </DropdownMenuItem>
+              )
+            })}
           </DropdownMenuContent>
         </DropdownMenu>
       }
       item={
         <>
           <Component size={14} className={['shrink-0', 'stroke-emerald-500'].join(' ')} />
-          {isRenaming && (
+          {isRenaming ? (
             <form
               className="grow"
               onSubmit={async (e) => {
@@ -192,7 +242,7 @@ export function BlockLayerItem(props: {
               }}
             >
               <input
-                className="focus:bg-gray-300 p-1 rounded focus:outline-none w-full bg-transparent"
+                className="focus:bg-gray-200 p-1 rounded focus:outline-none w-full bg-transparent"
                 ref={inputRef}
                 name="name"
                 onKeyDown={(e) => {
@@ -203,8 +253,7 @@ export function BlockLayerItem(props: {
                 defaultValue={blockGet.data.name}
               />
             </form>
-          )}
-          {!isRenaming && (
+          ) : (
             <span
               className="w-full p-1"
               onDoubleClick={(e) => {

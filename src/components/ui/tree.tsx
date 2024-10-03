@@ -1,4 +1,4 @@
-import { Dispatch, HTMLProps, RefObject, MouseEvent, SetStateAction, useState, useRef, useEffect } from 'react'
+import { Dispatch, HTMLProps, RefObject, MouseEvent, SetStateAction } from 'react'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './collapsible'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import { DropIndicator } from '../editor/DropIndicator'
@@ -12,7 +12,6 @@ export function Tree(props: {
   drop?: { isDraggingOver?: boolean; ref: RefObject<HTMLLIElement>; edge?: Edge }
   drag?: { isDragging?: boolean; ref: RefObject<HTMLDivElement>; preview: { container: HTMLElement | null; children: ReactNode } }
   open?: boolean
-  rename: { onSubmit: (e: React.FormEvent<HTMLFormElement>) => void }
   setOpen?: Dispatch<SetStateAction<boolean>>
   li?: HTMLProps<HTMLLIElement> & Record<`data-${string}`, any>
   isHovered?: boolean
@@ -20,20 +19,6 @@ export function Tree(props: {
   isActive?: boolean
   setActive?: (e: MouseEvent<HTMLDivElement>) => any
 }) {
-  const inputRef = useRef<HTMLInputElement>(null)
-  const [isRenaming, setIsRenaming] = useState(false)
-
-  function selectInput() {
-    inputRef.current?.select()
-    inputRef.current?.focus()
-  }
-
-  useEffect(() => {
-    if (isRenaming) {
-      selectInput()
-    }
-  }, [isRenaming])
-
   if (!props.items?.length)
     return (
       <li
