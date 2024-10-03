@@ -29,7 +29,7 @@ export function PageTableActionsRow(props: { table: Table<Page>; page: Page; set
           <MoreHorizontal size={16} />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent align="end">
+      <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuItem disabled={pageCRUDPending} asChild>
           <Link disabled={pageCRUDPending} params={{ id: String(props.page.id) }} to="/pages/$id">
             Open

@@ -13,11 +13,24 @@ import { useDrag } from '@/hooks/useDrag'
 import { BlockLayerItemSlot } from '@/components/editor/BlockLayerItemSlot'
 import { useBlockAdd } from '@/hooks/useBlockAdd'
 import { useBlockMove } from '@/hooks/useBlockMove'
+import { useTemplateAdd } from '@/hooks/useTemplateAdd'
 import { isBlock } from '@/api'
-import { ChevronDown, ChevronRight, MoreVertical, Component } from 'lucide-react'
+import { ChevronDown, ChevronRight, MoreVertical, Component, CopyIcon, Trash, Pen, Layout } from 'lucide-react'
 import { validateComponentSlots } from '@/components/editor/BlockItem'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible'
 import { Button } from '../ui/button'
+import { Tree } from '../ui/tree'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu'
+import { useIsMutating } from '@tanstack/react-query'
+import { Input } from '../ui/input'
 
 export function BlockLayerItem(props: {
   blockId: Block['id']
@@ -35,12 +48,14 @@ export function BlockLayerItem(props: {
   const { blockGet } = useBlockGet({ id: props.blockId })
   const { blockCopy } = useBlockCopy()
   const { blockDelete } = useBlockDelete()
+  const { templateAdd } = useTemplateAdd()
   const { blockUpdateName } = useBlockUpdateName()
   const isHoveredBlock = props.hoveredBlockId === props.blockId
   const isActiveBlock = props.activeBlockId === props.blockId
   const { blockMove } = useBlockMove()
   const { blockAdd } = useBlockAdd()
   const { templateApply } = useTemplateApply()
+  const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
   const [open, setOpen] = useState(false)
 
   useEffect(() => {
@@ -86,157 +101,154 @@ export function BlockLayerItem(props: {
     },
   })
 
+  function selectInput() {
+    inputRef.current?.select()
+    inputRef.current?.focus()
+  }
+
   useEffect(() => {
     if (isRenaming) {
-      inputRef.current?.select()
+      selectInput()
     }
   }, [isRenaming])
 
-  const slotKeys = Object.keys(blockGet.data.slots)
-
-  const item = (
-    <div className="flex gap-2 grow">
-      <div
-        onClick={(e) => {
-          e.stopPropagation()
-          props.setActiveBlockId((id) => {
-            if (id === props.blockId) return undefined
-            return props.blockId
-          })
-        }}
-        ref={dragRef}
-        className="cursor-move flex grow gap-2 items-center"
-      >
-        <Component size={14} className={['shrink-0', 'stroke-emerald-500'].join(' ')} />
-        {isRenaming && (
-          <form
-            className="grow"
-            onSubmit={async (e) => {
-              e.preventDefault()
-              const formData = new FormData(e.currentTarget)
-              const updatedName = formData.get('name') as string
-              await blockUpdateName.mutateAsync({ block: blockGet.data, name: updatedName })
-              setIsRenaming(false)
-            }}
-          >
-            <input
-              className="w-full bg-transparent"
-              ref={inputRef}
-              name="name"
-              autoFocus
-              onKeyDown={(e) => {
-                if (e.key === 'Escape') {
-                  setIsRenaming(false)
-                }
-              }}
-              defaultValue={blockGet.data.name}
-            />
-          </form>
-        )}
-        {!isRenaming && (
-          <span
-            className="w-full"
-            onDoubleClick={(e) => {
-              e.stopPropagation()
-              setIsRenaming(true)
-            }}
-          >
-            {blockGet.data.name}
-          </span>
-        )}
-      </div>
-      <button>
-        <MoreVertical size={16} className="shrink-0 opacity-40 hover:opacity-100" />
-      </button>
-    </div>
-  )
-
-  if (slotKeys.length > 0) {
-    return (
-      <Collapsible asChild open={open} onOpenChange={setOpen}>
-        <li
-          ref={dropRef}
-          data-drop-id={`block-${blockGet.data.id}`}
-          className={[
-            'select-none',
-            'grid',
-            'gap-2',
-            'p-2',
-            'text-sm',
-            isHoveredBlock && 'bg-gray-100',
-            isDraggingSource ? 'opacity-50' : 'opacity-100',
-            isActiveBlock && 'ring-inset ring-2 ring-emerald-500',
-          ].join(' ')}
-          data-component="BlockLayerItem"
-          onMouseOver={(e) => {
-            e.stopPropagation()
-            props.setHoveredBlockId(props.blockId)
-          }}
-          onMouseOut={(e) => {
-            e.stopPropagation()
-            props.setHoveredBlockId(undefined)
-          }}
-        >
-          <div className="w-full flex gap-2 items-center">
-            <CollapsibleTrigger className="cursor-pointer shrink-0 opacity-40 hover:opacity-100" asChild>
-              {open ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-            </CollapsibleTrigger>
-            {item}
-          </div>
-          <CollapsibleContent asChild>
-            <ul className="pl-2 ml-2 border-l border-dashed">
-              {Object.keys(blockGet.data.slots).map((slot) => (
-                <BlockLayerItemSlot
-                  activeBlockId={props.activeBlockId}
-                  setActiveBlockId={props.setActiveBlockId}
-                  hoveredBlockId={props.hoveredBlockId}
-                  setHoveredBlockId={props.setHoveredBlockId}
-                  key={slot}
-                  slot={slot}
-                  block={blockGet.data}
-                  parent={props.parent}
-                />
-              ))}
-            </ul>
-          </CollapsibleContent>
-          <DropIndicator closestEdge={closestEdge} variant="horizontal" />
-          <DragPreview dragPreviewContainer={dragPreviewContainer}>{blockGet.data.name}</DragPreview>
-        </li>
-      </Collapsible>
-    )
-  }
-
   return (
-    <li
-      data-drop-id={`block-${blockGet.data.id}`}
-      className={[
-        'select-none',
-        'grid',
-        'gap-2',
-        'p-2',
-        'text-sm',
-        isHoveredBlock && 'bg-gray-100',
-        isDraggingSource ? 'opacity-50' : 'opacity-100',
-        isActiveBlock && 'ring-inset ring-2 ring-emerald-500',
-      ].join(' ')}
-      data-component="BlockLayerItem"
-      onMouseOver={(e) => {
+    <Tree
+      open={open}
+      setOpen={setOpen}
+      drop={{ ref: dropRef, edge: closestEdge }}
+      drag={{ ref: dragRef, preview: { container: dragPreviewContainer, children: blockGet.data.name }, isDragging: isDraggingSource }}
+      isHovered={isHoveredBlock}
+      action={
+        <DropdownMenu>
+          <DropdownMenuTrigger disabled={isCanvasMutating}>
+            <MoreVertical size={16} className="shrink-0 opacity-40 hover:opacity-100" />
+          </DropdownMenuTrigger>
+          <DropdownMenuContent
+            onCloseAutoFocus={(e) => {
+              if (isRenaming) {
+                e.preventDefault()
+                inputRef.current?.focus()
+                inputRef.current?.select()
+              }
+            }}
+            className="w-56"
+            align="start"
+          >
+            <DropdownMenuLabel>Actions</DropdownMenuLabel>
+            <DropdownMenuSeparator />
+            <DropdownMenuItem
+              disabled={isCanvasMutating}
+              onClick={async (e) => {
+                e.stopPropagation()
+                blockCopy.mutate({ index: props.index, id: props.blockId, parent: props.parent })
+              }}
+            >
+              <CopyIcon size={14} className="opacity-40  mr-2" /> Duplicate
+              <DropdownMenuShortcut>⌘C</DropdownMenuShortcut>
+            </DropdownMenuItem>
+
+            <DropdownMenuItem disabled={isCanvasMutating} onClick={() => setIsRenaming(true)}>
+              <Pen size={14} className="opacity-40 mr-2" /> Rename
+              <DropdownMenuShortcut>⌘R</DropdownMenuShortcut>
+            </DropdownMenuItem>
+
+            <DropdownMenuItem
+              disabled={isCanvasMutating}
+              onClick={(e) => {
+                e.stopPropagation()
+                templateAdd.mutate({ source: { id: 'block', index: props.index, node: blockGet.data, parent: props.parent } })
+              }}
+            >
+              <Layout size={14} className="opacity-40 mr-2" />
+              Template
+              <DropdownMenuShortcut>⌘T</DropdownMenuShortcut>
+            </DropdownMenuItem>
+            <DropdownMenuItem
+              onClick={(e) => {
+                e.stopPropagation()
+                blockDelete.mutate({ index: props.index, blockId: props.blockId, parent: props.parent })
+                props.setActiveBlockId(undefined)
+              }}
+            >
+              <Trash size={14} className="opacity-40 mr-2" /> Delete
+              <DropdownMenuShortcut>⇧⌘D</DropdownMenuShortcut>
+            </DropdownMenuItem>
+          </DropdownMenuContent>
+        </DropdownMenu>
+      }
+      item={
+        <>
+          <Component size={14} className={['shrink-0', 'stroke-emerald-500'].join(' ')} />
+          {isRenaming && (
+            <form
+              className="grow"
+              onSubmit={async (e) => {
+                e.preventDefault()
+                const formData = new FormData(e.currentTarget)
+                const updatedName = formData.get('name') as string
+                await blockUpdateName.mutateAsync({ block: blockGet.data, name: updatedName })
+                setIsRenaming(false)
+              }}
+            >
+              <input
+                className="focus:bg-gray-300 p-1 rounded focus:outline-none w-full bg-transparent"
+                ref={inputRef}
+                name="name"
+                onKeyDown={(e) => {
+                  if (e.key === 'Escape') {
+                    setIsRenaming(false)
+                  }
+                }}
+                defaultValue={blockGet.data.name}
+              />
+            </form>
+          )}
+          {!isRenaming && (
+            <span
+              className="w-full p-1"
+              onDoubleClick={(e) => {
+                e.stopPropagation()
+                setIsRenaming(true)
+              }}
+            >
+              {blockGet.data.name}
+            </span>
+          )}
+        </>
+      }
+      isActive={isActiveBlock}
+      setActive={(e) => {
         e.stopPropagation()
-        props.setHoveredBlockId(props.blockId)
+        props.setActiveBlockId((id) => {
+          if (id === props.blockId) return undefined
+          return props.blockId
+        })
       }}
-      onMouseOut={(e) => {
-        e.stopPropagation()
-        props.setHoveredBlockId(undefined)
+      li={{
+        'data-drop-id': `block-${blockGet.data.id}`,
+        'data-component': 'BlockLayerItem',
+        onMouseLeave: (e) => {
+          e.stopPropagation()
+          props.setHoveredBlockId(undefined)
+        },
+        onMouseOver: (e) => {
+          e.stopPropagation()
+          props.setHoveredBlockId(props.blockId)
+        },
       }}
-      onDoubleClick={(e) => {
-        e.stopPropagation()
-        setIsRenaming(true)
-      }}
-      ref={dropRef}
-    >
-      {item}
-      <DropIndicator closestEdge={closestEdge} variant="horizontal" />
-      <DragPreview dragPreviewContainer={dragPreviewContainer}>{blockGet.data.name}</DragPreview>
-    </li>
+      items={Object.keys(blockGet.data.slots).map((slot) => (
+        <BlockLayerItemSlot
+          activeBlockId={props.activeBlockId}
+          setActiveBlockId={props.setActiveBlockId}
+          hoveredBlockId={props.hoveredBlockId}
+          setHoveredBlockId={props.setHoveredBlockId}
+          key={slot}
+          slot={slot}
+          block={blockGet.data}
+          parent={props.parent}
+        />
+      ))}
+    />
   )
 }

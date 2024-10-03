@@ -11,6 +11,7 @@ import { validateComponentSlots } from '@/components/editor/BlockItem'
 import { Missing } from './Missing'
 import { ChevronRight, ChevronDown, CircleDashed, Circle } from 'lucide-react'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '../ui/collapsible'
+import { Tree } from '../ui/tree'
 
 export function BlockLayerItemSlot(props: {
   block: Block
@@ -61,6 +62,32 @@ export function BlockLayerItemSlot(props: {
 
   if (!context.config[props.block.type]?.slots?.[props.slot]) return <Missing node={{ type: 'slot', name: props.slot }} />
 
+  return (
+    <Tree
+      li={{ 'data-component': 'BlockLayerItemSlot' }}
+      open={open}
+      setOpen={setOpen}
+      drop={{ ref: ref, isDraggingOver }}
+      item={
+        <>
+          {!hasSlotEntries && <CircleDashed size={14} className="opacity-40" />}
+          {context.config[props.block.type].slots?.[props.slot].name}
+        </>
+      }
+      items={props.block.slots[props.slot].map((blockId, index) => (
+        <BlockLayerItem
+          setActiveBlockId={props.setActiveBlockId}
+          activeBlockId={props.activeBlockId}
+          hoveredBlockId={props.hoveredBlockId}
+          setHoveredBlockId={props.setHoveredBlockId}
+          index={index}
+          parent={{ slot: props.slot, node: props.block }}
+          blockId={blockId}
+          key={blockId}
+        />
+      ))}
+    />
+  )
   return (
     <Collapsible asChild open={open} onOpenChange={setOpen}>
       <li ref={ref} className={['select-none', 'grid', 'gap-2', 'p-2', 'text-sm', isDraggingOver && 'bg-gray-100'].join(' ')}>

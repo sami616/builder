@@ -125,7 +125,6 @@ function Page() {
             <ResizablePanel>
               <ScrollArea className="h-full w-full">
                 <div>
-                  {isCanvasMutating && <div>Updating...</div>}
                   {blocks.length === 0 && (
                     <DropZone
                       children={

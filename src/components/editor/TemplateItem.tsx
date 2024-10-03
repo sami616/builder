@@ -10,6 +10,7 @@ import { useTemplateReorder } from '@/hooks/useTemplateReorder'
 import { useDrag } from '@/hooks/useDrag'
 import { useDrop } from '@/hooks/useDrop'
 import { Layout, MoreVertical } from 'lucide-react'
+import { Tree } from '../ui/tree'
 
 export function TemplateItem(props: { template: Template; index: number }) {
   const dragRef = useRef<HTMLDivElement>(null)
@@ -58,21 +59,10 @@ export function TemplateItem(props: { template: Template; index: number }) {
   })
 
   return (
-    <li
-      className={[
-        'select-none',
-        'grid',
-        'gap-2',
-        'p-2',
-        'text-sm',
-        'hover:bg-muted',
-        isDraggingSource ? 'opacity-50' : 'opacity-100',
-      ].join(' ')}
-      data-component="TemplateItem"
-      ref={dropRef}
-    >
-      <div className="flex gap-2 grow">
-        <div ref={dragRef} className="cursor-move flex gap-2 grow items-center">
+    <Tree
+      li={{ className: 'hover:bg-gray-100', 'data-component': 'TemplateItem' }}
+      item={
+        <>
           <Layout size={14} className={['shrink-0', 'stroke-emerald-500'].join(' ')} />
           {isRenaming && (
             <form
@@ -110,13 +100,15 @@ export function TemplateItem(props: { template: Template; index: number }) {
               {props.template.name}
             </span>
           )}
-        </div>
-      <button>
-        <MoreVertical size={16} className="shrink-0 opacity-40 hover:opacity-100" />
-      </button>
-      </div>
-      <DropIndicator closestEdge={closestEdge} variant="horizontal" />
-      <DragPreview dragPreviewContainer={dragPreviewContainer}>{props.template.name}</DragPreview>
-    </li>
+        </>
+      }
+      action={
+        <button>
+          <MoreVertical size={16} className="shrink-0 opacity-40 hover:opacity-100" />
+        </button>
+      }
+      drop={{ ref: dropRef, edge: closestEdge }}
+      drag={{ ref: dragRef, isDragging: isDraggingSource, preview: { container: dragPreviewContainer, children: props.template.name } }}
+    />
   )
 }

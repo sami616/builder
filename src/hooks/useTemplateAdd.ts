@@ -3,6 +3,7 @@ import { useRouteContext } from '@tanstack/react-router'
 import { Block, db } from '@/db'
 import { DragData } from '@/hooks/useDrag'
 import { Edge } from '@/hooks/useDrop'
+import { getMany } from '@/api'
 
 export function useTemplateAdd() {
   const context = useRouteContext({ from: '/pages/$id' })
@@ -11,8 +12,8 @@ export function useTemplateAdd() {
       mutationKey: ['canvas', 'template', 'add'],
       mutationFn: async (args: {
         source: DragData['block']
-        target: {
-          index?: number
+        target?: {
+          index: number
           edge: Edge
         }
       }) => {
@@ -29,7 +30,7 @@ export function useTemplateAdd() {
           slots: { root: [rootEntry.id] },
         }
 
-        if (args.target.index !== undefined && args.target.edge) {
+        if (args.target?.index !== undefined && args.target.edge) {
           const tx = db.transaction('templates', 'readwrite')
           let addIndex = args.target.index
           let { edge } = args.target
@@ -47,7 +48,8 @@ export function useTemplateAdd() {
           return context.add({ entry: { ...template, store: 'templates', order: addIndex } })
         }
 
-        return context.add({ entry: { ...template, store: 'templates', order: 0 } })
+        const templates = await getMany({ store: 'templates', sortBy: ['order', 'descending'] })
+        return context.add({ entry: { ...template, store: 'templates', order: templates.length + 1 } })
       },
       onSuccess: () => {
         context.queryClient.invalidateQueries({ queryKey: ['templates'] })
