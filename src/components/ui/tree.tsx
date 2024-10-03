@@ -1,10 +1,27 @@
-import { Dispatch, HTMLProps, RefObject, MouseEvent, SetStateAction } from 'react'
+import { Dispatch, HTMLProps, RefObject, MouseEvent, SetStateAction, ComponentType } from 'react'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from './collapsible'
-import { ChevronDown, ChevronRight } from 'lucide-react'
+import { ChevronDown, ChevronRight, MoreVertical } from 'lucide-react'
 import { DropIndicator } from '../editor/DropIndicator'
 import { Edge } from '@/hooks/useDrop'
 import { ReactNode } from '@tanstack/react-router'
 import { DragPreview } from '../editor/DragPreview'
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+  DropdownMenuSeparator,
+  DropdownMenuShortcut,
+  DropdownMenuTrigger,
+} from './dropdown-menu'
+
+export type Action = {
+  label: string
+  id: string
+  icon: ComponentType<{ className?: string; size?: number | string }>
+  action: () => void
+  shortcut: { label: string; modifiers?: Array<'ctrlKey' | 'shiftKey'>; key: string }
+}
 
 export function Tree(props: {
   item: ReactNode
@@ -15,7 +32,12 @@ export function Tree(props: {
   setOpen?: Dispatch<SetStateAction<boolean>>
   li?: HTMLProps<HTMLLIElement> & Record<`data-${string}`, any>
   isHovered?: boolean
-  action?: ReactNode
+  onCloseAutoFocus?: (e: Event) => void
+  action?: {
+    items: Array<Action>
+    label: string
+    disabled: boolean
+  }
   isActive?: boolean
   setActive?: (e: MouseEvent<HTMLDivElement>) => any
 }) {
@@ -45,7 +67,6 @@ export function Tree(props: {
           >
             {props.item}
           </div>
-          {props.action}
         </div>
         {props.drop?.edge && <DropIndicator closestEdge={props.drop.edge} variant="horizontal" />}
         {props.drag?.preview && <DragPreview dragPreviewContainer={props.drag.preview.container}>{props.drag.preview.children}</DragPreview>}
@@ -81,7 +102,32 @@ export function Tree(props: {
             >
               {props.item}
             </div>
-            {props.action}
+
+            {props.action?.items && (
+              <DropdownMenu>
+                <DropdownMenuTrigger disabled={props.action.disabled}>
+                  <MoreVertical size={16} className="shrink-0 opacity-40 hover:opacity-100" />
+                </DropdownMenuTrigger>
+                <DropdownMenuContent onCloseAutoFocus={props.onCloseAutoFocus} className="w-56" align="start">
+                  {props.action.label && (
+                    <>
+                      <DropdownMenuLabel>{props.action.label}</DropdownMenuLabel>
+                      <DropdownMenuSeparator />
+                    </>
+                  )}
+
+                  {props.action.items.map((action) => {
+                    const Icon = action.icon
+                    return (
+                      <DropdownMenuItem onClick={() => action.action()} key={action.id}>
+                        {<Icon className="opacity-40 mr-2" size={14} />} {action.label}
+                        <DropdownMenuShortcut>{action.shortcut.label}</DropdownMenuShortcut>
+                      </DropdownMenuItem>
+                    )
+                  })}
+                </DropdownMenuContent>
+              </DropdownMenu>
+            )}
           </div>
         </div>
         <CollapsibleContent asChild>

@@ -13,18 +13,9 @@ import { useBlockAdd } from '@/hooks/useBlockAdd'
 import { useBlockMove } from '@/hooks/useBlockMove'
 import { useTemplateAdd } from '@/hooks/useTemplateAdd'
 import { isBlock } from '@/api'
-import { MoreVertical, Component, Trash, Pen, Layout, Copy } from 'lucide-react'
+import { Component, Trash, Pen, Layout, Copy } from 'lucide-react'
 import { validateComponentSlots } from '@/components/editor/BlockItem'
-import { Tree } from '../ui/tree'
-import {
-  DropdownMenu,
-  DropdownMenuContent,
-  DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuShortcut,
-  DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
+import { Action, Tree } from '../ui/tree'
 import { useIsMutating } from '@tanstack/react-query'
 
 export function BlockLayerItem(props: {
@@ -52,14 +43,6 @@ export function BlockLayerItem(props: {
   const { templateApply } = useTemplateApply()
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
   const [open, setOpen] = useState(false)
-
-  type Action = {
-    label: string
-    id: string
-    icon: ComponentType<{ className?: string; size?: number | string }>
-    action: () => void
-    shortcut: { label: string; modifiers?: Array<'ctrlKey' | 'shiftKey'>; key: string }
-  }
 
   const blockActions: Array<Action> = [
     {
@@ -196,37 +179,18 @@ export function BlockLayerItem(props: {
       drop={{ ref: dropRef, edge: closestEdge }}
       drag={{ ref: dragRef, preview: { container: dragPreviewContainer, children: blockGet.data.name }, isDragging: isDraggingSource }}
       isHovered={isHoveredBlock}
-      action={
-        <DropdownMenu>
-          <DropdownMenuTrigger disabled={isCanvasMutating}>
-            <MoreVertical size={16} className="shrink-0 opacity-40 hover:opacity-100" />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent
-            onCloseAutoFocus={(e) => {
-              if (isRenaming) {
-                e.preventDefault()
-                inputRef.current?.focus()
-                inputRef.current?.select()
-              }
-            }}
-            className="w-56"
-            align="start"
-          >
-            <DropdownMenuLabel>Layer actions</DropdownMenuLabel>
-            <DropdownMenuSeparator />
-
-            {blockActions.map((action) => {
-              const Icon = action.icon
-              return (
-                <DropdownMenuItem onClick={() => action.action()} key={action.id} disabled={isCanvasMutating}>
-                  {<Icon className="opacity-40 mr-2" size={14} />} {action.label}
-                  <DropdownMenuShortcut>{action.shortcut.label}</DropdownMenuShortcut>
-                </DropdownMenuItem>
-              )
-            })}
-          </DropdownMenuContent>
-        </DropdownMenu>
-      }
+      onCloseAutoFocus={(e) => {
+        if (isRenaming) {
+          e.preventDefault()
+          inputRef.current?.focus()
+          inputRef.current?.select()
+        }
+      }}
+      action={{
+        label: 'Layer actions',
+        items: blockActions,
+        disabled: isCanvasMutating,
+      }}
       item={
         <>
           <Component size={14} className={['shrink-0', 'stroke-emerald-500'].join(' ')} />
