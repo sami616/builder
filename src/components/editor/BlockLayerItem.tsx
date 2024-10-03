@@ -228,13 +228,6 @@ export function BlockLayerItem(props: {
         e.stopPropagation()
         props.setHoveredBlockId(undefined)
       }}
-      // onClick={(e) => {
-      //   e.stopPropagation()
-      //   props.setActiveBlockId((id) => {
-      //     if (id === props.blockId) return undefined
-      //     return props.blockId
-      //   })
-      // }}
       onDoubleClick={(e) => {
         e.stopPropagation()
         setIsRenaming(true)
