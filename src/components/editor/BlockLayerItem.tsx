@@ -1,5 +1,5 @@
 import { type Page, type Block } from '@/db'
-import { ComponentType, Dispatch, ReactElement, ReactNode, SetStateAction, useEffect, useRef, useState } from 'react'
+import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react'
 import { isDragData } from '@/hooks/useDrag'
 import { useDrop } from '@/hooks/useDrop'
 import { useBlockDelete } from '@/hooks/useBlockDelete'
@@ -94,6 +94,19 @@ export function BlockLayerItem(props: {
       icon: Trash,
       action: async () => {
         await blockDelete.mutateAsync({ index: props.index, blockId: props.blockId, parent: props.parent })
+        props.setActiveBlockId(undefined)
+      },
+    },
+
+    {
+      id: 'deselect',
+      label: 'Deselect',
+      shortcut: {
+        key: 'Escape',
+        label: 'ESC',
+      },
+      icon: Trash,
+      action: async () => {
         props.setActiveBlockId(undefined)
       },
     },
