@@ -68,12 +68,7 @@ export function BlockLayerItemSlot(props: {
       open={open}
       setOpen={setOpen}
       drop={{ ref: ref, isDraggingOver }}
-      item={
-        <>
-          {!hasSlotEntries && <CircleDashed size={14} className="opacity-40" />}
-          {context.config[props.block.type].slots?.[props.slot].name}
-        </>
-      }
+      item={{ icon: !hasSlotEntries ? CircleDashed : undefined, label: context.config[props.block.type].slots?.[props.slot].name }}
       items={props.block.slots[props.slot].map((blockId, index) => (
         <BlockLayerItem
           setActiveBlockId={props.setActiveBlockId}
@@ -87,40 +82,5 @@ export function BlockLayerItemSlot(props: {
         />
       ))}
     />
-  )
-  return (
-    <Collapsible asChild open={open} onOpenChange={setOpen}>
-      <li ref={ref} className={['select-none', 'grid', 'gap-2', 'p-2', 'text-sm', isDraggingOver && 'bg-gray-100'].join(' ')}>
-        <div className="flex gap-2 items-center">
-          <CollapsibleTrigger asChild className="cursor-pointer opacity-40 hover:opacity-100 shrink-0">
-            {open ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
-          </CollapsibleTrigger>
-          <div className="flex gap-2 grow">
-            <div className="flex gap-2 grow items-center">
-              {hasSlotEntries ? <Circle size={14} className="opacity-40" /> : <CircleDashed size={14} className="opacity-40" />}
-              {context.config[props.block.type].slots?.[props.slot].name}
-            </div>
-          </div>
-        </div>
-        <CollapsibleContent asChild>
-          {hasSlotEntries && (
-            <ul className="pl-2 ml-2 border-l border-dashed">
-              {props.block.slots[props.slot].map((blockId, index) => (
-                <BlockLayerItem
-                  setActiveBlockId={props.setActiveBlockId}
-                  activeBlockId={props.activeBlockId}
-                  hoveredBlockId={props.hoveredBlockId}
-                  setHoveredBlockId={props.setHoveredBlockId}
-                  index={index}
-                  parent={{ slot: props.slot, node: props.block }}
-                  blockId={blockId}
-                  key={blockId}
-                />
-              ))}
-            </ul>
-          )}
-        </CollapsibleContent>
-      </li>
-    </Collapsible>
   )
 }

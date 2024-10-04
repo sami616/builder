@@ -1,5 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { type Page, type Block } from '@/db'
+import { type Page, type Block, Template } from '@/db'
 import { Suspense, useState } from 'react'
 import { ComponentPanel } from '@/components/editor/ComponentPanel'
 import { PropsPanel } from '@/components/editor/PropsPanel'
@@ -18,17 +18,7 @@ import '@/routes/pages.$id.css'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
-import { Blocks, Scroll } from 'lucide-react'
-
-// export default function Example() {
-// return (
-//   <ResizablePanelGroup direction="vertical">
-//     <ResizablePanel>One</ResizablePanel>
-//     <ResizableHandle />
-//     <ResizablePanel>Two</ResizablePanel>
-//   </ResizablePanelGroup>
-// )
-// }
+import { Blocks } from 'lucide-react'
 
 export const Route = createFileRoute('/pages/$id')({
   component: Page,
@@ -45,16 +35,14 @@ export const Route = createFileRoute('/pages/$id')({
 function Page() {
   const { id } = Route.useParams()
   const [activeBlockId, setActiveBlockId] = useState<Block['id'] | undefined>()
+  const [active, setActive] = useState<{ store: 'blocks'; id: Block['id'] } | { store: 'templates'; id: Template['id'] }>()
   const [hoveredBlockId, setHoveredBlockId] = useState<Block['id'] | undefined>()
   const { pageGet } = usePageGet({ id: Number(id) })
   const { templateGetMany } = useTemplateGetMany()
   const { blockAdd } = useBlockAdd()
   const { templateApply } = useTemplateApply()
-  const { pageUpdateName } = usePageUpdateName()
   const blocks = Object.values(pageGet.data.slots)[0]
   const [activeTab, setActiveTab] = useState('components')
-
-  const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
 
   return (
     <div data-component="pages.$id">

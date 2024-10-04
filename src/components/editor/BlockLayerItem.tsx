@@ -1,9 +1,7 @@
 import { type Page, type Block } from '@/db'
-import { Dispatch, SetStateAction, useEffect, useRef, useState } from 'react'
+import { Dispatch, SetStateAction, useRef, useState } from 'react'
 import { isDragData } from '@/hooks/useDrag'
 import { useDrop } from '@/hooks/useDrop'
-import { useBlockDelete } from '@/hooks/useBlockDelete'
-import { useBlockCopy } from '@/hooks/useBlockCopy'
 import { useBlockUpdateName } from '@/hooks/useBlockUpdateName'
 import { useBlockGet } from '@/hooks/useBlockGet'
 import { useTemplateApply } from '@/hooks/useTemplateApply'
@@ -11,12 +9,12 @@ import { useDrag } from '@/hooks/useDrag'
 import { BlockLayerItemSlot } from '@/components/editor/BlockLayerItemSlot'
 import { useBlockAdd } from '@/hooks/useBlockAdd'
 import { useBlockMove } from '@/hooks/useBlockMove'
-import { useTemplateAdd } from '@/hooks/useTemplateAdd'
 import { isBlock } from '@/api'
-import { Component, Trash, Pen, Layout, Copy } from 'lucide-react'
+import { Component } from 'lucide-react'
 import { validateComponentSlots } from '@/components/editor/BlockItem'
-import { Action, Tree } from '../ui/tree'
+import { Tree } from '../ui/tree'
 import { useIsMutating } from '@tanstack/react-query'
+import { useBlockActions } from '@/hooks/useBlockActions'
 
 export function BlockLayerItem(props: {
   blockId: Block['id']
@@ -29,12 +27,7 @@ export function BlockLayerItem(props: {
 }) {
   const dragRef = useRef<HTMLDivElement>(null)
   const dropRef = useRef<HTMLLIElement>(null)
-  const inputRef = useRef<HTMLInputElement>(null)
-  const [isRenaming, setIsRenaming] = useState(false)
   const { blockGet } = useBlockGet({ id: props.blockId })
-  const { blockCopy } = useBlockCopy()
-  const { blockDelete } = useBlockDelete()
-  const { templateAdd } = useTemplateAdd()
   const { blockUpdateName } = useBlockUpdateName()
   const isHoveredBlock = props.hoveredBlockId === props.blockId
   const isActiveBlock = props.activeBlockId === props.blockId
@@ -43,106 +36,15 @@ export function BlockLayerItem(props: {
   const { templateApply } = useTemplateApply()
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
   const [open, setOpen] = useState(false)
-
-  const blockActions: Array<Action> = [
-    {
-      id: 'createTemplate',
-      label: 'Create template',
-      shortcut: {
-        label: '⇧⌥T',
-        modifiers: ['ctrlKey', 'shiftKey'],
-        key: 'T',
-      },
-      icon: Layout,
-      action: () => {
-        templateAdd.mutate({ source: { id: 'block', index: props.index, node: blockGet.data, parent: props.parent } })
-      },
-    },
-    {
-      id: 'duplicate',
-      label: 'Duplicate',
-      shortcut: {
-        label: '⇧⌥D',
-        modifiers: ['ctrlKey', 'shiftKey'],
-        key: 'D',
-      },
-      icon: Copy,
-      action: () => {
-        blockCopy.mutate({ index: props.index, id: props.blockId, parent: props.parent })
-      },
-    },
-    {
-      id: 'rename',
-      label: 'Rename',
-      shortcut: {
-        label: '⇧⌥R',
-        modifiers: ['ctrlKey', 'shiftKey'],
-        key: 'R',
-      },
-      icon: Pen,
-      action: () => {
-        setIsRenaming(true)
-      },
-    },
-    {
-      id: 'delete',
-      label: 'Delete',
-      shortcut: {
-        key: 'Backspace',
-        label: '⌫',
-      },
-      icon: Trash,
-      action: async () => {
-        await blockDelete.mutateAsync({ index: props.index, blockId: props.blockId, parent: props.parent })
-        props.setActiveBlockId(undefined)
-      },
-    },
-
-    {
-      id: 'deselect',
-      label: 'Deselect',
-      shortcut: {
-        key: 'Escape',
-        label: 'ESC',
-      },
-      icon: Trash,
-      action: async () => {
-        props.setActiveBlockId(undefined)
-      },
-    },
-  ]
-
-  useEffect(() => {
-    const handleKeyDown = async (e: KeyboardEvent) => {
-      if (!isActiveBlock) return
-
-      for (const action of blockActions) {
-        const { shortcut, action: performAction } = action
-        const isShortcutPressed = shortcut.modifiers ? shortcut.modifiers?.every((key) => e[key]) && shortcut.key === e.key : shortcut.key === e.key
-        if (isShortcutPressed) {
-          e.preventDefault()
-          performAction()
-        }
-      }
-    }
-    window.addEventListener('keydown', handleKeyDown)
-    return () => {
-      window.removeEventListener('keydown', handleKeyDown)
-    }
-  }, [isActiveBlock, blockActions])
-
-  useEffect(() => {
-    async function handleClickOutside(e: MouseEvent) {
-      if (inputRef.current && !inputRef.current.contains(e.target as Node)) {
-        await blockUpdateName.mutateAsync({ block: blockGet.data, name: inputRef.current.value })
-        setIsRenaming(false)
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside)
-    return () => {
-      document.removeEventListener('mousedown', handleClickOutside)
-    }
-  }, [])
+  const [isRenaming, setIsRenaming] = useState(false)
+  const { blockActions } = useBlockActions({
+    index: props.index,
+    block: blockGet.data,
+    parent: props.parent,
+    isActiveBlock,
+    setActiveBlockId: props.setActiveBlockId,
+    setIsRenaming,
+  })
 
   const { isDraggingSource, dragPreviewContainer } = useDrag({
     dragRef,
@@ -174,17 +76,6 @@ export function BlockLayerItem(props: {
     },
   })
 
-  function selectInput() {
-    inputRef.current?.select()
-    inputRef.current?.focus()
-  }
-
-  useEffect(() => {
-    if (isRenaming) {
-      selectInput()
-    }
-  }, [isRenaming])
-
   return (
     <Tree
       open={open}
@@ -192,57 +83,19 @@ export function BlockLayerItem(props: {
       drop={{ ref: dropRef, edge: closestEdge }}
       drag={{ ref: dragRef, preview: { container: dragPreviewContainer, children: blockGet.data.name }, isDragging: isDraggingSource }}
       isHovered={isHoveredBlock}
-      onCloseAutoFocus={(e) => {
-        if (isRenaming) {
-          e.preventDefault()
-          inputRef.current?.focus()
-          inputRef.current?.select()
-        }
+      rename={{
+        isRenaming,
+        setIsRenaming,
+        onRename: async (updatedName) => {
+          await blockUpdateName.mutateAsync({ block: blockGet.data, name: updatedName })
+        },
       }}
       action={{
         label: 'Layer actions',
         items: blockActions,
         disabled: isCanvasMutating,
       }}
-      item={
-        <>
-          <Component size={14} className={['shrink-0', 'stroke-emerald-500'].join(' ')} />
-          {isRenaming ? (
-            <form
-              className="grow"
-              onSubmit={async (e) => {
-                e.preventDefault()
-                const formData = new FormData(e.currentTarget)
-                const updatedName = formData.get('name') as string
-                await blockUpdateName.mutateAsync({ block: blockGet.data, name: updatedName })
-                setIsRenaming(false)
-              }}
-            >
-              <input
-                className="focus:bg-gray-200 p-1 rounded focus:outline-none w-full bg-transparent"
-                ref={inputRef}
-                name="name"
-                onKeyDown={(e) => {
-                  if (e.key === 'Escape') {
-                    setIsRenaming(false)
-                  }
-                }}
-                defaultValue={blockGet.data.name}
-              />
-            </form>
-          ) : (
-            <span
-              className="w-full p-1"
-              onDoubleClick={(e) => {
-                e.stopPropagation()
-                setIsRenaming(true)
-              }}
-            >
-              {blockGet.data.name}
-            </span>
-          )}
-        </>
-      }
+      item={{ label: blockGet.data.name, icon: Component }}
       isActive={isActiveBlock}
       setActive={(e) => {
         e.stopPropagation()
