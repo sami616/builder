@@ -21,10 +21,8 @@ export function useBlockActions(props: {
   const blockActions: Actions = [
     {
       id: 'createTemplate',
-      ui: {
-        label: 'Create template',
-        icon: Layout,
-      },
+      label: 'Create template',
+      icon: Layout,
       shortcut: {
         label: '⇧⌥T',
         modifiers: ['ctrlKey', 'shiftKey'],
@@ -36,10 +34,8 @@ export function useBlockActions(props: {
     },
     {
       id: 'duplicate',
-      ui: {
-        label: 'Duplicate',
-        icon: Copy,
-      },
+      label: 'Duplicate',
+      icon: Copy,
       shortcut: {
         label: '⇧⌥D',
         modifiers: ['ctrlKey', 'shiftKey'],
@@ -51,10 +47,8 @@ export function useBlockActions(props: {
     },
     {
       id: 'rename',
-      ui: {
-        label: 'Rename',
-        icon: Pen,
-      },
+      label: 'Rename',
+      icon: Pen,
       shortcut: {
         label: '⇧⌥R',
         modifiers: ['ctrlKey', 'shiftKey'],
@@ -66,10 +60,8 @@ export function useBlockActions(props: {
     },
     {
       id: 'delete',
-      ui: {
-        label: 'Delete',
-        icon: Trash,
-      },
+      label: 'Delete',
+      icon: Trash,
       shortcut: {
         key: 'Backspace',
         label: '⌫',

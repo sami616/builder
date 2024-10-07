@@ -11,11 +11,10 @@ import { useBlockMove } from '@/hooks/use-block-move'
 import { isBlock } from '@/api'
 import { Layers2 } from 'lucide-react'
 import { validateComponentSlots } from '@/components/editor/block-item'
-import { Tree } from '@/components/ui/tree'
+import { Tree, TreeItem } from '@/components/ui/tree'
 import { useIsMutating } from '@tanstack/react-query'
 import { useBlockActions } from '@/hooks/use-block-actions'
 import { Active } from '@/routes/pages.$id'
-import { useKeyboard } from '@/hooks/use-keyboard'
 
 export function BlockLayerItem(props: {
   blockId: Block['id']
@@ -47,8 +46,6 @@ export function BlockLayerItem(props: {
     setIsRenaming,
   })
 
-  useKeyboard({ actions: blockActions, bindListeners: isActive && !isCanvasMutating })
-
   const { isDraggingSource, dragPreviewContainer } = useDrag({
     dragRef,
     data: { id: 'block', parent: props.parent, node: blockGet.data, index: props.index },
@@ -79,35 +76,11 @@ export function BlockLayerItem(props: {
     },
   })
 
+  const isLeaf = Object.keys(blockGet.data.slots).length === 0
+
   return (
-    <Tree
-      open={open}
-      setOpen={setOpen}
-      drop={{ ref: dropRef, edge: closestEdge }}
-      drag={{ ref: dragRef, preview: { container: dragPreviewContainer, children: blockGet.data.name }, isDragging: isDraggingSource }}
-      isHovered={isHoveredBlock}
-      rename={{
-        isRenaming,
-        setIsRenaming,
-        onRename: async (updatedName) => {
-          await blockUpdateName.mutateAsync({ block: blockGet.data, name: updatedName })
-        },
-      }}
-      action={{
-        label: 'Layer actions',
-        items: blockActions,
-      }}
-      disabled={isCanvasMutating}
-      item={{ label: blockGet.data.name, icon: Layers2 }}
-      isActive={isActive}
-      setActive={(e) => {
-        e.stopPropagation()
-        props.setActive((active) => {
-          if (active?.id === props.blockId) return undefined
-          return { store: 'blocks', id: props.blockId }
-        })
-      }}
-      li={{
+    <TreeItem
+      htmlProps={{
         'data-drop-id': `block-${blockGet.data.id}`,
         'data-component': 'BlockLayerItem',
         onMouseLeave: (e) => {
@@ -119,7 +92,38 @@ export function BlockLayerItem(props: {
           props.setHoveredBlockId(props.blockId)
         },
       }}
-      items={Object.keys(blockGet.data.slots).map((slot) => (
+      collapsible={!isLeaf ? { open, setOpen } : undefined}
+      drop={{ ref: dropRef, edge: closestEdge }}
+      drag={{ ref: dragRef, preview: { container: dragPreviewContainer, children: blockGet.data.name }, isDragging: isDraggingSource }}
+      isHovered={isHoveredBlock}
+      rename={{
+        isRenaming,
+        setIsRenaming,
+        onRename: async (updatedName) => {
+          await blockUpdateName.mutateAsync({ block: blockGet.data, name: updatedName })
+        },
+      }}
+      actions={{
+        disableMenu: isCanvasMutating,
+        disableShortcuts: !isActive || isCanvasMutating,
+        label: 'Layer actions',
+        operations: blockActions,
+      }}
+      disabled={isCanvasMutating}
+      label={blockGet.data.name}
+      icon={Layers2}
+      active={{
+        isActive: isActive,
+        setActive: (e) => {
+          e.stopPropagation()
+          props.setActive((active) => {
+            if (active?.id === props.blockId) return undefined
+            return { store: 'blocks', id: props.blockId }
+          })
+        },
+      }}
+    >
+      {Object.keys(blockGet.data.slots).map((slot) => (
         <BlockLayerItemSlot
           active={props.active}
           setActive={props.setActive}
@@ -131,6 +135,6 @@ export function BlockLayerItem(props: {
           parent={props.parent}
         />
       ))}
-    />
+    </TreeItem>
   )
 }

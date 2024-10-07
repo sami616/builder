@@ -10,7 +10,7 @@ import { useBlockMove } from '@/hooks/use-block-move'
 import { validateComponentSlots } from '@/components/editor/block-item'
 import { Missing } from '@/components/editor/missing'
 import { CircleDashed } from 'lucide-react'
-import { Tree } from '@/components/ui/tree'
+import { Tree, TreeItem } from '@/components/ui/tree'
 import { Active } from '@/routes/pages.$id'
 
 export function BlockLayerItemSlot(props: {
@@ -63,13 +63,14 @@ export function BlockLayerItemSlot(props: {
   if (!context.config[props.block.type]?.slots?.[props.slot]) return <Missing node={{ type: 'slot', name: props.slot }} />
 
   return (
-    <Tree
-      li={{ 'data-component': 'BlockLayerItemSlot' }}
-      open={open}
-      setOpen={setOpen}
+    <TreeItem
+      htmlProps={{ 'data-component': 'BlockLayerItemSlot' }}
+      collapsible={hasSlotEntries ? { open, setOpen } : undefined}
       drop={{ ref: ref, isDraggingOver }}
-      item={{ icon: !hasSlotEntries ? CircleDashed : undefined, label: context.config[props.block.type].slots?.[props.slot].name }}
-      items={props.block.slots[props.slot].map((blockId, index) => (
+      icon={!hasSlotEntries ? CircleDashed : undefined}
+      label={context.config[props.block.type].slots?.[props.slot].name}
+    >
+      {props.block.slots[props.slot].map((blockId, index) => (
         <BlockLayerItem
           setActive={props.setActive}
           active={props.active}
@@ -81,6 +82,6 @@ export function BlockLayerItemSlot(props: {
           key={blockId}
         />
       ))}
-    />
+    </TreeItem>
   )
 }

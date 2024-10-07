@@ -10,7 +10,6 @@ import { Tree } from '@/components/ui/tree'
 import { useIsMutating } from '@tanstack/react-query'
 import { useTemplateActions } from '@/hooks/use-template-actions'
 import { Active } from '@/routes/pages.$id'
-import { useKeyboard } from '@/hooks/use-keyboard'
 
 export function TemplateItem(props: { template: Template; index: number; active: Active['State']; setActive: Active['Set'] }) {
   const dragRef = useRef<HTMLDivElement>(null)
@@ -23,7 +22,6 @@ export function TemplateItem(props: { template: Template; index: number; active:
   const [isRenaming, setIsRenaming] = useState(false)
   const isActive = props.active?.store === 'templates' && props.active.id === props.template.id
   const { templateActions } = useTemplateActions({ setIsRenaming, setActive: props.setActive, template: props.template })
-  useKeyboard({ actions: templateActions, bindListeners: isActive && !isCanvasMutating })
 
   const { closestEdge } = useDrop({
     dropRef,
