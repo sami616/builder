@@ -17,6 +17,7 @@ import { isBlock } from '@/api'
 import { Missing } from '@/components/editor/missing'
 import { CircleDashed } from 'lucide-react'
 import { Active } from '@/routes/pages.$id'
+import clsx from 'clsx'
 
 export function BlockItem(props: {
   index: number
@@ -148,11 +149,11 @@ export function BlockItem(props: {
     <div
       // @ts-ignore
       style={{ anchorName: `--${block.id}` }}
-      className={[
+      className={clsx([
         'relative',
         isActiveBlock ? 'outline outline-2 outline-emerald-500 z-50' : '',
         isHoveredBlock ? 'outline outline-2 outline-rose-500 z-50' : '',
-      ].join(' ')}
+      ])}
       data-component="BlockItem"
       data-drop-id={`block-${blockGet.data.id}`}
       onDoubleClick={(e) => {

@@ -10,7 +10,7 @@ import { useBlockMove } from '@/hooks/use-block-move'
 import { validateComponentSlots } from '@/components/editor/block-item'
 import { Missing } from '@/components/editor/missing'
 import { CircleDashed } from 'lucide-react'
-import { Tree, TreeItem } from '@/components/ui/tree'
+import { TreeItem } from '@/components/ui/tree'
 import { Active } from '@/routes/pages.$id'
 
 export function BlockLayerItemSlot(props: {

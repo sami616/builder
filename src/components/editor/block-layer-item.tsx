@@ -11,8 +11,7 @@ import { useBlockMove } from '@/hooks/use-block-move'
 import { isBlock } from '@/api'
 import { Layers2 } from 'lucide-react'
 import { validateComponentSlots } from '@/components/editor/block-item'
-import { Tree, TreeItem } from '@/components/ui/tree'
-import { useIsMutating } from '@tanstack/react-query'
+import { TreeItem } from '@/components/ui/tree'
 import { useBlockActions } from '@/hooks/use-block-actions'
 import { Active } from '@/routes/pages.$id'
 
@@ -32,17 +31,17 @@ export function BlockLayerItem(props: {
   const { blockMove } = useBlockMove()
   const { blockAdd } = useBlockAdd()
   const { templateApply } = useTemplateApply()
-  const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
   const [open, setOpen] = useState(false)
   const [isRenaming, setIsRenaming] = useState(false)
   const isHoveredBlock = props.hoveredBlockId === props.blockId
   const isActive = props.active?.store === 'blocks' && props.active.id === props.blockId
 
-  const { blockActions } = useBlockActions({
+  const blockActions = useBlockActions({
     index: props.index,
     block: blockGet.data,
     parent: props.parent,
     setActive: props.setActive,
+    isActive,
     setIsRenaming,
   })
 
@@ -81,8 +80,8 @@ export function BlockLayerItem(props: {
   return (
     <TreeItem
       htmlProps={{
-        'data-drop-id': `block-${blockGet.data.id}`,
         'data-component': 'BlockLayerItem',
+        'data-drop-id': `block-${blockGet.data.id}`,
         onMouseLeave: (e) => {
           e.stopPropagation()
           props.setHoveredBlockId(undefined)
@@ -103,24 +102,16 @@ export function BlockLayerItem(props: {
           await blockUpdateName.mutateAsync({ block: blockGet.data, name: updatedName })
         },
       }}
-      actions={{
-        disableMenu: isCanvasMutating,
-        disableShortcuts: !isActive || isCanvasMutating,
-        label: 'Layer actions',
-        operations: blockActions,
-      }}
-      disabled={isCanvasMutating}
+      actions={blockActions}
       label={blockGet.data.name}
       icon={Layers2}
-      active={{
-        isActive: isActive,
-        setActive: (e) => {
-          e.stopPropagation()
-          props.setActive((active) => {
-            if (active?.id === props.blockId) return undefined
-            return { store: 'blocks', id: props.blockId }
-          })
-        },
+      isActive={isActive}
+      setActive={(e) => {
+        e.stopPropagation()
+        props.setActive((active) => {
+          if (active?.id === props.blockId) return undefined
+          return { store: 'blocks', id: props.blockId }
+        })
       }}
     >
       {Object.keys(blockGet.data.slots).map((slot) => (

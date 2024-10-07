@@ -4,7 +4,7 @@ import { useRef, useState } from 'react'
 import { NestedStructure } from '@/components/editor/component-panel'
 import { useDrag } from '@/hooks/use-drag'
 import { Component } from 'lucide-react'
-import { Tree } from '@/components/ui/tree'
+import { Tree, TreeItem } from '@/components/ui/tree'
 
 export function ComponentItem(props: { page: Page; type: Block['type']; value: NestedStructure | Config[keyof Config] }) {
   const dragRef = useRef<HTMLDivElement>(null)
@@ -19,23 +19,20 @@ export function ComponentItem(props: { page: Page; type: Block['type']; value: N
 
   if (isLeaf) {
     return (
-      <Tree
-        li={{ 'data-component': 'ComponentItem', className: 'hover:bg-gray-100' }}
-        item={{ label: props.type, icon: Component }}
+      <TreeItem
+        htmlProps={{ 'data-component': 'ComponentItem', className: 'hover:bg-gray-100' }}
+        label={props.type}
+        icon={Component}
         drag={{ ref: dragRef, isDragging: isDraggingSource, preview: { container: dragPreviewContainer, children: props.type } }}
       />
     )
   }
 
   return (
-    <Tree
-      li={{ 'data-component': 'ComponentItem' }}
-      open={open}
-      setOpen={setOpen}
-      item={{ label: props.type }}
-      items={Object.entries(props.value).map(([key, value]) => (
+    <TreeItem htmlProps={{ 'data-component': 'ComponentItem' }} collapsible={{ open, setOpen }} label={props.type}>
+      {Object.entries(props.value).map(([key, value]) => (
         <ComponentItem key={key} page={props.page} type={key as Block['type']} value={value} />
       ))}
-    />
+    </TreeItem>
   )
 }

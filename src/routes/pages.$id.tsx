@@ -46,6 +46,7 @@ function Page() {
   const blocks = Object.values(pageGet.data.slots)[0]
   const [activeTab, setActiveTab] = useState('components')
 
+  console.log(active)
   return (
     <div data-component="pages.$id">
       {/* Edit page meta data */}

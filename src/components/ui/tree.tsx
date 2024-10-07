@@ -6,6 +6,8 @@ import { Edge } from '@/hooks/use-drop'
 import { ReactNode } from '@tanstack/react-router'
 import { DragPreview } from '@/components/editor/drag-preview'
 import { Actions } from '../editor/actions'
+import { useIsMutating } from '@tanstack/react-query'
+import clsx from 'clsx'
 
 export function Tree(props: { children: ReactNode }) {
   return <ul>{props.children}</ul>
@@ -17,7 +19,6 @@ export function TreeItem(props: {
   htmlProps?: HTMLProps<HTMLLIElement> & Record<`data-${string}`, any>
   isHovered?: boolean
   children?: ReactNode
-  disabled?: boolean
   drop?: { isDraggingOver?: boolean; ref: RefObject<HTMLLIElement>; edge?: Edge }
   drag?: { isDragging?: boolean; ref: RefObject<HTMLDivElement>; preview: { container: HTMLElement | null; children: ReactNode } }
   rename?: { isRenaming: boolean; setIsRenaming: Dispatch<SetStateAction<boolean>>; onRename: (updatedName: string) => void }
@@ -25,13 +26,12 @@ export function TreeItem(props: {
     open?: boolean
     setOpen?: Dispatch<SetStateAction<boolean>>
   }
-  active?: {
-    isActive?: boolean
-    setActive?: (e: React.MouseEvent<HTMLDivElement>) => any
-  }
+  isActive?: boolean
+  setActive?: (e: React.MouseEvent<HTMLDivElement>) => any
   actions?: ComponentProps<typeof Actions>
 }) {
   const inputRef = useRef<HTMLInputElement>(null)
+  const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
 
   useEffect(() => {
     async function handleClickOutside(e: MouseEvent) {
@@ -62,7 +62,7 @@ export function TreeItem(props: {
     <Collapsible asChild open={props.collapsible?.open} onOpenChange={props.collapsible?.setOpen}>
       <li
         {...props.htmlProps}
-        className={[
+        className={clsx([
           'select-none',
           'grid',
           'gap-2',
@@ -73,9 +73,9 @@ export function TreeItem(props: {
           props.isHovered ? 'bg-gray-100' : '',
           props.drag?.isDragging ? 'opacity-50' : 'opacity-100',
           props.drop?.isDraggingOver ? 'bg-gray-100' : '',
-          props.active?.isActive && 'ring-inset ring-2 ring-emerald-500',
+          props.isActive && 'ring-inset ring-2 ring-emerald-500',
           props.htmlProps?.className,
-        ].join(' ')}
+        ])}
         ref={props.drop?.ref}
       >
         <div className="w-full flex gap-2 items-center">
@@ -87,12 +87,11 @@ export function TreeItem(props: {
           <div className="flex gap-2 grow">
             <div
               onClick={(e) => {
-                if (!props.disabled) {
-                  props.active?.setActive?.(e)
-                }
+                if (isCanvasMutating) return
+                props.setActive?.(e)
               }}
               ref={props.drag?.ref}
-              className={`${props.drag ? 'cursor-move' : 'cursor-default'} ${props.disabled ? 'cursor-not-allowed' : 'cursor-default'} flex grow gap-2 items-center`}
+              className={`${props.drag ? 'cursor-move' : 'cursor-default'} ${isCanvasMutating ? 'cursor-not-allowed' : 'cursor-default'} flex grow gap-2 items-center`}
             >
               {itemIcon}
               {props.rename?.isRenaming ? (
@@ -123,7 +122,7 @@ export function TreeItem(props: {
                   className="w-full p-1"
                   onDoubleClick={(e) => {
                     e.stopPropagation()
-                    if (props.disabled) return
+                    if (isCanvasMutating) return
                     props.rename?.setIsRenaming(true)
                   }}
                 >
@@ -132,7 +131,17 @@ export function TreeItem(props: {
               )}
             </div>
 
-            {props.actions && <Actions {...props.actions} />}
+            {props.actions && (
+              <Actions
+                {...props.actions}
+                onCloseAutoFocus={(e) => {
+                  if (props.rename?.isRenaming) {
+                    e.preventDefault()
+                    selectInput()
+                  }
+                }}
+              />
+            )}
           </div>
         </div>
         {props.children && (

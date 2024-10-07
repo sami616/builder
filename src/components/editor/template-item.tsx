@@ -6,22 +6,20 @@ import { useTemplateAdd } from '@/hooks/use-template-add'
 import { useTemplateReorder } from '@/hooks/use-template-reorder'
 import { useDrag, isDragData } from '@/hooks/use-drag'
 import { useDrop } from '@/hooks/use-drop'
-import { Tree } from '@/components/ui/tree'
-import { useIsMutating } from '@tanstack/react-query'
+import { TreeItem } from '@/components/ui/tree'
 import { useTemplateActions } from '@/hooks/use-template-actions'
 import { Active } from '@/routes/pages.$id'
 
 export function TemplateItem(props: { template: Template; index: number; active: Active['State']; setActive: Active['Set'] }) {
   const dragRef = useRef<HTMLDivElement>(null)
   const dropRef = useRef<HTMLLIElement>(null)
-  const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
   const { templateUpdateName } = useTemplateUpdateName()
   const { templateAdd } = useTemplateAdd()
   const { templateReorder } = useTemplateReorder()
   const { dragPreviewContainer, isDraggingSource } = useDrag({ dragRef, data: { id: 'template', index: props.index, node: props.template } })
   const [isRenaming, setIsRenaming] = useState(false)
   const isActive = props.active?.store === 'templates' && props.active.id === props.template.id
-  const { templateActions } = useTemplateActions({ setIsRenaming, setActive: props.setActive, template: props.template })
+  const templateActions = useTemplateActions({ setIsRenaming, setActive: props.setActive, isActive, template: props.template })
 
   const { closestEdge } = useDrop({
     dropRef,
@@ -38,12 +36,10 @@ export function TemplateItem(props: { template: Template; index: number; active:
   })
 
   return (
-    <Tree
-      li={{ 'data-component': 'TemplateItem' }}
-      item={{
-        label: props.template.name,
-        icon: Layout,
-      }}
+    <TreeItem
+      htmlProps={{ 'data-component': 'TemplateItem' }}
+      label={props.template.name}
+      icon={Layout}
       rename={{
         isRenaming,
         setIsRenaming,
@@ -59,11 +55,7 @@ export function TemplateItem(props: { template: Template; index: number; active:
           return { store: 'templates', id: props.template.id }
         })
       }}
-      disabled={isCanvasMutating}
-      action={{
-        label: 'Template actions',
-        items: templateActions,
-      }}
+      actions={templateActions}
       drop={{ ref: dropRef, edge: closestEdge }}
       drag={{ ref: dragRef, isDragging: isDraggingSource, preview: { container: dragPreviewContainer, children: props.template.name } }}
     />

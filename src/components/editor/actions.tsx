@@ -17,8 +17,8 @@ export function Actions(props: {
     id: string
     action: () => void
     disabled?: boolean
-    label: string
-    icon: ComponentType<{ className?: string; size?: number | string }>
+    label?: string
+    icon?: ComponentType<{ className?: string; size?: number | string }>
     shortcut?: { label: string; modifiers?: Array<'ctrlKey' | 'shiftKey'>; key: string }
   }>
   label?: string

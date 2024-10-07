@@ -1,11 +1,12 @@
-import { type Actions } from '@/hooks/use-keyboard'
 import { Trash, Pen, Layout, Copy } from 'lucide-react'
 import { useBlockDelete } from '@/hooks/use-block-delete'
 import { useBlockCopy } from '@/hooks/use-block-copy'
 import { useTemplateAdd } from '@/hooks/use-template-add'
 import { Block, Page } from '@/db'
-import { Dispatch, SetStateAction } from 'react'
+import { ComponentProps, Dispatch, SetStateAction } from 'react'
 import { Active } from '@/routes/pages.$id'
+import { Actions } from '@/components/editor/actions'
+import { useIsMutating } from '@tanstack/react-query'
 
 export function useBlockActions(props: {
   block: Block
@@ -13,12 +14,14 @@ export function useBlockActions(props: {
   parent: { slot: string; node: Block } | { slot: string; node: Page }
   setIsRenaming: Dispatch<SetStateAction<boolean>>
   setActive: Active['Set']
-}) {
+  isActive: boolean
+}): ComponentProps<typeof Actions> {
   const { blockCopy } = useBlockCopy()
   const { blockDelete } = useBlockDelete()
   const { templateAdd } = useTemplateAdd()
+  const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
 
-  const blockActions: Actions = [
+  const operations: ComponentProps<typeof Actions>['operations'] = [
     {
       id: 'createTemplate',
       label: 'Create template',
@@ -83,5 +86,5 @@ export function useBlockActions(props: {
     },
   ]
 
-  return { blockActions }
+  return { operations, disableMenu: isCanvasMutating, disableShortcuts: !props.isActive || isCanvasMutating, label: 'Layer actions' }
 }
