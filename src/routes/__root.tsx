@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback } from '@/components/ui/avatar'
+import { AvatarImage, Avatar, AvatarFallback } from '@/components/ui/avatar'
 import { type Context } from '@/main'
 import {
   NavigationMenu,
@@ -7,11 +7,15 @@ import {
   NavigationMenuList,
   navigationMenuTriggerStyle,
 } from '@/components/ui/navigation-menu'
-
 import { createRootRouteWithContext, Link, Outlet } from '@tanstack/react-router'
-import { AvatarImage } from '@/components/ui/avatar'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuLabel } from '@/components/ui/dropdown-menu'
-import { DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu'
+import {
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuLabel,
+} from '@/components/ui/dropdown-menu'
 
 export const Route = createRootRouteWithContext<Context>()({
   component: () => (

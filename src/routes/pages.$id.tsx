@@ -1,19 +1,17 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { type Page, type Block, Template } from '@/db'
-import { Suspense, useState } from 'react'
-import { ComponentPanel } from '@/components/editor/ComponentPanel'
-import { PropsPanel } from '@/components/editor/PropsPanel'
-import { BlockLayerPanel } from '@/components/editor/BlockLayerPanel'
-import { DropZone } from '@/components/editor/DropZone'
-import { BlockItem } from '@/components/editor/BlockItem'
-import { TemplatePanel } from '@/components/editor/TemplatesPanel'
-import { usePageUpdateName } from '@/hooks/usePageUpdateName'
-import { usePageGet, pageGetOpts } from '../hooks/usePageGet'
-import { templateGetManyOpts, useTemplateGetMany } from '@/hooks/useTemplateGetMany'
-import { isDragData } from '@/hooks/useDrag'
-import { useBlockAdd } from '@/hooks/useBlockAdd'
-import { useTemplateApply } from '@/hooks/useTemplateApply'
-import { useIsMutating } from '@tanstack/react-query'
+import { Dispatch, SetStateAction, Suspense, useState } from 'react'
+import { ComponentPanel } from '@/components/editor/component-panel'
+import { PropsPanel } from '@/components/editor/props-panel'
+import { BlockLayerPanel } from '@/components/editor/block-layer-panel'
+import { DropZone } from '@/components/editor/drop-zone'
+import { BlockItem } from '@/components/editor/block-item'
+import { TemplatePanel } from '@/components/editor/templates-panel'
+import { usePageGet, pageGetOpts } from '@/hooks/use-page-get'
+import { templateGetManyOpts, useTemplateGetMany } from '@/hooks/use-template-get-many'
+import { isDragData } from '@/hooks/use-drag'
+import { useBlockAdd } from '@/hooks/use-block-add'
+import { useTemplateApply } from '@/hooks/use-template-apply'
 import '@/routes/pages.$id.css'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable'
@@ -32,10 +30,14 @@ export const Route = createFileRoute('/pages/$id')({
   errorComponent: () => <p>Error!</p>,
 })
 
+export type Active = {
+  State: { store: 'blocks'; id: Block['id'] } | { store: 'templates'; id: Template['id'] } | undefined
+  Set: Dispatch<SetStateAction<Active['State']>>
+}
+
 function Page() {
   const { id } = Route.useParams()
-  const [activeBlockId, setActiveBlockId] = useState<Block['id'] | undefined>()
-  const [active, setActive] = useState<{ store: 'blocks'; id: Block['id'] } | { store: 'templates'; id: Template['id'] }>()
+  const [active, setActive] = useState<Active['State']>()
   const [hoveredBlockId, setHoveredBlockId] = useState<Block['id'] | undefined>()
   const { pageGet } = usePageGet({ id: Number(id) })
   const { templateGetMany } = useTemplateGetMany()
@@ -86,7 +88,7 @@ function Page() {
                         <ComponentPanel page={pageGet.data} />
                       </TabsContent>
                       <TabsContent hidden={activeTab !== 'templates'} forceMount value="templates">
-                        <TemplatePanel templates={templateGetMany.data} />
+                        <TemplatePanel active={active} setActive={setActive} templates={templateGetMany.data} />
                       </TabsContent>
                     </Tabs>
 
@@ -98,9 +100,9 @@ function Page() {
                   <ScrollArea className="h-full w-full">
                     <h4 className="p-4">Layers</h4>
                     <BlockLayerPanel
-                      activeBlockId={activeBlockId}
+                      active={active}
                       hoveredBlockId={hoveredBlockId}
-                      setActiveBlockId={setActiveBlockId}
+                      setActive={setActive}
                       setHoveredBlockId={setHoveredBlockId}
                       page={pageGet.data}
                     />
@@ -139,8 +141,8 @@ function Page() {
                         parent={{ node: pageGet.data, slot: 'root' }}
                         index={index}
                         page={pageGet.data}
-                        activeBlockId={activeBlockId}
-                        setActiveBlockId={setActiveBlockId}
+                        active={active}
+                        setActive={setActive}
                         hoveredBlockId={hoveredBlockId}
                         setHoveredBlockId={setHoveredBlockId}
                         key={blockId}
@@ -151,12 +153,12 @@ function Page() {
                 <ScrollBar orientation="horizontal" />
               </ScrollArea>
             </ResizablePanel>
-            {activeBlockId !== undefined && (
+            {active?.store === 'blocks' && (
               <>
                 <ResizableHandle />
                 <ResizablePanel minSize={20} defaultSize={20}>
                   <ScrollArea className="h-full w-full">
-                    <PropsPanel activeBlockId={activeBlockId} setActiveBlockId={setActiveBlockId} />
+                    <PropsPanel active={active} setActive={setActive} />
                     <ScrollBar orientation="horizontal" />
                   </ScrollArea>
                 </ResizablePanel>

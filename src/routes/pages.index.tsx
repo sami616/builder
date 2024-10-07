@@ -1,7 +1,7 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { pageGetManyOpts, usePageGetMany } from '@/hooks/usePageGetMany'
+import { pageGetManyOpts, usePageGetMany } from '@/hooks/use-page-get-many'
 import { Skeleton } from '@/components/ui/skeleton'
-import { PageTable } from '@/components/editor/PageTable'
+import { PageTable } from '@/components/editor/page-table'
 
 // Route
 export const Route = createFileRoute('/pages/')({
