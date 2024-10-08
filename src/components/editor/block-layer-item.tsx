@@ -43,6 +43,7 @@ export function BlockLayerItem(props: {
     setActive: props.setActive,
     isActive,
     setIsRenaming,
+    isRenaming,
   })
 
   const { isDraggingSource, dragPreviewContainer } = useDrag({
@@ -104,7 +105,7 @@ export function BlockLayerItem(props: {
       }}
       actions={blockActions}
       label={blockGet.data.name}
-      icon={Layers2}
+      Icon={Layers2}
       isActive={isActive}
       setActive={(e) => {
         e.stopPropagation()

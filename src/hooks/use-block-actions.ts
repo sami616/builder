@@ -13,6 +13,7 @@ export function useBlockActions(props: {
   index: number
   parent: { slot: string; node: Block } | { slot: string; node: Page }
   setIsRenaming: Dispatch<SetStateAction<boolean>>
+  isRenaming?: boolean
   setActive: Active['Set']
   isActive: boolean
 }): ComponentProps<typeof Actions> {
@@ -65,6 +66,7 @@ export function useBlockActions(props: {
       id: 'delete',
       label: 'Delete',
       icon: Trash,
+      disabled: props.isRenaming,
       shortcut: {
         key: 'Backspace',
         label: '⌫',
@@ -86,5 +88,10 @@ export function useBlockActions(props: {
     },
   ]
 
-  return { operations, disableMenu: isCanvasMutating, disableShortcuts: !props.isActive || isCanvasMutating, label: 'Layer actions' }
+  return {
+    operations,
+    disableMenu: isCanvasMutating,
+    disableShortcuts: !props.isActive || props.isRenaming || isCanvasMutating,
+    label: 'Layer actions',
+  }
 }
