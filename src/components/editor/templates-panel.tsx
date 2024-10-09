@@ -3,10 +3,9 @@ import { isDragData } from '@/hooks/use-drag'
 import { useTemplateAdd } from '@/hooks/use-template-add'
 import { DropZone } from '@/components/editor/drop-zone'
 import { TemplateItem } from '@/components/editor/template-item'
-import { Active } from '@/routes/pages.$id'
 import { Layers2 } from 'lucide-react'
 
-export function TemplatePanel(props: { templates: Template[]; active: Active['State']; setActive: Active['Set'] }) {
+export function TemplatePanel(props: { templates: Template[] }) {
   const { templateAdd } = useTemplateAdd()
   if (props.templates.length === 0)
     return (
@@ -29,7 +28,7 @@ export function TemplatePanel(props: { templates: Template[]; active: Active['St
   return (
     <ul data-component="TemplatePanel">
       {props.templates.map((template, index) => {
-        return <TemplateItem active={props.active} setActive={props.setActive} index={index} key={template.id} template={template} />
+        return <TemplateItem index={index} key={template.id} template={template} />
       })}
     </ul>
   )

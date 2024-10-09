@@ -16,6 +16,7 @@ import {
   DropdownMenuItem,
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu'
+import { ActiveProvider } from '@/components/editor/active-provider'
 
 export const Route = createRootRouteWithContext<Context>()({
   component: () => (
@@ -47,7 +48,10 @@ export const Route = createRootRouteWithContext<Context>()({
           </DropdownMenu>
         </div>
       </div>
-      <Outlet />
+
+      <ActiveProvider>
+        <Outlet />
+      </ActiveProvider>
     </>
   ),
 })

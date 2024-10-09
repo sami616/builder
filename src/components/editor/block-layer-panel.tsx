@@ -5,15 +5,12 @@ import { useBlockAdd } from '@/hooks/use-block-add'
 import { useTemplateApply } from '@/hooks/use-template-apply'
 import { BlockLayerItem } from '@/components/editor/block-layer-item'
 import { Blocks } from 'lucide-react'
-import { Active } from '@/routes/pages.$id'
 import { Dispatch, SetStateAction } from 'react'
 
 export function BlockLayerPanel(props: {
   page: Page
   hoveredBlockId?: Block['id']
   setHoveredBlockId: Dispatch<SetStateAction<Block['id'] | undefined>>
-  active: Active['State']
-  setActive: Active['Set']
 }) {
   const { blockAdd } = useBlockAdd()
   const { templateApply } = useTemplateApply()
@@ -44,8 +41,6 @@ export function BlockLayerPanel(props: {
     <ul data-component="BlockLayerPanel">
       {blocks.map((blockId, index) => (
         <BlockLayerItem
-          active={props.active}
-          setActive={props.setActive}
           setHoveredBlockId={props.setHoveredBlockId}
           hoveredBlockId={props.hoveredBlockId}
           parent={{ node: props.page, slot: 'root' }}

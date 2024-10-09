@@ -1,5 +1,5 @@
 import { type Page, type Block } from '@/db'
-import { Dispatch, SetStateAction, useRef, useState } from 'react'
+import { Dispatch, SetStateAction, useRef } from 'react'
 import { useDrag, isDragData } from '@/hooks/use-drag'
 import { useDrop } from '@/hooks/use-drop'
 import { useBlockUpdateName } from '@/hooks/use-block-update-name'
@@ -11,9 +11,13 @@ import { useBlockMove } from '@/hooks/use-block-move'
 import { isBlock } from '@/api'
 import { Layers2 } from 'lucide-react'
 import { validateComponentSlots } from '@/components/editor/block-item'
-import { TreeItem } from '@/components/ui/tree'
-import { useBlockActions } from '@/hooks/use-block-actions'
-import { Active } from '@/routes/pages.$id'
+import { Fold, FoldContent, FoldHead, FoldIcon, FoldLabel, FoldTrigger } from '@/components/ui/tree'
+import { useIsMutating } from '@tanstack/react-query'
+import { DropIndicator } from './drop-indicator'
+import { DragPreview } from './drag-preview'
+import clsx from 'clsx'
+import { BlockLayerItemActions } from './block-layer-item-actions'
+import { useActive } from './active-provider'
 
 export function BlockLayerItem(props: {
   blockId: Block['id']
@@ -21,9 +25,8 @@ export function BlockLayerItem(props: {
   parent: { slot: string; node: Block } | { slot: string; node: Page }
   hoveredBlockId?: Block['id']
   setHoveredBlockId: Dispatch<SetStateAction<Block['id'] | undefined>>
-  setActive: Active['Set']
-  active: Active['State']
 }) {
+  const { setActive, isActive } = useActive()
   const dragRef = useRef<HTMLDivElement>(null)
   const dropRef = useRef<HTMLLIElement>(null)
   const { blockGet } = useBlockGet({ id: props.blockId })
@@ -31,20 +34,9 @@ export function BlockLayerItem(props: {
   const { blockMove } = useBlockMove()
   const { blockAdd } = useBlockAdd()
   const { templateApply } = useTemplateApply()
-  const [open, setOpen] = useState(false)
-  const [isRenaming, setIsRenaming] = useState(false)
   const isHoveredBlock = props.hoveredBlockId === props.blockId
-  const isActive = props.active?.store === 'blocks' && props.active.id === props.blockId
-
-  const blockActions = useBlockActions({
-    index: props.index,
-    block: blockGet.data,
-    parent: props.parent,
-    setActive: props.setActive,
-    isActive,
-    setIsRenaming,
-    isRenaming,
-  })
+  const currActive = isActive({ id: props.blockId, store: 'blocks' })
+  const isLeaf = Object.keys(blockGet.data.slots).length === 0
 
   const { isDraggingSource, dragPreviewContainer } = useDrag({
     dragRef,
@@ -76,13 +68,18 @@ export function BlockLayerItem(props: {
     },
   })
 
-  const isLeaf = Object.keys(blockGet.data.slots).length === 0
-
   return (
-    <TreeItem
+    <Fold
+      customRef={dropRef}
       htmlProps={{
-        'data-component': 'BlockLayerItem',
         'data-drop-id': `block-${blockGet.data.id}`,
+        className: clsx([isHoveredBlock && 'bg-gray-100', isDraggingSource && 'opacity-50', currActive && 'ring-inset ring-2 ring-emerald-500']),
+        onClick: () => {
+          setActive((active) => {
+            if (active?.id === props.blockId) return undefined
+            return { store: 'blocks', id: props.blockId }
+          })
+        },
         onMouseLeave: (e) => {
           e.stopPropagation()
           props.setHoveredBlockId(undefined)
@@ -92,41 +89,33 @@ export function BlockLayerItem(props: {
           props.setHoveredBlockId(props.blockId)
         },
       }}
-      collapsible={!isLeaf ? { open, setOpen } : undefined}
-      drop={{ ref: dropRef, edge: closestEdge }}
-      drag={{ ref: dragRef, preview: { container: dragPreviewContainer, children: blockGet.data.name }, isDragging: isDraggingSource }}
-      isHovered={isHoveredBlock}
-      rename={{
-        isRenaming,
-        setIsRenaming,
-        onRename: async (updatedName) => {
-          await blockUpdateName.mutateAsync({ block: blockGet.data, name: updatedName })
-        },
-      }}
-      actions={blockActions}
-      label={blockGet.data.name}
-      Icon={Layers2}
-      isActive={isActive}
-      setActive={(e) => {
-        e.stopPropagation()
-        props.setActive((active) => {
-          if (active?.id === props.blockId) return undefined
-          return { store: 'blocks', id: props.blockId }
-        })
-      }}
     >
-      {Object.keys(blockGet.data.slots).map((slot) => (
-        <BlockLayerItemSlot
-          active={props.active}
-          setActive={props.setActive}
-          hoveredBlockId={props.hoveredBlockId}
-          setHoveredBlockId={props.setHoveredBlockId}
-          key={slot}
-          slot={slot}
-          block={blockGet.data}
-          parent={props.parent}
+      <FoldHead customRef={dragRef}>
+        <FoldTrigger hide={isLeaf} />
+        <FoldIcon icon={Layers2} />
+        <FoldLabel
+          label={blockGet.data.name}
+          onRename={async (updatedName) => {
+            await blockUpdateName.mutateAsync({ block: blockGet.data, name: updatedName })
+          }}
         />
-      ))}
-    </TreeItem>
+
+        <BlockLayerItemActions block={blockGet.data} index={props.index} parent={props.parent} />
+      </FoldHead>
+      <FoldContent>
+        {Object.keys(blockGet.data.slots).map((slot) => (
+          <BlockLayerItemSlot
+            hoveredBlockId={props.hoveredBlockId}
+            setHoveredBlockId={props.setHoveredBlockId}
+            key={slot}
+            slot={slot}
+            block={blockGet.data}
+            parent={props.parent}
+          />
+        ))}
+      </FoldContent>
+      <DropIndicator closestEdge={closestEdge} variant="horizontal" />
+      <DragPreview dragPreviewContainer={dragPreviewContainer}>{blockGet.data.name}</DragPreview>
+    </Fold>
   )
 }

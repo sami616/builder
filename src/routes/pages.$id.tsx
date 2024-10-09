@@ -1,6 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
-import { type Page, type Block, Template } from '@/db'
-import { Dispatch, SetStateAction, Suspense, useState } from 'react'
+import { type Page, type Block } from '@/db'
+import { Suspense, useState } from 'react'
 import { ComponentPanel } from '@/components/editor/component-panel'
 import { PropsPanel } from '@/components/editor/props-panel'
 import { BlockLayerPanel } from '@/components/editor/block-layer-panel'
@@ -17,6 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { Blocks } from 'lucide-react'
+import { useActive } from '@/components/editor/active-provider'
 
 export const Route = createFileRoute('/pages/$id')({
   component: Page,
@@ -30,14 +31,8 @@ export const Route = createFileRoute('/pages/$id')({
   errorComponent: () => <p>Error!</p>,
 })
 
-export type Active = {
-  State: { store: 'blocks'; id: Block['id'] } | { store: 'templates'; id: Template['id'] } | undefined
-  Set: Dispatch<SetStateAction<Active['State']>>
-}
-
 function Page() {
   const { id } = Route.useParams()
-  const [active, setActive] = useState<Active['State']>()
   const [hoveredBlockId, setHoveredBlockId] = useState<Block['id'] | undefined>()
   const { pageGet } = usePageGet({ id: Number(id) })
   const { templateGetMany } = useTemplateGetMany()
@@ -45,30 +40,10 @@ function Page() {
   const { templateApply } = useTemplateApply()
   const blocks = Object.values(pageGet.data.slots)[0]
   const [activeTab, setActiveTab] = useState('components')
+  const { active } = useActive()
 
-  console.log(active)
   return (
-    <div data-component="pages.$id">
-      {/* Edit page meta data */}
-      {/* <div> */}
-      {/*   <p>{pageGet.data.name}</p> */}
-      {/*   <form */}
-      {/*     onSubmit={(e) => { */}
-      {/*       e.preventDefault() */}
-      {/*       const form = e.currentTarget */}
-      {/*       const formData = new FormData(form) */}
-      {/*       pageUpdateName.mutate({ page: pageGet.data, name: formData.get('name') as string }) */}
-      {/*     }} */}
-      {/*   > */}
-      {/*     <fieldset disabled={pageUpdateName.isPending}> */}
-      {/*       <input type="text" name="name" defaultValue={pageGet.data.name} /> */}
-      {/*       <button type="submit">Update</button> */}
-      {/*     </fieldset> */}
-      {/*   </form> */}
-      {/* </div> */}
-      {/* {pageUpdateName.isPending && <p>Updating...</p>} */}
-      {/* {pageUpdateName.error && <p>{pageUpdateName.error.message}</p>} */}
-
+    <div>
       <Suspense fallback={<p>Loading...</p>}>
         <main className="h-[calc(100vh-62px)]">
           <ResizablePanelGroup direction="horizontal">
@@ -89,7 +64,7 @@ function Page() {
                         <ComponentPanel page={pageGet.data} />
                       </TabsContent>
                       <TabsContent hidden={activeTab !== 'templates'} forceMount value="templates">
-                        <TemplatePanel active={active} setActive={setActive} templates={templateGetMany.data} />
+                        <TemplatePanel templates={templateGetMany.data} />
                       </TabsContent>
                     </Tabs>
 
@@ -100,13 +75,7 @@ function Page() {
                 <ResizablePanel>
                   <ScrollArea className="h-full w-full">
                     <h4 className="p-4">Layers</h4>
-                    <BlockLayerPanel
-                      active={active}
-                      hoveredBlockId={hoveredBlockId}
-                      setActive={setActive}
-                      setHoveredBlockId={setHoveredBlockId}
-                      page={pageGet.data}
-                    />
+                    <BlockLayerPanel hoveredBlockId={hoveredBlockId} setHoveredBlockId={setHoveredBlockId} page={pageGet.data} />
                     <ScrollBar orientation="horizontal" />
                   </ScrollArea>
                 </ResizablePanel>
@@ -142,8 +111,6 @@ function Page() {
                         parent={{ node: pageGet.data, slot: 'root' }}
                         index={index}
                         page={pageGet.data}
-                        active={active}
-                        setActive={setActive}
                         hoveredBlockId={hoveredBlockId}
                         setHoveredBlockId={setHoveredBlockId}
                         key={blockId}
@@ -159,7 +126,7 @@ function Page() {
                 <ResizableHandle />
                 <ResizablePanel minSize={20} defaultSize={20}>
                   <ScrollArea className="h-full w-full">
-                    <PropsPanel active={active} setActive={setActive} />
+                    <PropsPanel />
                     <ScrollBar orientation="horizontal" />
                   </ScrollArea>
                 </ResizablePanel>

@@ -16,24 +16,23 @@ import { config } from '@/main'
 import { isBlock } from '@/api'
 import { Missing } from '@/components/editor/missing'
 import { CircleDashed } from 'lucide-react'
-import { Active } from '@/routes/pages.$id'
 import clsx from 'clsx'
+import { useActive } from './active-provider'
 
 export function BlockItem(props: {
   index: number
   page: Page
   parent: { slot: string; node: Block | Page }
   blockId: Block['id']
-  active?: Active['State']
-  setActive: Active['Set']
   hoveredBlockId?: Block['id']
   setHoveredBlockId: (id: Block['id'] | undefined) => void
 }) {
+  const { active, setActive } = useActive()
   const dropRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<HTMLDivElement>(null)
   const popoverRef = useRef<HTMLDivElement>(null)
   const context = useRouteContext({ from: '/pages/$id' })
-  const isActiveBlock = props.active?.store === 'blocks' && props.active.id === props.blockId
+  const isActiveBlock = active?.store === 'blocks' && active.id === props.blockId
   const isHoveredBlock = props.hoveredBlockId === props.blockId
 
   const { blockGet } = useBlockGet({ id: props.blockId })
@@ -131,8 +130,6 @@ export function BlockItem(props: {
             index={index}
             parent={{ slot, node: block }}
             page={props.page}
-            active={props.active}
-            setActive={props.setActive}
             key={blockId}
             blockId={blockId}
           />
@@ -158,7 +155,7 @@ export function BlockItem(props: {
       data-drop-id={`block-${blockGet.data.id}`}
       onDoubleClick={(e) => {
         e.stopPropagation()
-        props.setActive({ store: 'blocks', id: props.blockId })
+        setActive({ store: 'blocks', id: props.blockId })
       }}
       onMouseOver={(e) => {
         e.stopPropagation()
@@ -195,7 +192,7 @@ export function BlockItem(props: {
                 blockId: props.blockId,
                 parent: props.parent,
               })
-              props.setActive(undefined)
+              setActive(undefined)
             }}
           >
             Delete

@@ -2,11 +2,12 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouteContext } from '@tanstack/react-router'
 import { useBlockGet } from '@/hooks/use-block-get'
 import { config, PropTypes } from '@/main'
-import { Active } from '@/routes/pages.$id'
+import { useActive } from './active-provider'
 
-export function PropsPanel<T extends Active['State'] & { store: 'blocks' }>(props: { active: T; setActive: Active['Set'] }) {
+export function PropsPanel() {
   const context = useRouteContext({ from: '/pages/$id' })
-  const { blockGet } = useBlockGet({ id: props.active?.id })
+  const { active, setActive } = useActive()
+  const { blockGet } = useBlockGet({ id: active?.id })
 
   const updateBlockProps = useMutation({
     mutationFn: context.update,
@@ -53,7 +54,7 @@ export function PropsPanel<T extends Active['State'] & { store: 'blocks' }>(prop
 
   return (
     <div data-component="PropsPanel">
-      <button onClick={() => props.setActive(undefined)}>Close</button>
+      <button onClick={() => setActive(undefined)}>Close</button>
       {<pre>{JSON.stringify(block.props, null, 2)}</pre>}
 
       {configItemProps &&
