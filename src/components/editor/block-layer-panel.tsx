@@ -6,6 +6,7 @@ import { useTemplateApply } from '@/hooks/use-template-apply'
 import { BlockLayerItem } from '@/components/editor/block-layer-item'
 import { Blocks } from 'lucide-react'
 import { Dispatch, SetStateAction } from 'react'
+import { Tree } from '../ui/tree'
 
 export function BlockLayerPanel(props: {
   page: Page
@@ -28,17 +29,17 @@ export function BlockLayerPanel(props: {
         data={{ parent: { slot: 'root', node: props.page } }}
         onDrop={({ source, target }) => {
           if (isDragData['template'](source.data)) {
-            templateApply.mutate({ source: source.data, target: target.data })
+            templateApply({ source: source.data, target: target.data })
           }
           if (isDragData['component'](source.data)) {
-            blockAdd.mutate({ source: source.data, target: target.data })
+            blockAdd({ source: source.data, target: target.data })
           }
         }}
       />
     )
   }
   return (
-    <ul data-component="BlockLayerPanel">
+    <Tree>
       {blocks.map((blockId, index) => (
         <BlockLayerItem
           setHoveredBlockId={props.setHoveredBlockId}
@@ -49,6 +50,6 @@ export function BlockLayerPanel(props: {
           key={blockId}
         />
       ))}
-    </ul>
+    </Tree>
   )
 }

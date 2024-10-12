@@ -1,25 +1,28 @@
 import { useRouteContext } from '@tanstack/react-router'
 import { Page } from '@/db'
 import { useMutation } from '@tanstack/react-query'
-import { useToast } from '@/hooks/use-toast'
+import { toast } from 'sonner'
+
+type Args = { entry: Page }
 
 export function usePageDelete() {
   const context = useRouteContext({ from: '/pages/' })
-  const { toast } = useToast()
-  return {
-    pageDelete: useMutation({
-      mutationKey: ['page', 'delete'],
-      mutationFn: async (args: { entry: Page }) => {
-        const entries = await context.getTree({ root: { store: 'pages', id: args.entry.id }, entries: [] })
-        await context.removeMany({ entries })
-      },
-      onSuccess: () => {
-        context.queryClient.invalidateQueries({ queryKey: ['pages'] })
-        toast({ description: 'Page deleted' })
-      },
-      onError: (e) => {
-        toast({ title: 'Page deletion failed', variant: 'destructive', description: e?.message })
-      },
-    }),
+  const mutation = useMutation({
+    mutationKey: ['page', 'delete'],
+    mutationFn: async (args: Args) => {
+      const entries = await context.getTree({ root: { store: 'pages', id: args.entry.id }, entries: [] })
+      await context.removeMany({ entries })
+    },
+    onSuccess: () => {
+      context.queryClient.invalidateQueries({ queryKey: ['pages'] })
+    },
+  })
+
+  async function pageDelete(args: Args) {
+    const promise = mutation.mutateAsync(args)
+    toast.promise(promise, { loading: 'Deleting page...', success: 'Deleted page', error: 'Deleting page failed' })
+    return promise
   }
+
+  return { pageDelete }
 }

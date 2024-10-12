@@ -12,7 +12,9 @@ import { useIsMutating } from '@tanstack/react-query'
 import { useState } from 'react'
 
 const formSchema = z.object({
-  name: z.string().trim().min(1, { message: 'Name required' }),
+  title: z.string().trim().min(1, { message: 'Title required' }),
+  description: z.string(),
+  url: z.string(),
   slug: z
     .string()
     .trim()
@@ -24,8 +26,8 @@ const formSchema = z.object({
 
 export function PageAdd() {
   const navigate = useNavigate({ from: '/pages' })
-  const { pageAdd } = usePageAdd()
-  const form = useForm<z.infer<typeof formSchema>>({ resolver: zodResolver(formSchema), defaultValues: { name: '' } })
+  const { pageAdd, pageAddIsPending } = usePageAdd()
+  const form = useForm<z.infer<typeof formSchema>>({ resolver: zodResolver(formSchema), defaultValues: { title: '', description: '', slug: '' } })
   const pageCRUDPending = Boolean(useIsMutating({ mutationKey: ['page'] }))
   const [addNewPageDialogOpen, setAddNewPageDialogOpen] = useState(false)
 
@@ -38,7 +40,7 @@ export function PageAdd() {
         open={addNewPageDialogOpen}
         onOpenChange={(bool) => {
           if (bool === false) {
-            if (!pageAdd.isPending) {
+            if (!pageAddIsPending) {
               setAddNewPageDialogOpen(bool)
             }
           } else {
@@ -56,11 +58,13 @@ export function PageAdd() {
             <form
               className="grid gap-4"
               onSubmit={form.handleSubmit(async (values) => {
-                const id = await pageAdd.mutateAsync({
+                const id = await pageAdd({
                   entry: {
                     store: 'pages',
-                    name: values.name,
+                    title: values.title,
+                    description: values.description,
                     slug: values.slug,
+                    url: values.url,
                     createdAt: new Date(),
                     updatedAt: new Date(),
                     slots: { root: [] },
@@ -73,7 +77,7 @@ export function PageAdd() {
             >
               <FormField
                 control={form.control}
-                name="name"
+                name="title"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Name</FormLabel>
@@ -102,14 +106,44 @@ export function PageAdd() {
                   </FormItem>
                 )}
               />
+
+              <FormField
+                control={form.control}
+                name="description"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Description</FormLabel>
+                    <FormControl>
+                      <Input {...field} />
+                    </FormControl>
+                    <FormDescription>The page description for search indexing</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+
+              <FormField
+                control={form.control}
+                name="url"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>URL</FormLabel>
+                    <FormControl>
+                      <Input placeholder="https://yourwebsite.com" {...field} />
+                    </FormControl>
+                    <FormDescription>The URL of you page. This will be used to generate user friendly social media links</FormDescription>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
               <DialogFooter>
                 <DialogClose asChild>
-                  <Button disabled={pageAdd.isPending} variant="outline">
+                  <Button disabled={pageAddIsPending} variant="outline">
                     Close
                   </Button>
                 </DialogClose>
-                <Button disabled={pageAdd.isPending} type="submit" variant="default">
-                  {pageAdd.isPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                <Button disabled={pageAddIsPending} type="submit" variant="default">
+                  {pageAddIsPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                   Create
                 </Button>
               </DialogFooter>

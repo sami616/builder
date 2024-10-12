@@ -22,10 +22,13 @@ export function DropZone<D extends Record<string, any>>(
         'items-center',
         'justify-center',
         'gap-2 ',
+        'text-sm',
         'bg-white',
         'border-2',
+        'border-dashed',
         'rounded-lg',
-        isDraggingOver && 'border-emerald-500',
+        'border-gray-300',
+        isDraggingOver && 'border-purple-500',
       ])}
       id={props.id}
       ref={ref}

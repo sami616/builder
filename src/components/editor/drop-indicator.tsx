@@ -6,7 +6,7 @@ export function DropIndicator(props: { variant: 'vertical' | 'horizontal'; close
   return (
     <div
       className={clsx([
-        'bg-rose-500',
+        'bg-purple-500',
         'absolute',
         'z-50',
         props.variant === 'vertical' ? 'w-0.5 h-full' : 'h-0.5 w-full',

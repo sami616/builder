@@ -11,8 +11,7 @@ import { useBlockMove } from '@/hooks/use-block-move'
 import { isBlock } from '@/api'
 import { Layers2 } from 'lucide-react'
 import { validateComponentSlots } from '@/components/editor/block-item'
-import { Fold, FoldContent, FoldHead, FoldIcon, FoldLabel, FoldTrigger } from '@/components/ui/tree'
-import { useIsMutating } from '@tanstack/react-query'
+import { TreeItem, TreeItemContent, TreeItemHead, TreeItemIcon, TreeItemLabel, TreeItemTrigger } from '@/components/ui/tree'
 import { DropIndicator } from './drop-indicator'
 import { DragPreview } from './drag-preview'
 import clsx from 'clsx'
@@ -35,7 +34,7 @@ export function BlockLayerItem(props: {
   const { blockAdd } = useBlockAdd()
   const { templateApply } = useTemplateApply()
   const isHoveredBlock = props.hoveredBlockId === props.blockId
-  const currActive = isActive({ id: props.blockId, store: 'blocks' })
+  const isActiveBlock = isActive({ id: props.blockId, store: 'blocks' })
   const isLeaf = Object.keys(blockGet.data.slots).length === 0
 
   const { isDraggingSource, dragPreviewContainer } = useDrag({
@@ -48,13 +47,13 @@ export function BlockLayerItem(props: {
     data: { parent: props.parent, node: blockGet.data, index: props.index },
     onDrop: ({ source, target }) => {
       if (isDragData['component'](source.data)) {
-        blockAdd.mutate({ source: source.data, target: target.data })
+        blockAdd({ source: source.data, target: target.data })
       }
       if (isDragData['template'](source.data)) {
-        templateApply.mutate({ source: source.data, target: target.data })
+        templateApply({ source: source.data, target: target.data })
       }
       if (isDragData['block'](source.data)) {
-        blockMove.mutate({ source: source.data, target: target.data })
+        blockMove({ source: source.data, target: target.data })
       }
     },
     disableDrop: ({ source, element }) => {
@@ -69,12 +68,22 @@ export function BlockLayerItem(props: {
   })
 
   return (
-    <Fold
+    <TreeItem
       customRef={dropRef}
       htmlProps={{
         'data-drop-id': `block-${blockGet.data.id}`,
-        className: clsx([isHoveredBlock && 'bg-gray-100', isDraggingSource && 'opacity-50', currActive && 'ring-inset ring-2 ring-emerald-500']),
-        onClick: () => {
+        className: clsx([
+          'outline',
+          'outline-2',
+          '-outline-offset-2',
+          'outline-none',
+          isDraggingSource && 'opacity-50',
+          isActiveBlock && 'outline-rose-500',
+          isHoveredBlock && 'outline-emerald-500',
+          isHoveredBlock && isActiveBlock && 'outline-rose-600',
+        ]),
+        onClick: (e) => {
+          e.stopPropagation()
           setActive((active) => {
             if (active?.id === props.blockId) return undefined
             return { store: 'blocks', id: props.blockId }
@@ -90,19 +99,19 @@ export function BlockLayerItem(props: {
         },
       }}
     >
-      <FoldHead customRef={dragRef}>
-        <FoldTrigger hide={isLeaf} />
-        <FoldIcon icon={Layers2} />
-        <FoldLabel
+      <TreeItemHead customRef={dragRef}>
+        <TreeItemTrigger hide={isLeaf} />
+        <TreeItemIcon icon={Layers2} />
+        <TreeItemLabel
           label={blockGet.data.name}
-          onRename={async (updatedName) => {
-            await blockUpdateName.mutateAsync({ block: blockGet.data, name: updatedName })
+          onRename={(updatedName) => {
+            blockUpdateName({ block: blockGet.data, name: updatedName })
           }}
         />
 
         <BlockLayerItemActions block={blockGet.data} index={props.index} parent={props.parent} />
-      </FoldHead>
-      <FoldContent>
+      </TreeItemHead>
+      <TreeItemContent>
         {Object.keys(blockGet.data.slots).map((slot) => (
           <BlockLayerItemSlot
             hoveredBlockId={props.hoveredBlockId}
@@ -113,9 +122,9 @@ export function BlockLayerItem(props: {
             parent={props.parent}
           />
         ))}
-      </FoldContent>
+      </TreeItemContent>
       <DropIndicator closestEdge={closestEdge} variant="horizontal" />
       <DragPreview dragPreviewContainer={dragPreviewContainer}>{blockGet.data.name}</DragPreview>
-    </Fold>
+    </TreeItem>
   )
 }

@@ -12,17 +12,22 @@ const Context = createContext<{
   setRenaming: Dispatch<SetStateAction<boolean>>
 } | null>(null)
 
-export function useFold() {
+export function useTreeItem() {
   const context = useContext(Context)
-  if (!context) throw new Error('Must be wrapped in a FoldRoot')
+  if (!context) throw new Error('Must be wrapped in a TreeItem')
   return context
 }
 
-export function Fold(props: {
+export function Tree(props: { children: ReactNode }) {
+  return <ul>{props.children}</ul>
+}
+
+export function TreeItem(props: {
   open?: boolean
   setOpen?: Dispatch<SetStateAction<boolean>>
   htmlProps?: HTMLProps<HTMLLIElement> & Record<`data-${string}`, any>
   customRef?: RefObject<HTMLLIElement>
+  disableHover?: boolean
   children?: ReactNode
 }) {
   const [renaming, setRenaming] = useState(false)
@@ -44,10 +49,10 @@ export function Fold(props: {
           className={clsx([
             'relative',
             'grid',
-            'gap-2',
-            'p-1',
-            'hover:bg-gray-100',
-            'has-[&:hover]:bg-[initial]',
+            'py-1',
+            'px-2',
+            !props.disableHover && 'hover:bg-gray-100',
+            // 'has-[&:hover]:bg-[initial]',
             isCanvasMutating && 'pointer-events-none opacity-50',
             props.htmlProps?.className,
           ])}
@@ -59,27 +64,7 @@ export function Fold(props: {
   )
 }
 
-export function FoldTrigger(props: { hide?: boolean }) {
-  const { open } = useFold()
-  if (props.hide) return null
-
-  return (
-    <CollapsibleTrigger onClick={(e) => e.stopPropagation()} className="cursor-pointer shrink-0 opacity-40 hover:opacity-100" asChild>
-      {open ? <ChevronDown size={16} className="shrink-0" /> : <ChevronRight className="shrink-0" size={16} />}
-    </CollapsibleTrigger>
-  )
-}
-
-export function FoldContent(props: { children: JSX.Element[] }) {
-  if (props.children.length === 0) return null
-  return (
-    <CollapsibleContent asChild>
-      <ul className="pl-2 ml-2 border-l border-dashed">{props.children}</ul>
-    </CollapsibleContent>
-  )
-}
-
-export function FoldHead(props: {
+export function TreeItemHead(props: {
   htmlProps?: HTMLProps<HTMLDivElement> & Record<`data-${string}`, any>
   children: ReactNode
   customRef?: RefObject<HTMLDivElement>
@@ -91,8 +76,14 @@ export function FoldHead(props: {
   )
 }
 
-export function FoldLabel(props: { onRename?: (updatedName: string) => void; label?: string }) {
-  const { renaming, setRenaming } = useFold()
+export function TreeItemIcon(props: { hide?: boolean; icon: ComponentType<{ size?: number | string; className?: string }> }) {
+  if (props.hide) return null
+  const Icon = props.icon
+  return <Icon size={16} className="shrink-0 stroke-emerald-500" />
+}
+
+export function TreeItemLabel(props: { onRename?: (updatedName: string) => void; label?: string }) {
+  const { renaming, setRenaming } = useTreeItem()
   const inputRef = useRef<HTMLInputElement>(null)
 
   useEffect(() => {
@@ -147,8 +138,21 @@ export function FoldLabel(props: { onRename?: (updatedName: string) => void; lab
   )
 }
 
-export function FoldIcon(props: { hide?: boolean; icon: ComponentType<{ size?: number | string; className?: string }> }) {
+export function TreeItemTrigger(props: { hide?: boolean }) {
+  const { open } = useTreeItem()
   if (props.hide) return null
-  const Icon = props.icon
-  return <Icon size={16} className="shrink-0 stroke-emerald-500" />
+  return (
+    <CollapsibleTrigger onClick={(e) => e.stopPropagation()} className="cursor-pointer shrink-0 opacity-40 hover:opacity-100" asChild>
+      {open ? <ChevronDown size={16} className="shrink-0" /> : <ChevronRight className="shrink-0" size={16} />}
+    </CollapsibleTrigger>
+  )
+}
+
+export function TreeItemContent(props: { children: JSX.Element[] }) {
+  if (props.children.length === 0) return null
+  return (
+    <CollapsibleContent asChild>
+      <ul className="pl-2 ml-2 border-l border-dashed">{props.children}</ul>
+    </CollapsibleContent>
+  )
 }

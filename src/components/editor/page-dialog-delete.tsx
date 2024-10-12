@@ -58,9 +58,9 @@ export function PageDialogDelete(props: {
               const pages = props.selectedPages
               if (pages.length === 1) {
                 const [entry] = pages
-                await pageDelete.mutateAsync({ entry })
+                await pageDelete({ entry })
               } else {
-                await pageDeleteMany.mutateAsync({ entries: pages })
+                await pageDeleteMany({ entries: pages })
               }
               props.table.resetRowSelection()
               props.setIsDeleteDialogOpen(false)

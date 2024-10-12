@@ -12,7 +12,6 @@ import { templateGetManyOpts, useTemplateGetMany } from '@/hooks/use-template-ge
 import { isDragData } from '@/hooks/use-drag'
 import { useBlockAdd } from '@/hooks/use-block-add'
 import { useTemplateApply } from '@/hooks/use-template-apply'
-import '@/routes/pages.$id.css'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
@@ -67,7 +66,6 @@ function Page() {
                         <TemplatePanel templates={templateGetMany.data} />
                       </TabsContent>
                     </Tabs>
-
                     <ScrollBar orientation="horizontal" />
                   </ScrollArea>
                 </ResizablePanel>
@@ -96,10 +94,10 @@ function Page() {
                       data={{ parent: { slot: 'root', node: pageGet.data } }}
                       onDrop={({ source, target }) => {
                         if (isDragData['template'](source.data)) {
-                          templateApply.mutate({ source: source.data, target: target.data })
+                          templateApply({ source: source.data, target: target.data })
                         }
                         if (isDragData['component'](source.data)) {
-                          blockAdd.mutate({ source: source.data, target: target.data })
+                          blockAdd({ source: source.data, target: target.data })
                         }
                       }}
                     />

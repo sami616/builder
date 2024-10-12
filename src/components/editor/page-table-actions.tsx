@@ -35,11 +35,12 @@ export function PageTableActions(props: { table: Table<Page>; selectedPages: Pag
             onClick={async () => {
               if (props.selectedPages.length === 1) {
                 const [page] = props.selectedPages
-                await pageCopy.mutateAsync({ id: page.id })
+                await pageCopy({ id: page.id })
               } else {
-                await pageCopyMany.mutateAsync({ ids: props.selectedPages.map((page) => page.id) })
+                await pageCopyMany({ ids: props.selectedPages.map((page) => page.id) })
               }
               props.table.resetRowSelection()
+              props.table.resetSorting()
             }}
             variant="outline"
           >
@@ -63,9 +64,9 @@ export function PageTableActions(props: { table: Table<Page>; selectedPages: Pag
             onClick={async () => {
               if (props.selectedPages.length === 1) {
                 const [page] = props.selectedPages
-                await pageExport.mutateAsync({ page })
+                await pageExport({ page })
               } else {
-                await pageExportMany.mutateAsync({ pages: props.selectedPages })
+                await pageExportMany({ pages: props.selectedPages })
               }
               props.table.resetRowSelection()
             }}

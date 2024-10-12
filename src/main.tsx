@@ -10,6 +10,7 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Block } from '@/db'
 import '@/index.css'
 import { Toaster } from '@/components/ui/toaster'
+import { Toaster as ToasterSonner } from '@/components/ui/sonner'
 
 const queryClient = new QueryClient()
 
@@ -20,6 +21,7 @@ export type Config = {
     component: (props: any) => JSX.Element
     name: string
     folder?: Array<string>
+    deprecated?: boolean
     slots?: {
       [key: string]: {
         default?: Array<Block['id']>
@@ -75,6 +77,7 @@ if (!rootElement.innerHTML) {
   root.render(
     <StrictMode>
       <Toaster />
+      <ToasterSonner />
       <QueryClientProvider client={queryClient}>
         <RouterProvider router={router} />
         <TanStackRouterDevtools initialIsOpen={false} router={router} />

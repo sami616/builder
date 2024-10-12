@@ -3,6 +3,7 @@ import { type Page, type Block } from '@/db'
 import { ComponentItem } from '@/components/editor/component-item'
 import { Config } from '@/main'
 import { useMemo } from 'react'
+import { Tree } from '../ui/tree'
 
 export function ComponentPanel(props: { page: Page }) {
   const context = useRouteContext({ from: '/pages/$id' })
@@ -12,12 +13,16 @@ export function ComponentPanel(props: { page: Page }) {
   }, [])
 
   return (
-    <ul data-component="ComponentPanel">
+    <Tree>
       {Object.entries(structure).map(([key, value]) => {
         return <ComponentItem value={value} key={key} type={key as Block['type']} page={props.page} />
       })}
-    </ul>
+    </Tree>
   )
+}
+
+export function isComponentLeaf(arg: NestedStructure | Config[keyof Config]): arg is Config[keyof Config] {
+  return typeof arg === 'object' && 'component' in arg
 }
 
 export type NestedStructure = {

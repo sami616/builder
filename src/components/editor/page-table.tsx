@@ -23,13 +23,13 @@ import { PageTableActions } from '@/components/editor/page-table-actions'
 import { PageTableActionsRow } from '@/components/editor/page-table-actions-row'
 import { PageTableColumnFilters } from '@/components/editor/page-table-column-filters'
 import { PageDialogDelete } from '@/components/editor/page-dialog-delete'
-import { PageAdd } from '@/components/editor/page-add'
+import { PageAdd } from '@/components/editor/page-dialog-add'
 import clsx from 'clsx'
 
 export function PageTable() {
   const navigate = useNavigate({ from: '/pages' })
   const { pageGetMany } = usePageGetMany()
-  const { pageImport } = usePageImport()
+  const { pageImport, pageImportIsPending } = usePageImport()
   const [deleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const pageCRUDPending = Boolean(useIsMutating({ mutationKey: ['page'] }))
 
@@ -145,8 +145,8 @@ export function PageTable() {
         <div className=" gap-2 flex justify-between items-center py-4">
           <PageTableFilters table={table} />
           <div className="gap-2 flex">
-            <Button variant="outline" disabled={pageCRUDPending} onClick={() => pageImport.mutate()}>
-              {pageImport.isPending ? <Loader2 size={16} className="mr-2 animate-spin" /> : <Import size={16} className="mr-2" />}Import
+            <Button variant="outline" disabled={pageCRUDPending} onClick={() => pageImport()}>
+              {pageImportIsPending ? <Loader2 size={16} className="mr-2 animate-spin" /> : <Import size={16} className="mr-2" />}Import
             </Button>
             <PageAdd />
           </div>

@@ -6,7 +6,7 @@ import { useTemplateAdd } from '@/hooks/use-template-add'
 import { useTemplateReorder } from '@/hooks/use-template-reorder'
 import { useDrag, isDragData } from '@/hooks/use-drag'
 import { useDrop } from '@/hooks/use-drop'
-import { Fold, FoldHead, FoldIcon, FoldLabel } from '@/components/ui/tree'
+import { TreeItem, TreeItemHead, TreeItemIcon, TreeItemLabel } from '@/components/ui/tree'
 import { useActive } from './active-provider'
 import { DropIndicator } from './drop-indicator'
 import { DragPreview } from './drag-preview'
@@ -25,20 +25,20 @@ export function TemplateItem(props: { template: Template; index: number }) {
 
   const { closestEdge } = useDrop({
     dropRef,
-    disableDrop: ({ source, element }) => source.data.id === 'componentItem' && element.getAttribute('data-component') === 'TemplateItem',
+    disableDrop: ({ source }) => isDragData['component'](source.data),
     data: { index: props.index, node: props.template },
     onDrop: ({ source, target }) => {
       if (isDragData['block'](source.data)) {
-        templateAdd.mutate({ source: source.data, target: target.data })
+        templateAdd({ source: source.data, target: target.data })
       }
       if (isDragData['template'](source.data)) {
-        templateReorder.mutate({ source: source.data, target: target.data })
+        templateReorder({ source: source.data, target: target.data })
       }
     },
   })
 
   return (
-    <Fold
+    <TreeItem
       customRef={dropRef}
       htmlProps={{
         className: clsx([isDraggingSource && 'opacity-50', currActive && 'ring-inset ring-2 ring-emerald-500']),
@@ -50,18 +50,18 @@ export function TemplateItem(props: { template: Template; index: number }) {
         },
       }}
     >
-      <FoldHead customRef={dragRef}>
-        <FoldIcon icon={Layout} />
-        <FoldLabel
+      <TreeItemHead customRef={dragRef}>
+        <TreeItemIcon icon={Layout} />
+        <TreeItemLabel
           onRename={async (updatedName) => {
-            await templateUpdateName.mutateAsync({ template: props.template, name: updatedName })
+            await templateUpdateName({ template: props.template, name: updatedName })
           }}
           label={props.template.name}
         />
         <TemplateItemActions template={props.template} />
-      </FoldHead>
+      </TreeItemHead>
       <DropIndicator closestEdge={closestEdge} variant="horizontal" />
       <DragPreview dragPreviewContainer={dragPreviewContainer}>{props.template.name}</DragPreview>
-    </Fold>
+    </TreeItem>
   )
 }

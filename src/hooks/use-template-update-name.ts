@@ -1,27 +1,29 @@
 import { useMutation } from '@tanstack/react-query'
-import { useToast } from '@/hooks/use-toast'
 import { useRouteContext } from '@tanstack/react-router'
 import { Template } from '@/db'
+import { toast } from 'sonner'
+
+type Args = { template: Template; name: string }
 
 export function useTemplateUpdateName() {
   const context = useRouteContext({ from: '/pages/$id' })
-  const { toast } = useToast()
 
-  return {
-    templateUpdateName: useMutation({
-      mutationKey: ['canvas', 'template', 'update', 'name'],
-      mutationFn: async (args: { template: Template; name: string }) => {
-        const clonedEntry = structuredClone(args.template)
-        clonedEntry.name = args.name
-        return context.update({ entry: clonedEntry })
-      },
-      onSuccess: () => {
-        context.queryClient.invalidateQueries({ queryKey: ['templates'] })
-        toast({ description: 'Template updated' })
-      },
-      onError: (e) => {
-        toast({ title: 'Template update failed', variant: 'destructive', description: e?.message })
-      },
-    }),
+  const mutation = useMutation({
+    mutationKey: ['canvas', 'template', 'update', 'name'],
+    mutationFn: async (args: Args) => {
+      const clonedEntry = structuredClone(args.template)
+      clonedEntry.name = args.name
+      return context.update({ entry: clonedEntry })
+    },
+    onSuccess: () => {
+      context.queryClient.invalidateQueries({ queryKey: ['templates'] })
+    },
+  })
+
+  async function templateUpdateName(args: Args) {
+    const promise = mutation.mutateAsync(args)
+    toast.promise(promise, { loading: 'Updating template...', success: 'Updated template', error: 'Updating template failed' })
+    return promise
   }
+  return { templateUpdateName }
 }

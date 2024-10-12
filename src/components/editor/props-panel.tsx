@@ -56,7 +56,6 @@ export function PropsPanel() {
     <div data-component="PropsPanel">
       <button onClick={() => setActive(undefined)}>Close</button>
       {<pre>{JSON.stringify(block.props, null, 2)}</pre>}
-
       {configItemProps &&
         Object.keys(configItemProps).map((key) => (
           <div>

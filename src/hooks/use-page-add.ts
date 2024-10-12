@@ -1,21 +1,27 @@
-import { useToast } from '@/hooks/use-toast'
+import { Page } from '@/db'
 import { useMutation } from '@tanstack/react-query'
 import { useRouteContext } from '@tanstack/react-router'
+import { toast } from 'sonner'
+
+type Args = { entry: Omit<Page, 'id'> }
 
 export function usePageAdd() {
   const context = useRouteContext({ from: '/pages/' })
-  const { toast } = useToast()
-  return {
-    pageAdd: useMutation({
-      mutationKey: ['page', 'add'],
-      mutationFn: context.add,
-      onSuccess: async () => {
-        context.queryClient.invalidateQueries({ queryKey: ['pages'] })
-        toast({ description: 'Page created' })
-      },
-      onError: (e) => {
-        toast({ title: 'Page creation failed', variant: 'destructive', description: e?.message })
-      },
-    }),
+  const mutation = useMutation({
+    mutationKey: ['page', 'add'],
+    mutationFn: (args: Args) => {
+      return context.add(args)
+    },
+    onSuccess: async () => {
+      context.queryClient.invalidateQueries({ queryKey: ['pages'] })
+    },
+  })
+
+  async function pageAdd(args: Args) {
+    const promise = mutation.mutateAsync(args)
+    toast.promise(promise, { loading: 'Creating page...', success: 'Created page', error: 'Creating page failed' })
+    return promise
   }
+
+  return { pageAdd, pageAddIsPending: mutation.isPending }
 }

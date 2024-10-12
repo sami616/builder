@@ -4,6 +4,7 @@ import { useTemplateAdd } from '@/hooks/use-template-add'
 import { DropZone } from '@/components/editor/drop-zone'
 import { TemplateItem } from '@/components/editor/template-item'
 import { Layers2 } from 'lucide-react'
+import { Tree } from '../ui/tree'
 
 export function TemplatePanel(props: { templates: Template[] }) {
   const { templateAdd } = useTemplateAdd()
@@ -13,7 +14,7 @@ export function TemplatePanel(props: { templates: Template[] }) {
         id="templateDrop"
         onDrop={({ source }) => {
           if (isDragData['block'](source.data)) {
-            templateAdd.mutate({ source: source.data })
+            templateAdd({ source: source.data })
           }
         }}
         disableDrop={({ source, element }) => source.data.id === 'componentItem' && element.id === 'templateDrop'}
@@ -26,10 +27,10 @@ export function TemplatePanel(props: { templates: Template[] }) {
       />
     )
   return (
-    <ul data-component="TemplatePanel">
+    <Tree>
       {props.templates.map((template, index) => {
         return <TemplateItem index={index} key={template.id} template={template} />
       })}
-    </ul>
+    </Tree>
   )
 }

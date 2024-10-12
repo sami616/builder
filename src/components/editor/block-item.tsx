@@ -1,4 +1,5 @@
 import { useRef } from 'react'
+import { Trash, Move, Copy } from 'lucide-react'
 import { DropIndicator } from '@/components/editor/drop-indicator'
 import { type Block, type Page } from '@/db'
 import { useRouteContext } from '@tanstack/react-router'
@@ -69,18 +70,18 @@ export function BlockItem(props: {
     },
     onDrop: ({ source, target }) => {
       if (isDragData['component'](source.data)) {
-        blockAdd.mutate({ source: source.data, target: target.data })
+        blockAdd({ source: source.data, target: target.data })
       }
       if (isDragData['template'](source.data)) {
-        templateApply.mutate({ source: source.data, target: target.data })
+        templateApply({ source: source.data, target: target.data })
       }
       if (isDragData['block'](source.data)) {
-        blockMove.mutate({ source: source.data, target: target.data })
+        blockMove({ source: source.data, target: target.data })
       }
     },
   })
 
-  const { dragPreviewContainer } = useDrag({
+  const { isDraggingSource, dragPreviewContainer } = useDrag({
     dragRef,
     data: { id: 'block', index: props.index, parent: props.parent, node: block },
   })
@@ -110,13 +111,13 @@ export function BlockItem(props: {
           }}
           onDrop={({ source, target }) => {
             if (isDragData['component'](source.data)) {
-              blockAdd.mutate({ source: source.data, target: target.data })
+              blockAdd({ source: source.data, target: target.data })
             }
             if (isDragData['template'](source.data)) {
-              templateApply.mutate({ source: source.data, target: target.data })
+              templateApply({ source: source.data, target: target.data })
             }
             if (isDragData['block'](source.data)) {
-              blockMove.mutate({ source: source.data, target: target.data })
+              blockMove({ source: source.data, target: target.data })
             }
           }}
         />
@@ -142,20 +143,31 @@ export function BlockItem(props: {
 
   const Component = context.config[block.type]?.component ?? (() => <Missing node={{ type: 'component', name: block.type }} />)
 
+  const blockActionStyles = clsx(['cursor-grab p-2', isActiveBlock ? 'bg-rose-500 hover:bg-rose-600' : 'bg-emerald-500 hover:bg-emerald-600'])
+
   return (
     <div
       // @ts-ignore
       style={{ anchorName: `--${block.id}` }}
+      data-component="BlockItem"
       className={clsx([
         'relative',
-        isActiveBlock ? 'outline outline-2 outline-emerald-500 z-50' : '',
-        isHoveredBlock ? 'outline outline-2 outline-rose-500 z-50' : '',
+        'outline',
+        'outline-2',
+        '-outline-offset-2',
+        'outline-none',
+        isDraggingSource && 'opacity-50',
+        isActiveBlock && 'outline-rose-500',
+        isHoveredBlock && 'outline-emerald-500',
+        isHoveredBlock && isActiveBlock && 'outline-rose-600',
       ])}
-      data-component="BlockItem"
       data-drop-id={`block-${blockGet.data.id}`}
-      onDoubleClick={(e) => {
+      onClick={(e) => {
         e.stopPropagation()
-        setActive({ store: 'blocks', id: props.blockId })
+        setActive((active) => {
+          if (active?.id === props.blockId) return undefined
+          return { store: 'blocks', id: props.blockId }
+        })
       }}
       onMouseOver={(e) => {
         e.stopPropagation()
@@ -169,39 +181,47 @@ export function BlockItem(props: {
       }}
       ref={dropRef}
     >
-      <div
-        // @ts-ignore
-        style={{ positionAnchor: `--${block.id}` }}
-        popover="true"
-        ref={popoverRef}
-        data-context
-      >
-        <div>
-          <span ref={dragRef}>Move</span>
-          <button
-            onClick={() => {
-              blockCopy.mutate({ index: props.index, id: props.blockId, parent: props.parent })
-            }}
-          >
-            Duplicate
-          </button>
-          <button
-            onClick={() => {
-              blockDelete.mutate({
-                index: props.index,
-                blockId: props.blockId,
-                parent: props.parent,
-              })
-              setActive(undefined)
-            }}
-          >
-            Delete
-          </button>
+      <div ref={dragRef}>
+        <div
+          // @ts-ignore
+          style={{ positionAnchor: `--${block.id}` }}
+          className={clsx([
+            'rounded-tr rounded-tl p-0 inset-auto bottom-[anchor(top)] right-[anchor(right)]',
+            isActiveBlock ? 'bg-rose-500' : 'bg-emerald-500',
+          ])}
+          popover="true"
+          ref={popoverRef}
+        >
+          <div className="flex">
+            <button
+              className={blockActionStyles}
+              onClick={(e) => {
+                e.stopPropagation()
+                blockCopy({ index: props.index, id: props.blockId, parent: props.parent })
+              }}
+            >
+              <Copy size={16} className="stroke-white" />
+            </button>
+            <button
+              className={blockActionStyles}
+              onClick={(e) => {
+                e.stopPropagation()
+                blockDelete({
+                  index: props.index,
+                  blockId: props.blockId,
+                  parent: props.parent,
+                })
+                setActive(undefined)
+              }}
+            >
+              <Trash size={16} className="stroke-white" />
+            </button>
+          </div>
         </div>
+        <Component {...componentProps} {...componentBlocks} />
+        <DropIndicator closestEdge={closestEdge} variant="horizontal" />
+        <DragPreview dragPreviewContainer={dragPreviewContainer}>{block.name}</DragPreview>
       </div>
-      <Component {...componentProps} {...componentBlocks} />
-      <DropIndicator closestEdge={closestEdge} variant="horizontal" />
-      <DragPreview dragPreviewContainer={dragPreviewContainer}>{block.name}</DragPreview>
     </div>
   )
 }

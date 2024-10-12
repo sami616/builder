@@ -14,7 +14,7 @@ import { useIsMutating } from '@tanstack/react-query'
 import { Block } from '@/db'
 import { ComponentProps } from 'react'
 import { BlockLayerItem } from './block-layer-item'
-import { useFold } from '../ui/tree'
+import { useTreeItem } from '../ui/tree'
 import { useActive } from './active-provider'
 
 type BlockLayerItemProps = ComponentProps<typeof BlockLayerItem>
@@ -24,7 +24,7 @@ export function BlockLayerItemActions(props: { block: Block; index: BlockLayerIt
   const { blockDelete } = useBlockDelete()
   const { templateAdd } = useTemplateAdd()
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
-  const { setRenaming } = useFold()
+  const { setRenaming } = useTreeItem()
   const { setActive } = useActive()
   return (
     <DropdownMenu>
@@ -36,14 +36,14 @@ export function BlockLayerItemActions(props: { block: Block; index: BlockLayerIt
         <DropdownMenuSeparator />
         <DropdownMenuItem
           onClick={() => {
-            templateAdd.mutate({ source: { id: 'block', index: props.index, node: props.block, parent: props.parent } })
+            templateAdd({ source: { id: 'block', index: props.index, node: props.block, parent: props.parent } })
           }}
         >
           <Copy size={14} className="opacity-40 mr-2" /> Create template
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => {
-            blockCopy.mutate({ index: props.index, id: props.block.id, parent: props.parent })
+            blockCopy({ index: props.index, id: props.block.id, parent: props.parent })
           }}
         >
           <Layout size={14} className="opacity-40 mr-2" /> Duplicate
@@ -57,7 +57,7 @@ export function BlockLayerItemActions(props: { block: Block; index: BlockLayerIt
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={async () => {
-            await blockDelete.mutateAsync({ index: props.index, blockId: props.block.id, parent: props.parent })
+            await blockDelete({ index: props.index, blockId: props.block.id, parent: props.parent })
             setActive(undefined)
           }}
         >

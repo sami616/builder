@@ -10,7 +10,7 @@ import { useBlockMove } from '@/hooks/use-block-move'
 import { validateComponentSlots } from '@/components/editor/block-item'
 import { Missing } from '@/components/editor/missing'
 import { CircleDashed } from 'lucide-react'
-import { Fold, FoldContent, FoldHead, FoldIcon, FoldLabel, FoldTrigger } from '@/components/ui/tree'
+import { TreeItem, TreeItemContent, TreeItemHead, TreeItemIcon, TreeItemLabel, TreeItemTrigger } from '@/components/ui/tree'
 import clsx from 'clsx'
 
 export function BlockLayerItemSlot(props: {
@@ -38,13 +38,13 @@ export function BlockLayerItemSlot(props: {
     },
     onDrop: ({ source, target }) => {
       if (isDragData['component'](source.data)) {
-        blockAdd.mutate({ source: source.data, target: target.data })
+        blockAdd({ source: source.data, target: target.data })
       }
       if (isDragData['template'](source.data)) {
-        templateApply.mutate({ source: source.data, target: target.data })
+        templateApply({ source: source.data, target: target.data })
       }
       if (isDragData['block'](source.data)) {
-        blockMove.mutate({ source: source.data, target: target.data })
+        blockMove({ source: source.data, target: target.data })
       }
       setOpen(true)
     },
@@ -57,19 +57,19 @@ export function BlockLayerItemSlot(props: {
   if (!context.config[props.block.type]?.slots?.[props.slot]) return <Missing node={{ type: 'slot', name: props.slot }} />
 
   return (
-    <Fold
+    <TreeItem
       htmlProps={{
-        className: clsx([isDraggingOver && 'ring-inset ring-2 ring-rose-500']),
+        className: clsx([isDraggingOver && 'ring-inset ring-2 ring-rose-500', 'py-0']),
       }}
       open={open}
       setOpen={setOpen}
     >
-      <FoldHead customRef={dropRef}>
-        <FoldTrigger hide={!hasSlotEntries} />
-        <FoldIcon hide={hasSlotEntries} icon={CircleDashed} />
-        <FoldLabel label={context.config[props.block.type].slots?.[props.slot].name} />
-      </FoldHead>
-      <FoldContent>
+      <TreeItemHead customRef={dropRef}>
+        <TreeItemTrigger hide={!hasSlotEntries} />
+        <TreeItemIcon hide={hasSlotEntries} icon={CircleDashed} />
+        <TreeItemLabel label={context.config[props.block.type].slots?.[props.slot].name} />
+      </TreeItemHead>
+      <TreeItemContent>
         {props.block.slots[props.slot].map((blockId, index) => (
           <BlockLayerItem
             hoveredBlockId={props.hoveredBlockId}
@@ -80,7 +80,7 @@ export function BlockLayerItemSlot(props: {
             key={blockId}
           />
         ))}
-      </FoldContent>
-    </Fold>
+      </TreeItemContent>
+    </TreeItem>
   )
 }

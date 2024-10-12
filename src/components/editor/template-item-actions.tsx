@@ -9,14 +9,14 @@ import {
 } from '../ui/dropdown-menu'
 import { useIsMutating } from '@tanstack/react-query'
 import { Template } from '@/db'
-import { useFold } from '../ui/tree'
+import { useTreeItem } from '../ui/tree'
 import { useActive } from './active-provider'
 import { useTemplateDelete } from '@/hooks/use-template-delete'
 
 export function TemplateItemActions(props: { template: Template }) {
   const { templateDelete } = useTemplateDelete()
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
-  const { setRenaming } = useFold()
+  const { setRenaming } = useTreeItem()
   const { setActive } = useActive()
   return (
     <DropdownMenu>
@@ -35,7 +35,7 @@ export function TemplateItemActions(props: { template: Template }) {
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={async () => {
-            templateDelete.mutate({ template: props.template })
+            templateDelete({ template: props.template })
             setActive(undefined)
           }}
         >

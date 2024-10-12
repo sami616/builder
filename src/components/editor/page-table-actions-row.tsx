@@ -42,7 +42,7 @@ export function PageTableActionsRow(props: { table: Table<Page>; page: Page; set
           onClick={async (e) => {
             e.stopPropagation()
             props.table.setRowSelection(() => ({ [props.page.id]: true }))
-            await pageCopy.mutateAsync({ id: props.page.id })
+            await pageCopy({ id: props.page.id })
             props.table.resetRowSelection()
             props.table.resetSorting()
           }}
@@ -66,7 +66,7 @@ export function PageTableActionsRow(props: { table: Table<Page>; page: Page; set
           onClick={async (e) => {
             e.stopPropagation()
             props.table.setRowSelection(() => ({ [props.page.id]: true }))
-            await pageExport.mutateAsync({ page: props.page })
+            await pageExport({ page: props.page })
             props.table.resetRowSelection()
           }}
         >

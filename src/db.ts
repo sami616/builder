@@ -64,9 +64,11 @@ export type Sys = {
 
 export type Page = {
   store: 'pages'
-  name: string
-  status: 'published' | 'draft' | 'changed'
+  title: string
   slug: string
+  url: string
+  description: string
+  status: 'published' | 'draft' | 'changed'
   slots: { [index: string]: Array<Block['id']> }
 } & Sys
 
