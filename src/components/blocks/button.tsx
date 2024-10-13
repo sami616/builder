@@ -2,13 +2,14 @@
 
 import { type ReactNode } from '@tanstack/react-router'
 import { type Config } from '@/main'
+import { Button as ShadButton } from '@/components/ui/button'
 
 export function Button({ children = 'Button', icon }: { children?: ReactNode; icon: string }) {
   return (
-    <button onClick={() => console.log('click from button')}>
+    <ShadButton>
       {icon}
       {children}
-    </button>
+    </ShadButton>
   )
 }
 
