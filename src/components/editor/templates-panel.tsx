@@ -17,7 +17,7 @@ export function TemplatePanel(props: { templates: Template[] }) {
             templateAdd({ source: source.data })
           }
         }}
-        disableDrop={({ source, element }) => source.data.id === 'componentItem' && element.id === 'templateDrop'}
+        disableDrop={({ source }) => isDragData['component'](source.data)}
         children={
           <>
             <Layers2 size={16} className="opacity-40" />

@@ -61,6 +61,7 @@ export function useDrop<Data extends Record<string, any>>(props: {
         setClosestEdge(null)
       },
       canDrop: ({ source, element, input }) => {
+        // Prevent dropping on self or own children
         if (isDragData['block'](source.data)) {
           const sourceId = source.element.closest('[data-drop-id^="block"]')?.getAttribute('data-drop-id')
 

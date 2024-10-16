@@ -1,25 +1,20 @@
 import { type Block } from '@/db'
+import { config } from '@/main'
 import { useRouteContext } from '@tanstack/react-router'
-import { type ComponentProps, Dispatch, SetStateAction, useRef, useState } from 'react'
+import { type ComponentProps, useRef, useState } from 'react'
 import { isDragData } from '@/hooks/use-drag'
 import { useDrop } from '@/hooks/use-drop'
 import { useBlockAdd } from '@/hooks/use-block-add'
 import { useTemplateApply } from '@/hooks/use-template-apply'
 import { BlockLayerItem } from '@/components/editor/block-layer-item'
 import { useBlockMove } from '@/hooks/use-block-move'
-import { validateComponentSlots } from '@/components/editor/block-item'
 import { Missing } from '@/components/editor/missing'
 import { CircleDashed } from 'lucide-react'
 import { TreeItem, TreeItemContent, TreeItemHead, TreeItemIcon, TreeItemLabel, TreeItemTrigger } from '@/components/ui/tree'
 import clsx from 'clsx'
+import { toast } from 'sonner'
 
-export function BlockLayerItemSlot(props: {
-  block: Block
-  slot: string
-  parent: ComponentProps<typeof BlockLayerItem>['parent']
-  hoveredBlockId?: Block['id']
-  setHoveredBlockId: Dispatch<SetStateAction<Block['id'] | undefined>>
-}) {
+export function BlockLayerItemSlot(props: { block: Block; slot: string; parent: ComponentProps<typeof BlockLayerItem>['parent'] }) {
   const dropRef = useRef<HTMLDivElement>(null)
   const { blockMove } = useBlockMove()
   const { blockAdd } = useBlockAdd()
@@ -29,14 +24,13 @@ export function BlockLayerItemSlot(props: {
   const { isDraggingOver } = useDrop({
     dropRef,
     data: { parent: { slot: props.slot, node: props.block } },
-    disableDrop: ({ source, element }) => {
-      try {
-        validateComponentSlots({ source, element, node: props.block, slot: props.slot })
-      } catch (e) {
-        return true
-      }
-    },
     onDrop: ({ source, target }) => {
+      let error = undefined
+      error = validateComponentSlots({ source, node: props.block, slot: props.slot })
+      if (error) {
+        toast.error(error)
+        return
+      }
       if (isDragData['component'](source.data)) {
         blockAdd({ source: source.data, target: target.data })
       }
@@ -71,16 +65,38 @@ export function BlockLayerItemSlot(props: {
       </TreeItemHead>
       <TreeItemContent>
         {props.block.slots[props.slot].map((blockId, index) => (
-          <BlockLayerItem
-            hoveredBlockId={props.hoveredBlockId}
-            setHoveredBlockId={props.setHoveredBlockId}
-            index={index}
-            parent={{ slot: props.slot, node: props.block }}
-            blockId={blockId}
-            key={blockId}
-          />
+          <BlockLayerItem index={index} parent={{ slot: props.slot, node: props.block }} blockId={blockId} key={blockId} />
         ))}
       </TreeItemContent>
     </TreeItem>
   )
+}
+
+export function validateComponentSlots(args: { source: Record<string, any>; node: Block; slot: string }) {
+  const disabledComponents = config[args.node.type].slots?.[args.slot].validation?.disabledComponents
+  const maxItems = config[args.node.type].slots?.[args.slot].validation?.maxItems
+  const itemsLength = args.node.slots[args.slot].length
+
+  if (maxItems) {
+    if (itemsLength >= maxItems) {
+      return `This slot cannot have more than ${maxItems} items`
+    }
+  }
+  if (disabledComponents) {
+    if (isDragData['component'](args.source.data)) {
+      if (disabledComponents.includes(args.source.data.type)) {
+        return `${args.source.data.type} cannot be dropped here`
+      }
+    }
+    if (isDragData['block'](args.source.data)) {
+      if (disabledComponents.includes(args.source.data.node.type)) {
+        return `${args.source.data.node.type} cannot be dropped here`
+      }
+    }
+    if (isDragData['template'](args.source.data)) {
+      if (disabledComponents.includes(args.source.data.node.rootNode.type)) {
+        return `${args.source.data.node.rootNode.type} cannot be dropped here`
+      }
+    }
+  }
 }

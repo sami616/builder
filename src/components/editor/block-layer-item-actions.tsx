@@ -1,4 +1,4 @@
-import { MoreVertical, Trash, Pen, Layout, Copy } from 'lucide-react'
+import { MoreVertical, Trash, Layout, Copy } from 'lucide-react'
 import {
   DropdownMenuTrigger,
   DropdownMenu,
@@ -14,8 +14,7 @@ import { useIsMutating } from '@tanstack/react-query'
 import { Block } from '@/db'
 import { ComponentProps } from 'react'
 import { BlockLayerItem } from './block-layer-item'
-import { useTreeItem } from '../ui/tree'
-import { useActive } from './active-provider'
+import { useActive } from '@/hooks/use-active'
 
 type BlockLayerItemProps = ComponentProps<typeof BlockLayerItem>
 
@@ -24,7 +23,6 @@ export function BlockLayerItemActions(props: { block: Block; index: BlockLayerIt
   const { blockDelete } = useBlockDelete()
   const { templateAdd } = useTemplateAdd()
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
-  const { setRenaming } = useTreeItem()
   const { setActive } = useActive()
   return (
     <DropdownMenu>
@@ -39,21 +37,14 @@ export function BlockLayerItemActions(props: { block: Block; index: BlockLayerIt
             templateAdd({ source: { id: 'block', index: props.index, node: props.block, parent: props.parent } })
           }}
         >
-          <Copy size={14} className="opacity-40 mr-2" /> Create template
+          <Layout size={14} className="opacity-40 mr-2" /> Create template
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={() => {
             blockCopy({ index: props.index, id: props.block.id, parent: props.parent })
           }}
         >
-          <Layout size={14} className="opacity-40 mr-2" /> Duplicate
-        </DropdownMenuItem>
-        <DropdownMenuItem
-          onClick={() => {
-            setRenaming(true)
-          }}
-        >
-          <Pen size={14} className="opacity-40 mr-2" /> Rename
+          <Copy size={14} className="opacity-40 mr-2" /> Duplicate
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={async () => {

@@ -53,7 +53,7 @@ export function TreeItem(props: {
             'px-2',
             !props.disableHover && 'hover:bg-gray-100',
             // 'has-[&:hover]:bg-[initial]',
-            isCanvasMutating && 'pointer-events-none opacity-50',
+            isCanvasMutating && 'pointer-events-none',
             props.htmlProps?.className,
           ])}
         >

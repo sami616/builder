@@ -1,18 +1,13 @@
-import { type Page, type Block } from '@/db'
+import { type Page } from '@/db'
 import { DropZone } from '@/components/editor/drop-zone'
 import { isDragData } from '@/hooks/use-drag'
 import { useBlockAdd } from '@/hooks/use-block-add'
 import { useTemplateApply } from '@/hooks/use-template-apply'
 import { BlockLayerItem } from '@/components/editor/block-layer-item'
 import { Blocks } from 'lucide-react'
-import { Dispatch, SetStateAction } from 'react'
 import { Tree } from '../ui/tree'
 
-export function BlockLayerPanel(props: {
-  page: Page
-  hoveredBlockId?: Block['id']
-  setHoveredBlockId: Dispatch<SetStateAction<Block['id'] | undefined>>
-}) {
+export function BlockLayerPanel(props: { page: Page }) {
   const { blockAdd } = useBlockAdd()
   const { templateApply } = useTemplateApply()
   const blocks = Object.values(props.page.slots)[0]
@@ -41,14 +36,7 @@ export function BlockLayerPanel(props: {
   return (
     <Tree>
       {blocks.map((blockId, index) => (
-        <BlockLayerItem
-          setHoveredBlockId={props.setHoveredBlockId}
-          hoveredBlockId={props.hoveredBlockId}
-          parent={{ node: props.page, slot: 'root' }}
-          index={index}
-          blockId={blockId}
-          key={blockId}
-        />
+        <BlockLayerItem parent={{ node: props.page, slot: 'root' }} index={index} blockId={blockId} key={blockId} />
       ))}
     </Tree>
   )

@@ -2,7 +2,7 @@ import { useMutation } from '@tanstack/react-query'
 import { useRouteContext } from '@tanstack/react-router'
 import { useBlockGet } from '@/hooks/use-block-get'
 import { config, PropTypes } from '@/main'
-import { useActive } from './active-provider'
+import { useActive } from '@/hooks/use-active'
 
 export function PropsPanel() {
   const context = useRouteContext({ from: '/pages/$id' })

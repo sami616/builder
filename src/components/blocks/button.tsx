@@ -18,9 +18,11 @@ export const buttonConfig: Config = {
     component: Button,
     name: 'Button',
     folder: ['Elements'],
+    slots: {
+      icon: { name: 'Icon', validation: { maxItems: 1 } },
+    },
     props: {
       children: { name: 'Children', type: 'string' },
-      icon: { name: 'Icon', default: undefined, type: 'string' },
     },
   },
 }

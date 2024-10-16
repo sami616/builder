@@ -4,7 +4,6 @@ import { useRouteContext } from '@tanstack/react-router'
 import { type Block, type Page } from '@/db'
 import { DragData } from '@/hooks/use-drag'
 import { toast } from 'sonner'
-import { slow } from '@/api'
 
 type Args = {
   source: DragData['component']
@@ -38,7 +37,7 @@ export function useBlockAdd() {
       if (configItem.slots) {
         const slotKeys = Object.keys(configItem.slots)
         defaultSlots = slotKeys.reduce((blocks, slot) => {
-          return { ...blocks, [slot]: configItem.slots?.[slot].default }
+          return { ...blocks, [slot]: configItem.slots?.[slot].default ?? [] }
         }, {})
       }
 

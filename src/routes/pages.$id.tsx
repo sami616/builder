@@ -16,7 +16,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
 import { Blocks } from 'lucide-react'
-import { useActive } from '@/components/editor/active-provider'
+import { useActive } from '@/hooks/use-active'
 
 export const Route = createFileRoute('/pages/$id')({
   component: Page,
@@ -32,7 +32,6 @@ export const Route = createFileRoute('/pages/$id')({
 
 function Page() {
   const { id } = Route.useParams()
-  const [hoveredBlockId, setHoveredBlockId] = useState<Block['id'] | undefined>()
   const { pageGet } = usePageGet({ id: Number(id) })
   const { templateGetMany } = useTemplateGetMany()
   const { blockAdd } = useBlockAdd()
@@ -73,7 +72,7 @@ function Page() {
                 <ResizablePanel>
                   <ScrollArea className="h-full w-full">
                     <h4 className="p-4">Layers</h4>
-                    <BlockLayerPanel hoveredBlockId={hoveredBlockId} setHoveredBlockId={setHoveredBlockId} page={pageGet.data} />
+                    <BlockLayerPanel page={pageGet.data} />
                     <ScrollBar orientation="horizontal" />
                   </ScrollArea>
                 </ResizablePanel>
@@ -104,15 +103,7 @@ function Page() {
                   )}
                   {blocks.map((blockId, index) => {
                     return (
-                      <BlockItem
-                        blockId={blockId}
-                        parent={{ node: pageGet.data, slot: 'root' }}
-                        index={index}
-                        page={pageGet.data}
-                        hoveredBlockId={hoveredBlockId}
-                        setHoveredBlockId={setHoveredBlockId}
-                        key={blockId}
-                      />
+                      <BlockItem blockId={blockId} parent={{ node: pageGet.data, slot: 'root' }} index={index} page={pageGet.data} key={blockId} />
                     )
                   })}
                 </div>

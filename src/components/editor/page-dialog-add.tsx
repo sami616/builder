@@ -10,11 +10,11 @@ import { Input } from '@/components/ui/input'
 import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useIsMutating } from '@tanstack/react-query'
 import { useState } from 'react'
+import { Switch } from '@/components/ui/switch'
+import { Separator } from '@/components/ui/separator'
 
 const formSchema = z.object({
   title: z.string().trim().min(1, { message: 'Title required' }),
-  description: z.string(),
-  url: z.string(),
   slug: z
     .string()
     .trim()
@@ -22,12 +22,18 @@ const formSchema = z.object({
     .regex(/^[a-z0-9]+(?:-[a-z0-9]+)*$/, {
       message: 'Slug must only contain lowercase letters, numbers, and hyphens, and cannot start or end with a hyphen.',
     }),
+  standalone: z.boolean(),
+  description: z.string().optional(),
+  url: z.string().optional(),
 })
 
 export function PageAdd() {
   const navigate = useNavigate({ from: '/pages' })
   const { pageAdd, pageAddIsPending } = usePageAdd()
-  const form = useForm<z.infer<typeof formSchema>>({ resolver: zodResolver(formSchema), defaultValues: { title: '', description: '', slug: '' } })
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: { standalone: false, title: '', description: '', slug: '' },
+  })
   const pageCRUDPending = Boolean(useIsMutating({ mutationKey: ['page'] }))
   const [addNewPageDialogOpen, setAddNewPageDialogOpen] = useState(false)
 
@@ -62,9 +68,9 @@ export function PageAdd() {
                   entry: {
                     store: 'pages',
                     title: values.title,
-                    description: values.description,
+                    description: values.description ?? '',
                     slug: values.slug,
-                    url: values.url,
+                    url: values.url ?? '',
                     createdAt: new Date(),
                     updatedAt: new Date(),
                     slots: { root: [] },
@@ -89,7 +95,6 @@ export function PageAdd() {
                   </FormItem>
                 )}
               />
-
               <FormField
                 control={form.control}
                 name="slug"
@@ -106,36 +111,56 @@ export function PageAdd() {
                   </FormItem>
                 )}
               />
-
+              <Separator />
               <FormField
                 control={form.control}
-                name="description"
+                name="standalone"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Input {...field} />
-                    </FormControl>
-                    <FormDescription>The page description for search indexing</FormDescription>
+                    <div className="flex items-center justify-between">
+                      <FormLabel className="mr-2">Standalone page</FormLabel>
+                      <FormControl>
+                        <Switch checked={field.value} onCheckedChange={field.onChange} />
+                      </FormControl>
+                    </div>
+                    <FormDescription>Will this page be embedded into another page, or be an standalone experience?</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}
               />
 
-              <FormField
-                control={form.control}
-                name="url"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>URL</FormLabel>
-                    <FormControl>
-                      <Input placeholder="https://yourwebsite.com" {...field} />
-                    </FormControl>
-                    <FormDescription>The URL of you page. This will be used to generate user friendly social media links</FormDescription>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
+              {form.watch('standalone') && (
+                <>
+                  <FormField
+                    control={form.control}
+                    name="description"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Description</FormLabel>
+                        <FormControl>
+                          <Input {...field} />
+                        </FormControl>
+                        <FormDescription>The page description for search indexing</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="url"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>URL</FormLabel>
+                        <FormControl>
+                          <Input placeholder="https://yourwebsite.com" {...field} />
+                        </FormControl>
+                        <FormDescription>The URL of you page. This will be used to generate user friendly social media links</FormDescription>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </>
+              )}
               <DialogFooter>
                 <DialogClose asChild>
                   <Button disabled={pageAddIsPending} variant="outline">

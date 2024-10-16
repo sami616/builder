@@ -10,7 +10,7 @@ import {
 import { useIsMutating } from '@tanstack/react-query'
 import { Template } from '@/db'
 import { useTreeItem } from '../ui/tree'
-import { useActive } from './active-provider'
+import { useActive } from '@/hooks/use-active'
 import { useTemplateDelete } from '@/hooks/use-template-delete'
 
 export function TemplateItemActions(props: { template: Template }) {

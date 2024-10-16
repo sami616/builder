@@ -50,7 +50,7 @@ export function useTemplateAdd() {
       }
 
       const templates = await getMany({ store: 'templates', sortBy: ['order', 'descending'] })
-      return context.add({ entry: { ...template, store: 'templates', order: templates.length + 1 } })
+      return context.add({ entry: { ...template, store: 'templates', order: templates.length === 0 ? 0 : templates.length + 1 } })
     },
     onSuccess: () => {
       context.queryClient.invalidateQueries({ queryKey: ['templates'] })

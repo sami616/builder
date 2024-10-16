@@ -60,9 +60,9 @@ export function useTemplateReorder() {
   async function templateReorder(args: Args) {
     const promise = mutation.mutateAsync(args)
     toast.promise(promise, {
-      loading: 'Reordering template...',
-      success: 'Reordered template',
-      error: 'Reordering template failed',
+      loading: 'Moving template...',
+      success: 'Moved template',
+      error: 'Moving template failed',
     })
     return promise
   }
