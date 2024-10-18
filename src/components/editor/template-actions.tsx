@@ -39,12 +39,13 @@ export function TemplateActions(props: {
         <DropdownMenuLabel>Template actions</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem
+          className="text-red-500"
           onClick={async () => {
             await templateDelete({ template: props.template })
             if (isActiveTemplate) setActive(undefined)
           }}
         >
-          <Trash size={14} className="opacity-40 mr-2" /> Delete
+          <Trash size={14} className="mr-2" /> Delete
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

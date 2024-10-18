@@ -148,12 +148,13 @@ export function BlockActions(props: {
             <Layout size={14} className="opacity-40 mr-2" /> Create template
           </DropdownMenuItem>
           <DropdownMenuItem
+            className="text-red-500"
             onClick={async () => {
               await blockDelete({ index: props.index, blockId: props.block.id, parent: props.parent })
               if (isActiveBlock) setActive(undefined)
             }}
           >
-            <Trash size={14} className="opacity-40 mr-2" /> Delete
+            <Trash size={14} className="mr-2" /> Delete
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>
