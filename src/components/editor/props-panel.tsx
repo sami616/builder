@@ -7,6 +7,7 @@ import { useActive } from '@/hooks/use-active'
 export function PropsPanel() {
   const context = useRouteContext({ from: '/pages/$id' })
   const { active, setActive } = useActive()
+
   const { blockGet } = useBlockGet({ id: active?.id })
 
   const updateBlockProps = useMutation({

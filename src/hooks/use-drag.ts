@@ -8,7 +8,7 @@ import { Input } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-typ
 import { useIsMutating } from '@tanstack/react-query'
 
 export function useDrag(props: {
-  dragRef: RefObject<HTMLLIElement | HTMLDivElement | HTMLSpanElement>
+  dragRef: RefObject<HTMLLIElement | HTMLDivElement | HTMLSpanElement | null>
   disableDrag?: (data: { dragHandle: Element | null; element: Element; input: Input }) => boolean
   data: Data
 }) {
@@ -55,8 +55,8 @@ export type DragData = {
     node: Template
   }
   component: {
+    id: 'component'
     type: Block['type']
-    id: 'componentItem'
   }
 }
 
@@ -64,6 +64,7 @@ export type Data = DragData['block'] | DragData['template'] | DragData['componen
 
 export const isDragData = {
   component(args: Record<string, any>): args is DragData['component'] {
+    if (args.id !== 'component') return false
     if (typeof args.type !== 'string') return false
     return Object.keys(config).includes(args.type)
   },

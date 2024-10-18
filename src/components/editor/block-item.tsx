@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState } from 'react'
+import { useDeferredValue, useRef, useState } from 'react'
 import { DropIndicator } from '@/components/editor/drop-indicator'
 import { type Block, type Page } from '@/db'
 import { useRouteContext } from '@tanstack/react-router'
@@ -7,16 +7,18 @@ import { useDrag, isDragData } from '@/hooks/use-drag'
 import { useTemplateApply } from '@/hooks/use-template-apply'
 import { useBlockGet } from '@/hooks/use-block-get'
 import { useBlockAdd } from '@/hooks/use-block-add'
-import { useDrop } from '@/hooks/use-drop'
+import { Edge, getEdge, useDrop } from '@/hooks/use-drop'
 import { useBlockMove } from '@/hooks/use-block-move'
-import { isBlock } from '@/api'
 import { Missing } from '@/components/editor/missing'
 import clsx from 'clsx'
 import { useActive } from '@/hooks/use-active'
-import { BlockItemActions } from './block-item-actions'
 import { toast } from 'sonner'
-import { validateComponentSlots } from './block-layer-item-slot'
 import { useHovered } from '@/hooks/use-hovered'
+import { validateSlotBlock, validateSlotMax } from './block-layer-item-slot'
+import { BlockActions } from '@/components/editor/block-actions'
+import { MoreHorizontal, Plus } from 'lucide-react'
+import { PopoverTrigger, Popover } from '../ui/popover'
+import { PopoverContent } from '@radix-ui/react-popover'
 
 export function BlockItem(props: { index: number; page: Page; parent: { slot: string; node: Block | Page }; blockId: Block['id'] }) {
   const { blockGet } = useBlockGet({ id: props.blockId })
@@ -33,7 +35,7 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
   const context = useRouteContext({ from: '/pages/$id' })
   const isActiveBlock = active?.store === 'blocks' && active.id === block.id
   const isHoveredBlock = isHovered(block.id)
-  const [addBlockOpen, setAddBlockOpen] = useState(false)
+  const [actionsOpen, setActionsOpen] = useState(false)
 
   // const mutationState = useMutationState<Block>({
   //   filters: {
@@ -49,13 +51,11 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
     dropRef: dropRef,
     data: { index: props.index, parent: props.parent, node: block },
     onDrop: ({ source, target }) => {
-      let error = undefined
-      if (isBlock(props.parent.node)) {
-        error = validateComponentSlots({ source, node: props.parent.node, slot: props.parent.slot })
-      }
-
-      if (error) {
-        toast.error(error)
+      try {
+        validateSlotMax({ source, target: target.data })
+        validateSlotBlock({ source, target: target.data })
+      } catch (e) {
+        if (e instanceof Error) toast.error(e.message, { richColors: true })
         return
       }
 
@@ -87,18 +87,15 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
   }, {})
 
   const Component = context.config[block.type]?.component ?? (() => <Missing node={{ type: 'component', name: block.type }} />)
-
-  useEffect(() => {
-    if (!addBlockOpen) {
-      popoverRef.current?.hidePopover()
-      setHovered(undefined)
-    }
-  }, [addBlockOpen])
+  const [hoverEdge, setHoverEdge] = useState<Edge>(null)
+  const defferedHoverEdge = useDeferredValue(hoverEdge)
 
   return (
     <div
-      // @ts-ignore
-      style={{ anchorName: `--${block.id}` }}
+      onMouseMove={(e) => {
+        const edge = getEdge(e, dropRef.current!)
+        setHoverEdge(edge)
+      }}
       data-component="BlockItem"
       className={clsx([
         'relative',
@@ -126,21 +123,87 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
       }}
       onMouseOut={(e) => {
         e.stopPropagation()
-        if (addBlockOpen) return
+        setHoverEdge(null)
+        if (actionsOpen) return
         setHovered(undefined)
         popoverRef.current?.hidePopover()
       }}
       ref={dropRef}
     >
       <div ref={dragRef}>
-        <BlockItemActions
-          addBlockOpen={addBlockOpen}
-          setAddBlockOpen={setAddBlockOpen}
-          parent={props.parent}
-          index={props.index}
-          block={block}
-          popoverRef={popoverRef}
-        />
+        <Popover>
+          <PopoverTrigger asChild>
+            <button
+              onClick={(e) => {
+                e.stopPropagation()
+              }}
+              className={clsx([
+                'size-5',
+                'items-center',
+                'z-50',
+                'justify-center',
+                'rounded-full',
+                'absolute',
+                'top-0',
+                '-mt-2.5',
+                '-ml-2.5',
+                'left-1/2',
+                defferedHoverEdge === 'top' && isHoveredBlock ? 'flex' : 'hidden',
+                isActiveBlock && 'bg-rose-500',
+                isHoveredBlock && 'bg-emerald-500',
+                isHoveredBlock && isActiveBlock && 'bg-rose-600',
+              ])}
+            >
+              <Plus size={14} className="stroke-white" />
+            </button>
+          </PopoverTrigger>
+          <PopoverContent>Content!</PopoverContent>
+        </Popover>
+        <div
+          className={clsx([
+            'absolute',
+            'right-0',
+            'size-6',
+            'text-white',
+            'justify-center',
+            'items-center',
+            isActiveBlock ? 'bg-rose-500' : 'bg-emerald-500',
+            isHoveredBlock || isActiveBlock ? 'flex' : 'hidden',
+          ])}
+        >
+          <BlockActions
+            trigger={<MoreHorizontal size={16} />}
+            parent={props.parent}
+            actionsOpen={actionsOpen}
+            setActionsOpen={setActionsOpen}
+            block={block}
+            index={props.index}
+          />
+        </div>
+
+        <button
+          onClick={(e) => {
+            e.stopPropagation()
+          }}
+          className={clsx([
+            'size-5',
+            'z-50',
+            'items-center',
+            'justify-center',
+            'rounded-full',
+            'absolute',
+            'bottom-0',
+            '-mb-2.5',
+            'left-1/2',
+            '-ml-2.5',
+            defferedHoverEdge === 'bottom' && isHoveredBlock ? 'flex' : 'hidden',
+            isActiveBlock && 'bg-rose-500',
+            isHoveredBlock && 'bg-emerald-500',
+            isHoveredBlock && isActiveBlock && 'bg-rose-600',
+          ])}
+        >
+          <Plus size={14} className="stroke-white" />
+        </button>
         <Component {...componentProps} {...componentBlocks} />
         <DropIndicator closestEdge={closestEdge} variant="horizontal" />
         <DragPreview dragPreviewContainer={dragPreviewContainer}>{block.name}</DragPreview>

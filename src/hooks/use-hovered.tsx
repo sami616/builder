@@ -1,5 +1,5 @@
 import { Block } from '@/db'
-import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useState } from 'react'
+import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useDeferredValue, useState } from 'react'
 
 type Hovered = {
   State: Block['id'] | undefined
@@ -7,7 +7,6 @@ type Hovered = {
 }
 
 const Context = createContext<{
-  hovered: Hovered['State']
   setHovered: Hovered['Set']
   isHovered: (arg: Hovered['State']) => boolean
 } | null>(null)
@@ -25,5 +24,5 @@ export function HoveredProvider(props: { children: ReactNode }) {
     return arg === hovered
   }
 
-  return <Context.Provider value={{ isHovered, hovered, setHovered }}>{props.children}</Context.Provider>
+  return <Context.Provider value={{ isHovered, setHovered }}>{props.children}</Context.Provider>
 }

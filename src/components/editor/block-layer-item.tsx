@@ -1,23 +1,22 @@
 import { type Page, type Block } from '@/db'
-import { useRef } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { useDrag, isDragData } from '@/hooks/use-drag'
 import { useDrop } from '@/hooks/use-drop'
 import { useBlockUpdateName } from '@/hooks/use-block-update-name'
 import { useBlockGet } from '@/hooks/use-block-get'
 import { useTemplateApply } from '@/hooks/use-template-apply'
-import { BlockLayerItemSlot, validateComponentSlots } from '@/components/editor/block-layer-item-slot'
+import { BlockLayerItemSlot, validateSlotBlock, validateSlotMax } from '@/components/editor/block-layer-item-slot'
 import { useBlockAdd } from '@/hooks/use-block-add'
 import { useBlockMove } from '@/hooks/use-block-move'
-import { isBlock } from '@/api'
 import { Layers2 } from 'lucide-react'
 import { TreeItem, TreeItemContent, TreeItemHead, TreeItemIcon, TreeItemLabel, TreeItemTrigger } from '@/components/ui/tree'
 import { DropIndicator } from './drop-indicator'
 import { DragPreview } from './drag-preview'
 import clsx from 'clsx'
-import { BlockLayerItemActions } from './block-layer-item-actions'
+import { BlockActions } from '@/components/editor/block-actions'
 import { useActive } from '@/hooks/use-active'
-import { toast } from 'sonner'
 import { useHovered } from '@/hooks/use-hovered'
+import { toast } from 'sonner'
 
 export function BlockLayerItem(props: { blockId: Block['id']; index: number; parent: { slot: string; node: Block | Page } }) {
   const { setActive, isActive } = useActive()
@@ -29,6 +28,7 @@ export function BlockLayerItem(props: { blockId: Block['id']; index: number; par
   const { blockAdd } = useBlockAdd()
   const { templateApply } = useTemplateApply()
   const { isHovered, setHovered } = useHovered()
+  const [actionsOpen, setActionsOpen] = useState(false)
   const isHoveredBlock = isHovered(props.blockId)
   const isActiveBlock = isActive({ id: props.blockId, store: 'blocks' })
   const isLeaf = Object.keys(blockGet.data.slots).length === 0
@@ -42,13 +42,11 @@ export function BlockLayerItem(props: { blockId: Block['id']; index: number; par
     dropRef,
     data: { parent: props.parent, node: blockGet.data, index: props.index },
     onDrop: ({ source, target }) => {
-      let error = undefined
-      if (isBlock(props.parent.node)) {
-        error = validateComponentSlots({ source, node: props.parent.node, slot: props.parent.slot })
-      }
-
-      if (error) {
-        toast.error(error)
+      try {
+        validateSlotMax({ source, target: target.data })
+        validateSlotBlock({ source, target: target.data })
+      } catch (e) {
+        if (e instanceof Error) toast.error(e.message, { richColors: true })
         return
       }
 
@@ -63,6 +61,14 @@ export function BlockLayerItem(props: { blockId: Block['id']; index: number; par
       }
     },
   })
+
+  useEffect(() => {
+    if (actionsOpen) {
+      setHovered(props.blockId)
+    } else {
+      setHovered(undefined)
+    }
+  }, [actionsOpen, props.blockId])
 
   return (
     <TreeItem
@@ -86,13 +92,14 @@ export function BlockLayerItem(props: { blockId: Block['id']; index: number; par
             return { store: 'blocks', id: props.blockId }
           })
         },
-        onMouseLeave: (e) => {
-          e.stopPropagation()
-          setHovered(undefined)
-        },
         onMouseOver: (e) => {
           e.stopPropagation()
           setHovered(props.blockId)
+        },
+        onMouseOut: (e) => {
+          e.stopPropagation()
+          if (actionsOpen) return
+          setHovered(undefined)
         },
       }}
     >
@@ -105,8 +112,7 @@ export function BlockLayerItem(props: { blockId: Block['id']; index: number; par
             blockUpdateName({ block: blockGet.data, name: updatedName })
           }}
         />
-
-        <BlockLayerItemActions block={blockGet.data} index={props.index} parent={props.parent} />
+        <BlockActions actionsOpen={actionsOpen} setActionsOpen={setActionsOpen} block={blockGet.data} index={props.index} parent={props.parent} />
       </TreeItemHead>
       <TreeItemContent>
         {Object.keys(blockGet.data.slots).map((slot) => (

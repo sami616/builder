@@ -13,6 +13,7 @@ import { CircleDashed } from 'lucide-react'
 import { TreeItem, TreeItemContent, TreeItemHead, TreeItemIcon, TreeItemLabel, TreeItemTrigger } from '@/components/ui/tree'
 import clsx from 'clsx'
 import { toast } from 'sonner'
+import { isPage } from '@/api'
 
 export function BlockLayerItemSlot(props: { block: Block; slot: string; parent: ComponentProps<typeof BlockLayerItem>['parent'] }) {
   const dropRef = useRef<HTMLDivElement>(null)
@@ -25,10 +26,11 @@ export function BlockLayerItemSlot(props: { block: Block; slot: string; parent: 
     dropRef,
     data: { parent: { slot: props.slot, node: props.block } },
     onDrop: ({ source, target }) => {
-      let error = undefined
-      error = validateComponentSlots({ source, node: props.block, slot: props.slot })
-      if (error) {
-        toast.error(error)
+      try {
+        validateSlotMax({ source, target: target.data })
+        validateSlotBlock({ source, target: target.data })
+      } catch (e) {
+        if (e instanceof Error) toast.error(e.message, { richColors: true })
         return
       }
       if (isDragData['component'](source.data)) {
@@ -72,30 +74,57 @@ export function BlockLayerItemSlot(props: { block: Block; slot: string; parent: 
   )
 }
 
-export function validateComponentSlots(args: { source: Record<string, any>; node: Block; slot: string }) {
-  const disabledComponents = config[args.node.type].slots?.[args.slot].validation?.disabledComponents
-  const maxItems = config[args.node.type].slots?.[args.slot].validation?.maxItems
-  const itemsLength = args.node.slots[args.slot].length
+export function validateSlotMax<S extends { data: any }>(args: {
+  source?: S
+  target: {
+    parent: ComponentProps<typeof BlockLayerItem>['parent']
+  }
+}) {
+  let error = undefined
+  if (isPage(args.target.parent.node)) return error
 
+  const maxItems = config[args.target.parent.node.type].slots?.[args.target.parent.slot].validation?.maxItems
+  const itemsLength = args.target.parent.node.slots[args.target.parent.slot].length
   if (maxItems) {
-    if (itemsLength >= maxItems) {
-      return `This slot cannot have more than ${maxItems} items`
+    if (args.source && isDragData['block'](args.source.data)) {
+      if (args.source.data.parent.slot !== args.target.parent.slot || args.source.data.parent.node.id !== args.target.parent.node.id) {
+        if (itemsLength >= maxItems) {
+          throw new Error(`This slot cannot have more than ${maxItems} items`)
+        }
+      }
+    } else {
+      if (itemsLength >= maxItems) {
+        throw new Error(`This slot cannot have more than ${maxItems} items`)
+      }
     }
   }
+}
+
+export function validateSlotBlock<S extends { data: any }>(args: {
+  source: S
+  target: {
+    parent: ComponentProps<typeof BlockLayerItem>['parent']
+  }
+}) {
+  let error = undefined
+  if (isPage(args.target.parent.node)) return error
+
+  const disabledComponents = config[args.target.parent.node.type].slots?.[args.target.parent.slot].validation?.disabledComponents
+
   if (disabledComponents) {
     if (isDragData['component'](args.source.data)) {
       if (disabledComponents.includes(args.source.data.type)) {
-        return `${args.source.data.type} cannot be dropped here`
+        throw new Error(`${args.source.data.type} cannot be dropped here`)
       }
     }
     if (isDragData['block'](args.source.data)) {
       if (disabledComponents.includes(args.source.data.node.type)) {
-        return `${args.source.data.node.type} cannot be dropped here`
+        throw new Error(`${args.source.data.node.type} cannot be dropped here`)
       }
     }
     if (isDragData['template'](args.source.data)) {
       if (disabledComponents.includes(args.source.data.node.rootNode.type)) {
-        return `${args.source.data.node.rootNode.type} cannot be dropped here`
+        throw new Error(`${args.source.data.node.rootNode.type} cannot be dropped here`)
       }
     }
   }

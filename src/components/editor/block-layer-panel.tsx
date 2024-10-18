@@ -6,6 +6,7 @@ import { useTemplateApply } from '@/hooks/use-template-apply'
 import { BlockLayerItem } from '@/components/editor/block-layer-item'
 import { Blocks } from 'lucide-react'
 import { Tree } from '../ui/tree'
+import { Suspense } from 'react'
 
 export function BlockLayerPanel(props: { page: Page }) {
   const { blockAdd } = useBlockAdd()
@@ -36,7 +37,9 @@ export function BlockLayerPanel(props: { page: Page }) {
   return (
     <Tree>
       {blocks.map((blockId, index) => (
-        <BlockLayerItem parent={{ node: props.page, slot: 'root' }} index={index} blockId={blockId} key={blockId} />
+        <Suspense key={blockId} fallback={null}>
+          <BlockLayerItem parent={{ node: props.page, slot: 'root' }} index={index} blockId={blockId} />
+        </Suspense>
       ))}
     </Tree>
   )

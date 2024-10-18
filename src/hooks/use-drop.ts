@@ -7,7 +7,7 @@ import { isDragData } from '@/hooks/use-drag'
 export type Target<Data extends Record<string, any>> = Omit<DropTargetRecord, 'data'> & { data: WithEdge<Data> }
 
 export function useDrop<Data extends Record<string, any>>(props: {
-  dropRef: RefObject<HTMLDivElement | HTMLDetailsElement | HTMLLIElement>
+  dropRef: RefObject<HTMLDivElement | HTMLDetailsElement | HTMLLIElement | null>
   data?: Data
   onDrop?: (args: { source: ElementDragPayload; target: Target<Data> }) => void | undefined
   disableDrop?: (data: { source: ElementDragPayload; element: Element; input: Input }) => boolean | undefined
@@ -91,7 +91,7 @@ export function useDrop<Data extends Record<string, any>>(props: {
   return { isDraggingOver, closestEdge }
 }
 
-function getEdge(input: Input, element: Element): Edge {
+export function getEdge(input: Input, element: Element): Edge {
   const rect = element.getBoundingClientRect()
   const middle = rect.top + (rect.bottom - rect.top) / 2
 

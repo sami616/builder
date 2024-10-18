@@ -7,6 +7,7 @@ import { getMany } from '@/api'
 import { toast } from 'sonner'
 
 type Args = {
+  name?: string
   source: DragData['block']
   target?: {
     index: number
@@ -24,7 +25,7 @@ export function useTemplateAdd() {
 
       const date = new Date()
       const template = {
-        name: args.source.node.name,
+        name: args.name ?? args.source.node.name,
         createdAt: date,
         updatedAt: date,
         rootNode: rootEntry as Block,
@@ -50,7 +51,8 @@ export function useTemplateAdd() {
       }
 
       const templates = await getMany({ store: 'templates', sortBy: ['order', 'descending'] })
-      return context.add({ entry: { ...template, store: 'templates', order: templates.length === 0 ? 0 : templates.length + 1 } })
+
+      return context.add({ entry: { ...template, store: 'templates', order: templates.length } })
     },
     onSuccess: () => {
       context.queryClient.invalidateQueries({ queryKey: ['templates'] })

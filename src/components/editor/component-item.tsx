@@ -13,7 +13,7 @@ export function ComponentItem(props: { page: Page; type: Block['type']; value: N
   const dragRef = useRef<HTMLDivElement>(null)
   const { isDraggingSource, dragPreviewContainer } = useDrag({
     dragRef,
-    data: { id: 'componentItem', type: props.type },
+    data: { id: 'component', type: props.type },
   })
 
   const [open, setOpen] = useState(false)

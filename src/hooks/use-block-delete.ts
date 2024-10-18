@@ -25,7 +25,11 @@ export function useBlockDelete() {
 
   async function blockDelete(args: Args) {
     const promise = mutation.mutateAsync(args)
-    toast.promise(promise, { loading: 'Deleting layer...', success: 'Deleted layer', error: 'Deleting layer failed' })
+    toast.promise(promise, {
+      loading: 'Deleting layer...',
+      success: 'Deleted layer',
+      error: 'Deleting layer failed',
+    })
     return promise
   }
 

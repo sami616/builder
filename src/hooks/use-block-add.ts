@@ -6,6 +6,7 @@ import { DragData } from '@/hooks/use-drag'
 import { toast } from 'sonner'
 
 type Args = {
+  name?: string
   source: DragData['component']
   target: {
     parent: { slot: string; node: Page | Block }
@@ -46,7 +47,7 @@ export function useBlockAdd() {
         entry: {
           store: 'blocks',
           type: args.source.type,
-          name: configItem.name,
+          name: args.name ?? configItem.name,
           props: defaultProps,
           slots: defaultSlots,
           createdAt: date,

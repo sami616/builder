@@ -67,7 +67,7 @@ export function TreeItem(props: {
 export function TreeItemHead(props: {
   htmlProps?: HTMLProps<HTMLDivElement> & Record<`data-${string}`, any>
   children: ReactNode
-  customRef?: RefObject<HTMLDivElement>
+  customRef?: RefObject<HTMLDivElement | null>
 }) {
   return (
     <div {...props.htmlProps} className={clsx(['flex', 'items-center', 'gap-2', props.htmlProps?.className])} ref={props.customRef}>

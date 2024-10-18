@@ -9,8 +9,7 @@ import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Block } from '@/db'
 import '@/index.css'
-import { Toaster } from '@/components/ui/toaster'
-import { Toaster as ToasterSonner } from '@/components/ui/sonner'
+import { Toaster } from 'sonner'
 
 const queryClient = new QueryClient()
 
@@ -77,7 +76,6 @@ if (!rootElement.innerHTML) {
   root.render(
     <StrictMode>
       <Toaster />
-      <ToasterSonner />
       <QueryClientProvider client={queryClient}>
         <RouterProvider router={router} />
         <TanStackRouterDevtools initialIsOpen={false} router={router} />

@@ -49,9 +49,9 @@
     "lucide-react": "^0.445.0",
     "next-themes": "^0.3.0",
     "random-word-slugs": "^0.1.7",
-    "react": "^18.3.1",
+    "react": "19.0.0-rc-bf7e210c-20241017",
     "react-beautiful-dnd": "^13.1.1",
-    "react-dom": "^18.3.1",
+    "react-dom": "19.0.0-rc-bf7e210c-20241017",
     "react-hook-form": "^7.53.0",
     "react-resizable-panels": "^2.1.4",
     "sonner": "^1.5.0",
@@ -63,13 +63,15 @@
     "@tanstack/router-devtools": "^1.45.10",
     "@tanstack/router-plugin": "^1.45.8",
     "@types/node": "^22.5.5",
-    "@types/react": "^18.3.3",
-    "@types/react-dom": "^18.3.0",
+    "@types/react": "npm:types-react@rc",
+    "@types/react-dom": "npm:types-react-dom@rc",
     "@typescript-eslint/eslint-plugin": "^7.15.0",
     "@typescript-eslint/parser": "^7.15.0",
     "@vitejs/plugin-react": "^4.3.1",
     "autoprefixer": "^10.4.20",
+    "babel-plugin-react-compiler": "19.0.0-beta-9ee70a1-20241017",
     "eslint": "^8.57.0",
+    "eslint-plugin-react-compiler": "19.0.0-beta-9ee70a1-20241017",
     "eslint-plugin-react-hooks": "^4.6.2",
     "eslint-plugin-react-refresh": "^0.4.7",
     "postcss": "^8.4.47",
@@ -77,5 +79,9 @@
     "tailwindcss": "^3.4.12",
     "typescript": "^5.5.4",
     "vite": "^5.3.4"
+  },
+  "overrides": {
+    "@types/react": "npm:types-react@rc",
+    "@types/react-dom": "npm:types-react-dom@rc"
   }
 }
