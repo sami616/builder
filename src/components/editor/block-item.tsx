@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { DropIndicator } from '@/components/editor/drop-indicator'
 import { type Block, type Page } from '@/db'
 import { useRouteContext } from '@tanstack/react-router'
@@ -40,7 +40,6 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
   const { active, setActive } = useActive()
   const dropRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<HTMLDivElement>(null)
-  const popoverRef = useRef<HTMLDivElement>(null)
   const { isHovered, setHovered } = useHovered()
   const context = useRouteContext({ from: '/pages/$id' })
   const isActiveBlock = active?.store === 'blocks' && active.id === block.id
@@ -98,9 +97,24 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
 
   const Component = context.config[block.type]?.component ?? (() => <Missing node={{ type: 'component', name: block.type }} />)
 
+  useEffect(() => {
+    if (actionsOpen) {
+      setHovered(block.id)
+    } else {
+      setHovered(undefined)
+    }
+  }, [actionsOpen, block])
+
+  console.log(actionsOpen)
+
   return (
-    <ContextMenu>
-      <ContextMenuTrigger>
+    <ContextMenu
+      modal
+      onOpenChange={(bool) => {
+        setActionsOpen(bool)
+      }}
+    >
+      <ContextMenuTrigger asChild>
         <div
           data-component="BlockItem"
           className={clsx([
@@ -124,14 +138,13 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
           }}
           onMouseOver={(e) => {
             e.stopPropagation()
+            if (actionsOpen) return
             setHovered(block.id)
-            popoverRef.current?.showPopover()
           }}
           onMouseOut={(e) => {
             e.stopPropagation()
             if (actionsOpen) return
             setHovered(undefined)
-            popoverRef.current?.hidePopover()
           }}
           ref={dropRef}
         >
@@ -157,6 +170,7 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
                       'flex',
                       'transition',
                       'group-hover:scale-100',
+                      isActiveBlock || isHoveredBlock ? 'flex' : 'hidden',
                       isActiveBlock && 'bg-rose-500',
                       isHoveredBlock && 'bg-emerald-500',
                       isHoveredBlock && isActiveBlock && 'bg-rose-600',
@@ -165,7 +179,9 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
                     <Plus size={14} className="stroke-white" />
                   </button>
                 </PopoverTrigger>
-                <PopoverContent>Above</PopoverContent>
+                <PopoverContent onMouseOver={(e) => e.stopPropagation()} onMouseOut={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
+                  Above
+                </PopoverContent>
               </Popover>
             </div>
             {/* <div */}
@@ -211,6 +227,7 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
                       'flex',
                       'transition',
                       'group-hover:scale-100',
+                      isActiveBlock || isHoveredBlock ? 'flex' : 'hidden',
                       isActiveBlock && 'bg-rose-500',
                       isHoveredBlock && 'bg-emerald-500',
                       isHoveredBlock && isActiveBlock && 'bg-rose-600',
@@ -219,7 +236,9 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
                     <Plus size={14} className="stroke-white" />
                   </button>
                 </PopoverTrigger>
-                <PopoverContent>Below</PopoverContent>
+                <PopoverContent onMouseOver={(e) => e.stopPropagation()} onMouseOut={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
+                  Below
+                </PopoverContent>
               </Popover>
             </div>
             <Component {...componentProps} {...componentBlocks} />
@@ -228,7 +247,12 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
           </div>
         </div>
       </ContextMenuTrigger>
-      <ContextMenuContent className="w-56">
+      <ContextMenuContent
+        onMouseOver={(e) => e.stopPropagation()}
+        onMouseOut={(e) => e.stopPropagation()}
+        onClick={(e) => e.stopPropagation()}
+        className="w-56"
+      >
         <ContextMenuLabel>Layer actions</ContextMenuLabel>
         <ContextMenuSeparator />
         <ContextMenuSub>

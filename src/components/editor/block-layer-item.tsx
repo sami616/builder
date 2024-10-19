@@ -94,6 +94,7 @@ export function BlockLayerItem(props: { blockId: Block['id']; index: number; par
         },
         onMouseOver: (e) => {
           e.stopPropagation()
+          if (actionsOpen) return
           setHovered(props.blockId)
         },
         onMouseOut: (e) => {
