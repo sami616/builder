@@ -1,4 +1,9 @@
 import { useEffect, useRef, useState } from 'react'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
+import { useForm } from 'react-hook-form'
 import { DropIndicator } from '@/components/editor/drop-indicator'
 import { type Block, type Page } from '@/db'
 import { useRouteContext } from '@tanstack/react-router'
@@ -15,7 +20,7 @@ import { useActive } from '@/hooks/use-active'
 import { toast } from 'sonner'
 import { useHovered } from '@/hooks/use-hovered'
 import { validateSlotBlock, validateSlotMax } from './block-layer-item-slot'
-import { Copy, Layout, Plus, Trash } from 'lucide-react'
+import { Check, ChevronsUpDown, Copy, Layout, Plus, Trash } from 'lucide-react'
 import { PopoverTrigger, Popover } from '../ui/popover'
 import { PopoverContent } from '@radix-ui/react-popover'
 import {
@@ -29,6 +34,23 @@ import {
   ContextMenuSubContent,
   ContextMenuSubTrigger,
 } from '@/components/ui/context-menu'
+import { useBlockCopy } from '@/hooks/use-block-copy'
+import { useBlockDelete } from '@/hooks/use-block-delete'
+import { useTemplateAdd } from '@/hooks/use-template-add'
+import { Input } from '../ui/input'
+import { Button } from '../ui/button'
+import { ToggleGroup, ToggleGroupItem } from '../ui/toggle-group'
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../ui/command'
+
+const blockAddSchema = z.object({
+  name: z.string(),
+  edge: z.union([z.literal('top'), z.literal('bottom')]),
+  component: z.string(),
+})
+
+const templateAddSchema = z.object({
+  name: z.string(),
+})
 
 export function BlockItem(props: { index: number; page: Page; parent: { slot: string; node: Block | Page }; blockId: Block['id'] }) {
   const { blockGet } = useBlockGet({ id: props.blockId })
@@ -44,7 +66,23 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
   const context = useRouteContext({ from: '/pages/$id' })
   const isActiveBlock = active?.store === 'blocks' && active.id === block.id
   const isHoveredBlock = isHovered(block.id)
+  const { blockCopy } = useBlockCopy()
+  const { blockDelete } = useBlockDelete()
+  const { templateAdd } = useTemplateAdd()
   const [actionsOpen, setActionsOpen] = useState(false)
+  const [blockAddOpen, setBlockAddOpen] = useState(false)
+  const [templateAddOpen, setTemplateAddOpen] = useState(false)
+  const [blockPickerOpen, setBlockPickerOpen] = useState(false)
+
+  const blockAddForm = useForm<z.infer<typeof blockAddSchema>>({
+    resolver: zodResolver(blockAddSchema),
+    defaultValues: { name: '', edge: 'bottom', component: '' },
+  })
+
+  const templateAddForm = useForm<z.infer<typeof templateAddSchema>>({
+    resolver: zodResolver(templateAddSchema),
+    defaultValues: { name: '' },
+  })
 
   // const mutationState = useMutationState<Block>({
   //   filters: {
@@ -98,184 +136,360 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
   const Component = context.config[block.type]?.component ?? (() => <Missing node={{ type: 'component', name: block.type }} />)
 
   useEffect(() => {
-    if (actionsOpen) {
+    if (actionsOpen || templateAddOpen || blockAddOpen) {
       setHovered(block.id)
     } else {
       setHovered(undefined)
     }
-  }, [actionsOpen, block])
+  }, [actionsOpen, templateAddOpen, blockAddOpen, block])
 
-  console.log(actionsOpen)
+  function disableAdd() {
+    try {
+      validateSlotMax({ target: { parent: props.parent } })
+      return false
+    } catch (e) {
+      return true
+    }
+  }
 
   return (
-    <ContextMenu
-      modal
-      onOpenChange={(bool) => {
-        setActionsOpen(bool)
-      }}
-    >
-      <ContextMenuTrigger asChild>
-        <div
-          data-component="BlockItem"
-          className={clsx([
-            'relative',
-            'outline',
-            'outline-2',
-            '-outline-offset-2',
-            'outline-none',
-            isDraggingSource && 'opacity-50',
-            isActiveBlock && 'outline-rose-500',
-            isHoveredBlock && 'outline-emerald-500',
-            isHoveredBlock && isActiveBlock && 'outline-rose-600',
-          ])}
-          data-drop-id={`block-${blockGet.data.id}`}
-          onClick={(e) => {
-            e.stopPropagation()
-            setActive((active) => {
-              if (active?.id === block.id) return undefined
-              return { store: 'blocks', id: block.id }
-            })
-          }}
-          onMouseOver={(e) => {
-            e.stopPropagation()
-            if (actionsOpen) return
-            setHovered(block.id)
-          }}
-          onMouseOut={(e) => {
-            e.stopPropagation()
-            if (actionsOpen) return
-            setHovered(undefined)
-          }}
-          ref={dropRef}
-        >
-          <div ref={dragRef}>
-            <div className={clsx(['group', 'top-0', 'absolute', 'w-full', 'h-3', 'z-50'])}>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                    }}
-                    className={clsx([
-                      'size-5',
-                      'items-center',
-                      'justify-center',
-                      'rounded-full',
-                      'absolute',
-                      'top-0',
-                      '-mt-2.5',
-                      '-ml-2.5',
-                      'left-1/2',
-                      'scale-50',
-                      'flex',
-                      'transition',
-                      'group-hover:scale-100',
-                      isActiveBlock || isHoveredBlock ? 'flex' : 'hidden',
-                      isActiveBlock && 'bg-rose-500',
-                      isHoveredBlock && 'bg-emerald-500',
-                      isHoveredBlock && isActiveBlock && 'bg-rose-600',
-                    ])}
-                  >
-                    <Plus size={14} className="stroke-white" />
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent onMouseOver={(e) => e.stopPropagation()} onMouseOut={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
-                  Above
-                </PopoverContent>
-              </Popover>
-            </div>
-            {/* <div */}
-            {/*   className={clsx([ */}
-            {/*     'absolute', */}
-            {/*     'right-0', */}
-            {/*     'size-6', */}
-            {/*     'text-white', */}
-            {/*     'justify-center', */}
-            {/*     'items-center', */}
-            {/*     isActiveBlock ? 'bg-rose-500' : 'bg-emerald-500', */}
-            {/*     isHoveredBlock || isActiveBlock ? 'flex' : 'hidden', */}
-            {/*   ])} */}
-            {/* > */}
-            {/*   <BlockActions */}
-            {/*     trigger={<MoreHorizontal size={16} />} */}
-            {/*     parent={props.parent} */}
-            {/*     actionsOpen={actionsOpen} */}
-            {/*     setActionsOpen={setActionsOpen} */}
-            {/*     block={block} */}
-            {/*     index={props.index} */}
-            {/*   /> */}
-            {/* </div> */}
-
-            <div className={clsx(['group', 'bottom-0', 'absolute', 'w-full', 'h-3', 'z-50'])}>
-              <Popover>
-                <PopoverTrigger asChild>
-                  <button
-                    onClick={(e) => {
-                      e.stopPropagation()
-                    }}
-                    className={clsx([
-                      'size-5',
-                      'items-center',
-                      'justify-center',
-                      'rounded-full',
-                      'absolute',
-                      'bottom-0',
-                      '-mb-2.5',
-                      'left-1/2',
-                      '-ml-2.5',
-                      'scale-50',
-                      'flex',
-                      'transition',
-                      'group-hover:scale-100',
-                      isActiveBlock || isHoveredBlock ? 'flex' : 'hidden',
-                      isActiveBlock && 'bg-rose-500',
-                      isHoveredBlock && 'bg-emerald-500',
-                      isHoveredBlock && isActiveBlock && 'bg-rose-600',
-                    ])}
-                  >
-                    <Plus size={14} className="stroke-white" />
-                  </button>
-                </PopoverTrigger>
-                <PopoverContent onMouseOver={(e) => e.stopPropagation()} onMouseOut={(e) => e.stopPropagation()} onClick={(e) => e.stopPropagation()}>
-                  Below
-                </PopoverContent>
-              </Popover>
-            </div>
-            <Component {...componentProps} {...componentBlocks} />
-            <DropIndicator closestEdge={closestEdge} variant="horizontal" />
-            <DragPreview dragPreviewContainer={dragPreviewContainer}>{block.name}</DragPreview>
-          </div>
-        </div>
-      </ContextMenuTrigger>
-      <ContextMenuContent
-        onMouseOver={(e) => e.stopPropagation()}
-        onMouseOut={(e) => e.stopPropagation()}
-        onClick={(e) => e.stopPropagation()}
-        className="w-56"
+    <>
+      <ContextMenu
+        onOpenChange={(bool) => {
+          setActionsOpen(bool)
+        }}
       >
-        <ContextMenuLabel>Layer actions</ContextMenuLabel>
-        <ContextMenuSeparator />
-        <ContextMenuSub>
-          <ContextMenuSubTrigger>
-            <Plus size={14} className="mr-2 opacity-40" /> Add component
-          </ContextMenuSubTrigger>
-          <ContextMenuSubContent className="w-48">
-            <ContextMenuItem>Above</ContextMenuItem>
-            <ContextMenuItem>Below</ContextMenuItem>
-          </ContextMenuSubContent>
-        </ContextMenuSub>
-        <ContextMenuItem>
-          <Copy size={14} className="mr-2 opacity-40" />
-          Duplicate
-        </ContextMenuItem>
-        <ContextMenuItem>
-          <Layout size={14} className="mr-2 opacity-40" />
-          Create template
-        </ContextMenuItem>
-        <ContextMenuItem className="text-red-500">
-          <Trash size={14} className="mr-2" /> Delete
-        </ContextMenuItem>
-      </ContextMenuContent>
-    </ContextMenu>
+        <ContextMenuTrigger asChild>
+          <div
+            data-component="BlockItem"
+            className={clsx([
+              'relative',
+              'outline',
+              'outline-2',
+              '-outline-offset-2',
+              'outline-none',
+              isDraggingSource && 'opacity-50',
+              isActiveBlock && 'outline-rose-500',
+              isHoveredBlock && 'outline-emerald-500',
+              isHoveredBlock && isActiveBlock && 'outline-rose-600',
+            ])}
+            data-drop-id={`block-${blockGet.data.id}`}
+            onClick={(e) => {
+              e.stopPropagation()
+              setActive((active) => {
+                if (active?.id === block.id) return undefined
+                return { store: 'blocks', id: block.id }
+              })
+            }}
+            onMouseOver={(e) => {
+              e.stopPropagation()
+              if (actionsOpen || templateAddOpen || blockAddOpen) return
+              setHovered(block.id)
+            }}
+            onMouseOut={(e) => {
+              e.stopPropagation()
+              if (actionsOpen || templateAddOpen || blockAddOpen) return
+              setHovered(undefined)
+            }}
+            ref={dropRef}
+          >
+            <div ref={dragRef}>
+              <div className={clsx(['group', 'top-0', 'absolute', 'w-full', 'h-3', 'z-50'])}>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation()
+                      }}
+                      className={clsx([
+                        'size-5',
+                        'items-center',
+                        'justify-center',
+                        'rounded-full',
+                        'absolute',
+                        'top-0',
+                        '-mt-2.5',
+                        '-ml-2.5',
+                        'left-1/2',
+                        'scale-50',
+                        'flex',
+                        'transition',
+                        'group-hover:scale-100',
+                        isActiveBlock || isHoveredBlock ? 'flex' : 'hidden',
+                        isActiveBlock && 'bg-rose-500',
+                        isHoveredBlock && 'bg-emerald-500',
+                        isHoveredBlock && isActiveBlock && 'bg-rose-600',
+                      ])}
+                    >
+                      <Plus size={14} className="stroke-white" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    onMouseOver={(e) => e.stopPropagation()}
+                    onMouseOut={(e) => e.stopPropagation()}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Above
+                  </PopoverContent>
+                </Popover>
+              </div>
+
+              <div className={clsx(['group', 'bottom-0', 'absolute', 'w-full', 'h-3', 'z-50'])}>
+                <Popover>
+                  <PopoverTrigger asChild>
+                    <button
+                      onClick={(e) => e.stopPropagation()}
+                      className={clsx([
+                        'size-5',
+                        'items-center',
+                        'justify-center',
+                        'rounded-full',
+                        'absolute',
+                        'bottom-0',
+                        '-mb-2.5',
+                        'left-1/2',
+                        '-ml-2.5',
+                        'scale-50',
+                        'flex',
+                        'transition',
+                        'group-hover:scale-100',
+                        isActiveBlock || isHoveredBlock ? 'flex' : 'hidden',
+                        isActiveBlock && 'bg-rose-500',
+                        isHoveredBlock && 'bg-emerald-500',
+                        isHoveredBlock && isActiveBlock && 'bg-rose-600',
+                      ])}
+                    >
+                      <Plus size={14} className="stroke-white" />
+                    </button>
+                  </PopoverTrigger>
+                  <PopoverContent
+                    onMouseOver={(e) => e.stopPropagation()}
+                    onMouseOut={(e) => e.stopPropagation()}
+                    onClick={(e) => e.stopPropagation()}
+                  >
+                    Below
+                  </PopoverContent>
+                </Popover>
+              </div>
+              <Component {...componentProps} {...componentBlocks} />
+              <DropIndicator closestEdge={closestEdge} variant="horizontal" />
+              <DragPreview dragPreviewContainer={dragPreviewContainer}>{block.name}</DragPreview>
+            </div>
+          </div>
+        </ContextMenuTrigger>
+        <ContextMenuContent
+          onMouseOver={(e) => e.stopPropagation()}
+          onMouseOut={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+          className="w-56"
+        >
+          <ContextMenuLabel>Layer actions</ContextMenuLabel>
+          <ContextMenuSeparator />
+          <ContextMenuSub>
+            <ContextMenuSubTrigger disabled={disableAdd()} className="data-[disabled]:opacity-50">
+              <Plus size={14} className="mr-2 opacity-40" /> Add component
+            </ContextMenuSubTrigger>
+            <ContextMenuSubContent
+              className="w-48"
+              onClick={() => {
+                setBlockAddOpen(true)
+              }}
+            >
+              <ContextMenuItem onClick={() => blockAddForm.setValue('edge', 'bottom')}>Below</ContextMenuItem>
+              <ContextMenuItem onClick={() => blockAddForm.setValue('edge', 'top')}>Above</ContextMenuItem>
+            </ContextMenuSubContent>
+          </ContextMenuSub>
+          <ContextMenuItem
+            onClick={() => {
+              blockCopy({ index: props.index, id: block.id, parent: props.parent })
+            }}
+          >
+            <Copy size={14} className="mr-2 opacity-40" />
+            Duplicate
+          </ContextMenuItem>
+          <ContextMenuItem
+            onClick={() => {
+              setTemplateAddOpen(true)
+            }}
+          >
+            <Layout size={14} className="mr-2 opacity-40" />
+            Create template
+          </ContextMenuItem>
+          <ContextMenuItem
+            onClick={async () => {
+              await blockDelete({ index: props.index, blockId: block.id, parent: props.parent })
+              if (isActiveBlock) setActive(undefined)
+            }}
+            className="text-red-500"
+          >
+            <Trash size={14} className="mr-2" /> Delete
+          </ContextMenuItem>
+        </ContextMenuContent>
+      </ContextMenu>
+
+      <Dialog
+        open={blockAddOpen}
+        onOpenChange={(bool) => {
+          blockAddForm.reset()
+          setBlockAddOpen(bool)
+        }}
+      >
+        <DialogContent className="w-96">
+          <DialogHeader>
+            <DialogTitle>Add component</DialogTitle>
+            <DialogDescription>Add a new component to your page.</DialogDescription>
+          </DialogHeader>
+          <Form {...blockAddForm}>
+            <form
+              onSubmit={blockAddForm.handleSubmit(async (values) => {
+                blockAdd({
+                  name: values.name.trim() === '' ? undefined : values.name.trim(),
+                  source: { id: 'component', type: values.component },
+                  target: { edge: values.edge, parent: props.parent, index: props.index },
+                })
+                setBlockAddOpen(false)
+              })}
+              className="grid gap-4"
+            >
+              <FormField
+                control={blockAddForm.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input type="text" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={blockAddForm.control}
+                name="edge"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Placement</FormLabel>
+                    <FormControl>
+                      <ToggleGroup
+                        size="sm"
+                        value={field.value ?? undefined}
+                        onValueChange={(val) => {
+                          if (val) field.onChange(val)
+                        }}
+                        type="single"
+                      >
+                        <ToggleGroupItem className="grow" value="bottom">
+                          Below
+                        </ToggleGroupItem>
+                        <ToggleGroupItem className="grow" value="top">
+                          Above
+                        </ToggleGroupItem>
+                      </ToggleGroup>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <FormField
+                control={blockAddForm.control}
+                name="component"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Component</FormLabel>
+                    <FormControl>
+                      <Popover open={blockPickerOpen} onOpenChange={setBlockPickerOpen}>
+                        <PopoverTrigger asChild>
+                          <Button variant="outline" role="combobox" aria-expanded={blockPickerOpen} className="w-full justify-between">
+                            {field.value ? Object.keys(context.config).find((key) => key === field.value) : 'Select component...'}
+                            <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
+                          </Button>
+                        </PopoverTrigger>
+                        <PopoverContent className="w-full p-0">
+                          <Command>
+                            <CommandInput placeholder="Search components..." />
+                            <CommandList>
+                              <CommandEmpty>No component found.</CommandEmpty>
+                              <CommandGroup>
+                                {Object.entries(context.config).map(([key, configItem]) => {
+                                  try {
+                                    validateSlotBlock({ source: { data: { id: 'component', type: key } }, target: { parent: props.parent } })
+                                    return (
+                                      <CommandItem
+                                        key={key}
+                                        value={key}
+                                        onSelect={(args) => {
+                                          setBlockPickerOpen(false)
+                                          field.onChange(args)
+                                        }}
+                                      >
+                                        <Check className={clsx('mr-2 size-4', field.value === key ? 'opacity-100' : 'opacity-0')} />
+                                        {configItem.name}
+                                      </CommandItem>
+                                    )
+                                  } catch (e) {
+                                    return null
+                                  }
+                                })}
+                              </CommandGroup>
+                            </CommandList>
+                          </Command>
+                        </PopoverContent>
+                      </Popover>
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button disabled={blockAddForm.getValues('component') === ''} type="submit">
+                Add component
+              </Button>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+      <Dialog
+        open={templateAddOpen}
+        onOpenChange={(bool) => {
+          templateAddForm.reset()
+          setTemplateAddOpen(bool)
+        }}
+      >
+        <DialogContent className="w-96">
+          <DialogHeader>
+            <DialogTitle>Add template</DialogTitle>
+            <DialogDescription>Add a new template to your library.</DialogDescription>
+          </DialogHeader>
+
+          <Form {...templateAddForm}>
+            <form
+              onSubmit={templateAddForm.handleSubmit(async (values) => {
+                templateAdd({
+                  name: values.name.trim() === '' ? undefined : values.name.trim(),
+                  source: { id: 'block', index: props.index, node: block, parent: props.parent },
+                })
+                setTemplateAddOpen(false)
+              })}
+              className="grid gap-4"
+            >
+              <FormField
+                control={templateAddForm.control}
+                name="name"
+                render={({ field }) => (
+                  <FormItem>
+                    <FormLabel>Name</FormLabel>
+                    <FormControl>
+                      <Input type="text" {...field} />
+                    </FormControl>
+                    <FormMessage />
+                  </FormItem>
+                )}
+              />
+              <Button type="submit">Add template</Button>
+            </form>
+          </Form>
+        </DialogContent>
+      </Dialog>
+    </>
   )
 }

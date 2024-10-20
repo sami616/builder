@@ -107,7 +107,13 @@ export function BlockActions(props: {
         <DropdownMenuTrigger asChild disabled={isCanvasMutating}>
           {props.trigger ? props.trigger : <MoreHorizontal size={16} className="shrink-0 opacity-40 enabled:hover:opacity-100" />}
         </DropdownMenuTrigger>
-        <DropdownMenuContent onClick={(e) => e.stopPropagation()} className="w-56" align="start">
+        <DropdownMenuContent
+          onMouseOver={(e) => e.stopPropagation()}
+          onMouseOut={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+          className="w-56"
+          align="start"
+        >
           <DropdownMenuLabel>Layer actions</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuSub>
@@ -129,8 +135,8 @@ export function BlockActions(props: {
                 setBlockAddOpen(true)
               }}
             >
-              <DropdownMenuItem onSelect={() => blockAddForm.setValue('edge', 'bottom')}>Below</DropdownMenuItem>
-              <DropdownMenuItem onSelect={() => blockAddForm.setValue('edge', 'top')}>Above</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => blockAddForm.setValue('edge', 'bottom')}>Below</DropdownMenuItem>
+              <DropdownMenuItem onClick={() => blockAddForm.setValue('edge', 'top')}>Above</DropdownMenuItem>
             </DropdownMenuSubContent>
           </DropdownMenuSub>
           <DropdownMenuItem
@@ -141,7 +147,7 @@ export function BlockActions(props: {
             <Copy size={14} className="opacity-40 mr-2" /> Duplicate
           </DropdownMenuItem>
           <DropdownMenuItem
-            onSelect={() => {
+            onClick={() => {
               setTemplateAddOpen(true)
             }}
           >
