@@ -1,9 +1,8 @@
 import { useNavigate } from '@tanstack/react-router'
 import { usePageAdd } from '@/hooks/use-page-add'
-import { Loader2 } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
-import { useForm } from 'react-hook-form'
+import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Input } from '@/components/ui/input'
@@ -29,11 +28,13 @@ const formSchema = z.object({
 
 export function PageAdd() {
   const navigate = useNavigate({ from: '/pages' })
-  const { pageAdd, pageAddIsPending } = usePageAdd()
+  const { pageAdd } = usePageAdd()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: { standalone: false, title: '', description: '', slug: '' },
   })
+
+  const standalone = useWatch({ control: form.control, name: 'standalone' })
   const pageCRUDPending = Boolean(useIsMutating({ mutationKey: ['page'] }))
   const [addNewPageDialogOpen, setAddNewPageDialogOpen] = useState(false)
 
@@ -42,18 +43,7 @@ export function PageAdd() {
       <Button disabled={pageCRUDPending} onClick={() => setAddNewPageDialogOpen(true)} variant="default">
         Add new
       </Button>
-      <Dialog
-        open={addNewPageDialogOpen}
-        onOpenChange={(bool) => {
-          if (bool === false) {
-            if (!pageAddIsPending) {
-              setAddNewPageDialogOpen(bool)
-            }
-          } else {
-            setAddNewPageDialogOpen(bool)
-          }
-        }}
-      >
+      <Dialog open={addNewPageDialogOpen} onOpenChange={setAddNewPageDialogOpen}>
         <DialogContent>
           <DialogHeader>
             <DialogTitle>Create page</DialogTitle>
@@ -129,7 +119,7 @@ export function PageAdd() {
                 )}
               />
 
-              {form.watch('standalone') && (
+              {standalone && (
                 <>
                   <FormField
                     control={form.control}
@@ -161,14 +151,12 @@ export function PageAdd() {
                   />
                 </>
               )}
+
               <DialogFooter>
                 <DialogClose asChild>
-                  <Button disabled={pageAddIsPending} variant="outline">
-                    Close
-                  </Button>
+                  <Button variant="outline">Close</Button>
                 </DialogClose>
-                <Button disabled={pageAddIsPending} type="submit" variant="default">
-                  {pageAddIsPending && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                <Button type="submit" variant="default">
                   Create
                 </Button>
               </DialogFooter>

@@ -32,8 +32,8 @@ export function TemplateActions(props: {
         props.setActionsOpen(bool)
       }}
     >
-      <DropdownMenuTrigger asChild disabled={isCanvasMutating} className="shrink-0 opacity-40 enabled:hover:opacity-100">
-        {props.trigger ? props.trigger : <MoreHorizontal size={16} className="shrink-0 opacity-40 enabled:hover:opacity-100" />}
+      <DropdownMenuTrigger asChild disabled={isCanvasMutating} className="shrink-0 stroke-gray-400 enabled:hover:stroke-gray-900">
+        {props.trigger ? props.trigger : <MoreHorizontal size={16} />}
       </DropdownMenuTrigger>
       <DropdownMenuContent onClick={(e) => e.stopPropagation()} className="w-56" align="start">
         <DropdownMenuLabel>Template actions</DropdownMenuLabel>

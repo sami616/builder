@@ -8,15 +8,18 @@ import { useTemplateApply } from '@/hooks/use-template-apply'
 import { BlockLayerItemSlot, validateSlotBlock, validateSlotMax } from '@/components/editor/block-layer-item-slot'
 import { useBlockAdd } from '@/hooks/use-block-add'
 import { useBlockMove } from '@/hooks/use-block-move'
-import { Layers2 } from 'lucide-react'
+import { AlertCircle, Layers2 } from 'lucide-react'
 import { TreeItem, TreeItemContent, TreeItemHead, TreeItemIcon, TreeItemLabel, TreeItemTrigger } from '@/components/ui/tree'
 import { DropIndicator } from './drop-indicator'
 import { DragPreview } from './drag-preview'
 import clsx from 'clsx'
-import { BlockActions } from '@/components/editor/block-actions'
+import { BlockLayerItemActions } from '@/components/editor/block-layer-item-actions'
 import { useActive } from '@/hooks/use-active'
 import { useHovered } from '@/hooks/use-hovered'
 import { toast } from 'sonner'
+import { useRouteContext } from '@tanstack/react-router'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
+import { flash } from '@/lib/utils'
 
 export function BlockLayerItem(props: { blockId: Block['id']; index: number; parent: { slot: string; node: Block | Page } }) {
   const { setActive, isActive } = useActive()
@@ -32,6 +35,8 @@ export function BlockLayerItem(props: { blockId: Block['id']; index: number; par
   const isHoveredBlock = isHovered(props.blockId)
   const isActiveBlock = isActive({ id: props.blockId, store: 'blocks' })
   const isLeaf = Object.keys(blockGet.data.slots).length === 0
+  const context = useRouteContext({ from: '/pages/$id' })
+  const [open, setOpen] = useState(false)
 
   const { isDraggingSource, dragPreviewContainer } = useDrag({
     dragRef,
@@ -41,6 +46,11 @@ export function BlockLayerItem(props: { blockId: Block['id']; index: number; par
   const { closestEdge } = useDrop({
     dropRef,
     data: { parent: props.parent, node: blockGet.data, index: props.index },
+    onLongDrag: (element) => {
+      if (open || isLeaf) return
+      flash(element)
+      setOpen(true)
+    },
     onDrop: ({ source, target }) => {
       try {
         validateSlotMax({ source, target: target.data })
@@ -70,8 +80,12 @@ export function BlockLayerItem(props: { blockId: Block['id']; index: number; par
     }
   }, [actionsOpen, props.blockId])
 
+  const isMissing = context.config[blockGet.data.type] ? false : true
+
   return (
     <TreeItem
+      open={open}
+      setOpen={setOpen}
       customRef={dropRef}
       htmlProps={{
         'data-drop-id': `block-${blockGet.data.id}`,
@@ -113,7 +127,25 @@ export function BlockLayerItem(props: { blockId: Block['id']; index: number; par
             blockUpdateName({ block: blockGet.data, name: updatedName })
           }}
         />
-        <BlockActions actionsOpen={actionsOpen} setActionsOpen={setActionsOpen} block={blockGet.data} index={props.index} parent={props.parent} />
+        {isMissing && (
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger>
+                <AlertCircle size={16} className="text-red-500" />
+              </TooltipTrigger>
+              <TooltipContent>
+                <p>{blockGet.data.type} not found</p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
+        )}
+        <BlockLayerItemActions
+          actionsOpen={actionsOpen}
+          setActionsOpen={setActionsOpen}
+          block={blockGet.data}
+          index={props.index}
+          parent={props.parent}
+        />
       </TreeItemHead>
       <TreeItemContent>
         {Object.keys(blockGet.data.slots).map((slot) => (

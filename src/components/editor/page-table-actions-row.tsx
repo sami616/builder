@@ -47,7 +47,7 @@ export function PageTableActionsRow(props: { table: Table<Page>; page: Page; set
             props.table.resetSorting()
           }}
         >
-          <CopyIcon size={14} className="opacity-40  mr-2" /> Duplicate
+          <CopyIcon size={14} className="stroke-gray-400  mr-2" /> Duplicate
         </DropdownMenuItem>
 
         <DropdownMenuItem
@@ -58,7 +58,7 @@ export function PageTableActionsRow(props: { table: Table<Page>; page: Page; set
             props.setIsDeleteDialogOpen(true)
           }}
         >
-          <Trash size={14} className="opacity-40 mr-2" /> Delete
+          <Trash size={14} className="stroke-gray-400 mr-2" /> Delete
         </DropdownMenuItem>
 
         <DropdownMenuItem
@@ -70,7 +70,7 @@ export function PageTableActionsRow(props: { table: Table<Page>; page: Page; set
             props.table.resetRowSelection()
           }}
         >
-          <FileDown size={14} className="opacity-40 mr-2" /> Export
+          <FileDown size={14} className="stroke-gray-400 mr-2" /> Export
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={(e) => {
@@ -78,7 +78,7 @@ export function PageTableActionsRow(props: { table: Table<Page>; page: Page; set
             navigator.clipboard.writeText(String(props.page.id))
           }}
         >
-          <Clipboard size={14} className="opacity-40  mr-2" /> Copy ID
+          <Clipboard size={14} className="stroke-gray-400  mr-2" /> Copy ID
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

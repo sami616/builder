@@ -1,4 +1,4 @@
-import { MoreVertical, Trash, Pen } from 'lucide-react'
+import { Trash, Pen, MoreHorizontal } from 'lucide-react'
 import {
   DropdownMenuTrigger,
   DropdownMenu,
@@ -20,8 +20,8 @@ export function TemplateItemActions(props: { template: Template }) {
   const { setActive } = useActive()
   return (
     <DropdownMenu>
-      <DropdownMenuTrigger disabled={isCanvasMutating} className="shrink-0 opacity-40 enabled:hover:opacity-100">
-        <MoreVertical size={16} />
+      <DropdownMenuTrigger disabled={isCanvasMutating} className="shrink-0 stroke-gray-400 hover:enabled:stroke-gray-900">
+        <MoreHorizontal size={16} className="stroke-inherit" />
       </DropdownMenuTrigger>
       <DropdownMenuContent className="w-56" align="start">
         <DropdownMenuLabel>Template actions</DropdownMenuLabel>
@@ -31,7 +31,7 @@ export function TemplateItemActions(props: { template: Template }) {
             setRenaming(true)
           }}
         >
-          <Pen size={14} className="opacity-40 mr-2" /> Rename
+          <Pen size={14} className="stroke-gray-400 mr-2" /> Rename
         </DropdownMenuItem>
         <DropdownMenuItem
           onClick={async () => {
@@ -39,7 +39,7 @@ export function TemplateItemActions(props: { template: Template }) {
             setActive(undefined)
           }}
         >
-          <Trash size={14} className="opacity-40 mr-2" /> Delete
+          <Trash size={14} className="stroke-gray-400 mr-2" /> Delete
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

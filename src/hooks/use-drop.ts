@@ -1,5 +1,5 @@
 import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
-import { useState, useEffect, type RefObject } from 'react'
+import { useState, useEffect, type RefObject, useRef } from 'react'
 import { DropTargetRecord, ElementDragPayload, type Input } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types'
 import { useIsMutating } from '@tanstack/react-query'
 import { isDragData } from '@/hooks/use-drag'
@@ -10,29 +10,48 @@ export function useDrop<Data extends Record<string, any>>(props: {
   dropRef: RefObject<HTMLDivElement | HTMLDetailsElement | HTMLLIElement | null>
   data?: Data
   onDrop?: (args: { source: ElementDragPayload; target: Target<Data> }) => void | undefined
+  onDragEnter?: () => void | undefined
   disableDrop?: (data: { source: ElementDragPayload; element: Element; input: Input }) => boolean | undefined
+  onLongDrag?: (element: Element) => void // Callback for long drag
 }) {
   const [isDraggingOver, setIsDraggingOver] = useState(false)
   const [closestEdge, setClosestEdge] = useState<Edge>(null)
   const isCanvasMutating = useIsMutating({ mutationKey: ['canvas'] })
+  const timerRef = useRef<NodeJS.Timeout | null>(null) // Ref for the timer
+  const dragOverTimeout = 1000 // Internal duration set to 1000ms (1 second)
 
   useEffect(() => {
     const element = props.dropRef.current
     if (!element) return
+
+    const startDragOverTimer = (element: Element) => {
+      timerRef.current = setTimeout(() => {
+        props.onLongDrag?.(element) // Trigger the onLongDrag callback when timeout is reached
+      }, dragOverTimeout)
+    }
+
+    const clearDragOverTimer = () => {
+      if (timerRef.current) {
+        clearTimeout(timerRef.current)
+        timerRef.current = null
+      }
+    }
     dropTargetForElements({
       element,
       onDragEnter: () => {
-        // setIsDraggingOver(true)
+        props.onDragEnter?.()
+        // startDragOverTimer()
       },
       onDropTargetChange({ self, location }) {
         if (self.element === location.current.dropTargets[0]?.element) {
           setIsDraggingOver(true)
+          startDragOverTimer(self.element)
         } else {
           setIsDraggingOver(false)
+          clearDragOverTimer()
         }
       },
       onDragLeave: () => {
-        // setIsDraggingOver(false)
         setClosestEdge(null)
       },
       onDrag: ({ self, location }) => {
@@ -59,6 +78,7 @@ export function useDrop<Data extends Record<string, any>>(props: {
         }
         setIsDraggingOver(false)
         setClosestEdge(null)
+        clearDragOverTimer()
       },
       canDrop: ({ source, element, input }) => {
         // Prevent dropping on self or own children

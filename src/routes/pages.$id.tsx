@@ -15,7 +15,10 @@ import { useTemplateApply } from '@/hooks/use-template-apply'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
-import { Blocks } from 'lucide-react'
+import { Blocks, Smartphone, Tablet } from 'lucide-react'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { Separator } from '@/components/ui/separator'
 
 export const Route = createFileRoute('/pages/$id')({
   component: Page,
@@ -37,6 +40,7 @@ function Page() {
   const { templateApply } = useTemplateApply()
   const blocks = Object.values(pageGet.data.slots)[0]
   const [activeTab, setActiveTab] = useState('components')
+  const [canvasSize, setCanvasSize] = useState<string | undefined>(undefined)
 
   return (
     <main className="h-[calc(100vh-62px)]">
@@ -66,8 +70,8 @@ function Page() {
             </ResizablePanel>
             <ResizableHandle />
             <ResizablePanel>
+              <h4 className="p-4">Layers</h4>
               <ScrollArea className="h-full w-full">
-                <h4 className="p-4">Layers</h4>
                 <BlockLayerPanel page={pageGet.data} />
                 <ScrollBar orientation="horizontal" />
               </ScrollArea>
@@ -76,13 +80,41 @@ function Page() {
         </ResizablePanel>
         <ResizableHandle />
         <ResizablePanel>
+          <div className="py-0.5">
+            <TooltipProvider>
+              <ToggleGroup size="sm" value={canvasSize} onValueChange={setCanvasSize} type="single">
+                <Tooltip>
+                  <TooltipTrigger>
+                    <ToggleGroupItem value="360px">
+                      <Smartphone size={16} className="stroke-gray-400" />
+                    </ToggleGroupItem>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Mobile</p>
+                  </TooltipContent>
+                </Tooltip>
+
+                <Tooltip>
+                  <TooltipTrigger>
+                    <ToggleGroupItem value="768px">
+                      <Tablet size={16} className="stroke-gray-400" />
+                    </ToggleGroupItem>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Tablet</p>
+                  </TooltipContent>
+                </Tooltip>
+              </ToggleGroup>
+            </TooltipProvider>
+          </div>
+          <Separator />
           <ScrollArea className="h-full w-full">
-            <div>
+            <div className="mx-auto" style={{ maxWidth: canvasSize }}>
               {blocks.length === 0 && (
                 <DropZone
                   children={
                     <>
-                      <Blocks size={20} className="opacity-40" />
+                      <Blocks size={20} className="stroke-gray-400" />
                       Start building
                     </>
                   }

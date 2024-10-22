@@ -32,5 +32,5 @@ export function usePageImport() {
     return promise
   }
 
-  return { pageImport, pageImportIsPending: mutation.isPending }
+  return { pageImport }
 }

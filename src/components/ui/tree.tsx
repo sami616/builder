@@ -4,6 +4,7 @@ import { ChevronDown, ChevronRight } from 'lucide-react'
 import { ReactNode } from '@tanstack/react-router'
 import clsx from 'clsx'
 import { useIsMutating } from '@tanstack/react-query'
+import { cn } from '@/lib/utils'
 
 const Context = createContext<{
   open: boolean
@@ -26,7 +27,7 @@ export function TreeItem(props: {
   open?: boolean
   setOpen?: Dispatch<SetStateAction<boolean>>
   htmlProps?: HTMLProps<HTMLLIElement> & Record<`data-${string}`, any>
-  customRef?: RefObject<HTMLLIElement>
+  customRef?: RefObject<HTMLLIElement | null>
   disableHover?: boolean
   children?: ReactNode
 }) {
@@ -76,10 +77,10 @@ export function TreeItemHead(props: {
   )
 }
 
-export function TreeItemIcon(props: { hide?: boolean; icon: ComponentType<{ size?: number | string; className?: string }> }) {
+export function TreeItemIcon(props: { className?: string; hide?: boolean; icon: ComponentType<{ size?: number | string; className?: string }> }) {
   if (props.hide) return null
   const Icon = props.icon
-  return <Icon size={16} className="shrink-0 stroke-emerald-500" />
+  return <Icon size={16} className={cn('shrink-0 stroke-emerald-500', props.className)} />
 }
 
 export function TreeItemLabel(props: { onRename?: (updatedName: string) => void; label?: string }) {
@@ -142,8 +143,8 @@ export function TreeItemTrigger(props: { hide?: boolean }) {
   const { open } = useTreeItem()
   if (props.hide) return null
   return (
-    <CollapsibleTrigger onClick={(e) => e.stopPropagation()} className="cursor-pointer shrink-0 opacity-40 hover:opacity-100" asChild>
-      {open ? <ChevronDown size={16} className="shrink-0" /> : <ChevronRight className="shrink-0" size={16} />}
+    <CollapsibleTrigger onClick={(e) => e.stopPropagation()} className="cursor-pointer shrink-0 stroke-gray-400 hover:stroke-gray-900">
+      {open ? <ChevronDown size={16} className="stroke-inherit" /> : <ChevronRight size={16} className="stroke-inherit" />}
     </CollapsibleTrigger>
   )
 }

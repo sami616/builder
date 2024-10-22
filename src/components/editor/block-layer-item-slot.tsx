@@ -8,12 +8,12 @@ import { useBlockAdd } from '@/hooks/use-block-add'
 import { useTemplateApply } from '@/hooks/use-template-apply'
 import { BlockLayerItem } from '@/components/editor/block-layer-item'
 import { useBlockMove } from '@/hooks/use-block-move'
-import { Missing } from '@/components/editor/missing'
-import { CircleDashed } from 'lucide-react'
+import { AlertCircle, CircleDashed } from 'lucide-react'
 import { TreeItem, TreeItemContent, TreeItemHead, TreeItemIcon, TreeItemLabel, TreeItemTrigger } from '@/components/ui/tree'
 import clsx from 'clsx'
 import { toast } from 'sonner'
 import { isPage } from '@/api'
+import { flash } from '@/lib/utils'
 
 export function BlockLayerItemSlot(props: { block: Block; slot: string; parent: ComponentProps<typeof BlockLayerItem>['parent'] }) {
   const dropRef = useRef<HTMLDivElement>(null)
@@ -22,9 +22,18 @@ export function BlockLayerItemSlot(props: { block: Block; slot: string; parent: 
   const { templateApply } = useTemplateApply()
   const [open, setOpen] = useState(false)
 
+  const context = useRouteContext({ from: '/pages/$id' })
+  const slotLength = props.block.slots[props.slot].length
+  const hasSlotEntries = slotLength > 0
+
   const { isDraggingOver } = useDrop({
     dropRef,
     data: { parent: { slot: props.slot, node: props.block } },
+    onLongDrag: (element) => {
+      if (open || !hasSlotEntries) return
+      flash(element)
+      setOpen(true)
+    },
     onDrop: ({ source, target }) => {
       try {
         validateSlotMax({ source, target: target.data })
@@ -46,11 +55,7 @@ export function BlockLayerItemSlot(props: { block: Block; slot: string; parent: 
     },
   })
 
-  const context = useRouteContext({ from: '/pages/$id' })
-  const slotLength = props.block.slots[props.slot].length
-  const hasSlotEntries = slotLength > 0
-
-  if (!context.config[props.block.type]?.slots?.[props.slot]) return <Missing node={{ type: 'slot', name: props.slot }} />
+  const isMissing = !context.config[props.block.type]?.slots?.[props.slot]
 
   return (
     <TreeItem
@@ -60,10 +65,13 @@ export function BlockLayerItemSlot(props: { block: Block; slot: string; parent: 
       open={open}
       setOpen={setOpen}
     >
-      <TreeItemHead customRef={dropRef}>
-        <TreeItemTrigger hide={!hasSlotEntries} />
-        <TreeItemIcon hide={hasSlotEntries} icon={CircleDashed} />
-        <TreeItemLabel label={context.config[props.block.type].slots?.[props.slot].name} />
+      <TreeItemHead customRef={isMissing ? undefined : dropRef}>
+        {!isMissing && <TreeItemTrigger hide={!hasSlotEntries} />}
+        {!isMissing && <TreeItemIcon hide={hasSlotEntries} icon={CircleDashed} />}
+        {!isMissing && <TreeItemLabel label={context.config[props.block.type].slots?.[props.slot]?.name} />}
+
+        {isMissing && <TreeItemIcon icon={AlertCircle} className="stroke-red-500" />}
+        {isMissing && <TreeItemLabel label={`Slot (${props.slot}) missing`} />}
       </TreeItemHead>
       <TreeItemContent>
         {props.block.slots[props.slot].map((blockId, index) => (

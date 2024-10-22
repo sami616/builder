@@ -20,7 +20,7 @@ export function TemplatePanel(props: { templates: Template[] }) {
         disableDrop={({ source }) => isDragData['component'](source.data)}
         children={
           <>
-            <Layers2 size={16} className="opacity-40" />
+            <Layers2 size={16} className="stroke-gray-400" />
             Create template
           </>
         }

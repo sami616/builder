@@ -3,7 +3,7 @@ import { usePageImport } from '@/hooks/use-page-import'
 import { usePageGetMany } from '@/hooks/use-page-get-many'
 import { Button } from '@/components/ui/button'
 import { Checkbox } from '@/components/ui/checkbox'
-import { Loader2, ArrowUp, ArrowDown, Import } from 'lucide-react'
+import { ArrowUp, ArrowDown, Import } from 'lucide-react'
 import { Page } from '@/db'
 import {
   type ColumnDef,
@@ -29,7 +29,7 @@ import clsx from 'clsx'
 export function PageTable() {
   const navigate = useNavigate({ from: '/pages' })
   const { pageGetMany } = usePageGetMany()
-  const { pageImport, pageImportIsPending } = usePageImport()
+  const { pageImport } = usePageImport()
   const [deleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const pageCRUDPending = Boolean(useIsMutating({ mutationKey: ['page'] }))
 
@@ -146,7 +146,7 @@ export function PageTable() {
           <PageTableFilters table={table} />
           <div className="gap-2 flex">
             <Button variant="outline" disabled={pageCRUDPending} onClick={() => pageImport()}>
-              {pageImportIsPending ? <Loader2 size={16} className="mr-2 animate-spin" /> : <Import size={16} className="mr-2" />}Import
+              <Import size={16} className="mr-2" /> Import
             </Button>
             <PageAdd />
           </div>

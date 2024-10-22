@@ -1,14 +1,13 @@
-import { ExclamationTriangleIcon } from '@radix-ui/react-icons'
-import { Alert, AlertDescription, AlertTitle } from '@/components/ui/alert'
+import { AlertCircle } from 'lucide-react'
+import { Card, CardTitle } from '../ui/card'
 
 export function Missing(props: { node: { type: 'component'; name: string } | { type: 'slot'; name: string } }) {
   return (
-    <Alert className="bg-white" variant="destructive">
-      <ExclamationTriangleIcon className="size-4" />
-      <AlertTitle>Missing {props.node.type}</AlertTitle>
-      <AlertDescription>
+    <Card className="rounded-none bg-white item-center flex p-4 gap-2 text-sm justify-center">
+      <AlertCircle size={16} className="stroke-red-500 shrink-0" />
+      <CardTitle className="m-0 font-normal">
         {props.node.name} {props.node.type} not found
-      </AlertDescription>
-    </Alert>
+      </CardTitle>
+    </Card>
   )
 }

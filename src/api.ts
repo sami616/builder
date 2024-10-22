@@ -1,3 +1,4 @@
+import { generateSlug } from 'random-word-slugs'
 import { type Block, type Page, type Template, db, type DB } from './db'
 
 export async function slow(delay: number = 0) {
@@ -79,6 +80,9 @@ export async function duplicateTree(args: { tree: Awaited<ReturnType<typeof getT
     }
 
     const { id, ...clonedEntryWithoutId } = clonedEntry
+    if (isPage(clonedEntryWithoutId)) {
+      clonedEntryWithoutId.slug = generateSlug()
+    }
     const rootId = await add({ entry: clonedEntryWithoutId })
     rootEntry = { ...clonedEntry, id: rootId }
     idMap.set(entry.id, rootId)

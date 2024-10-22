@@ -18,7 +18,7 @@ export function BlockLayerPanel(props: { page: Page }) {
       <DropZone
         children={
           <>
-            <Blocks size={20} className="opacity-40" />
+            <Blocks size={20} className="stroke-gray-400" />
             Start building
           </>
         }

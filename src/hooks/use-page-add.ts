@@ -23,5 +23,5 @@ export function usePageAdd() {
     return promise
   }
 
-  return { pageAdd, pageAddIsPending: mutation.isPending }
+  return { pageAdd }
 }

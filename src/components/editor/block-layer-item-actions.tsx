@@ -1,4 +1,4 @@
-import { Trash, Layout, Copy, Component, Check, ChevronsUpDown, MoreHorizontal } from 'lucide-react'
+import { Trash, Layout, Copy, Check, ChevronsUpDown, MoreHorizontal, Plus } from 'lucide-react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import {
@@ -8,9 +8,6 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuItem,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
 } from '../ui/dropdown-menu'
 import { useBlockDelete } from '@/hooks/use-block-delete'
 import { useBlockCopy } from '@/hooks/use-block-copy'
@@ -35,7 +32,6 @@ import { validateSlotBlock, validateSlotMax } from './block-layer-item-slot'
 import { useHovered } from '@/hooks/use-hovered'
 
 type BlockLayerItemProps = ComponentProps<typeof BlockLayerItem>
-
 const blockAddSchema = z.object({
   name: z.string(),
   edge: z.union([z.literal('top'), z.literal('bottom')]),
@@ -46,7 +42,7 @@ const templateAddSchema = z.object({
   name: z.string(),
 })
 
-export function BlockActions(props: {
+export function BlockLayerItemActions(props: {
   actionsOpen: boolean
   setActionsOpen: Dispatch<SetStateAction<boolean>>
   block: Block
@@ -104,8 +100,8 @@ export function BlockActions(props: {
           props.setActionsOpen(bool)
         }}
       >
-        <DropdownMenuTrigger asChild disabled={isCanvasMutating}>
-          {props.trigger ? props.trigger : <MoreHorizontal size={16} className="shrink-0 opacity-40 enabled:hover:opacity-100" />}
+        <DropdownMenuTrigger disabled={isCanvasMutating} className="shrink-0 stroke-gray-400 hover:enabled:stroke-gray-900">
+          {props.trigger ? props.trigger : <MoreHorizontal size={16} className="stroke-inherit" />}
         </DropdownMenuTrigger>
         <DropdownMenuContent
           onMouseOver={(e) => e.stopPropagation()}
@@ -116,42 +112,28 @@ export function BlockActions(props: {
         >
           <DropdownMenuLabel>Layer actions</DropdownMenuLabel>
           <DropdownMenuSeparator />
-          <DropdownMenuSub>
-            <DropdownMenuSubTrigger
-              disabled={disableAdd()}
-              className="data-[disabled]:opacity-50"
-              onClick={(e) => {
-                e.stopPropagation()
-                setBlockAddOpen(true)
-                props.setActionsOpen(false)
-              }}
-            >
-              <Component size={14} className="opacity-40 mr-2" />
-              Add component
-            </DropdownMenuSubTrigger>
-            <DropdownMenuSubContent
-              onClick={(e) => {
-                e.stopPropagation()
-                setBlockAddOpen(true)
-              }}
-            >
-              <DropdownMenuItem onClick={() => blockAddForm.setValue('edge', 'bottom')}>Below</DropdownMenuItem>
-              <DropdownMenuItem onClick={() => blockAddForm.setValue('edge', 'top')}>Above</DropdownMenuItem>
-            </DropdownMenuSubContent>
-          </DropdownMenuSub>
+          <DropdownMenuItem
+            disabled={disableAdd()}
+            onClick={() => {
+              setBlockAddOpen(true)
+            }}
+          >
+            <Plus size={14} className="stroke-gray-400 mr-2" />
+            Add component
+          </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => {
               blockCopy({ index: props.index, id: props.block.id, parent: props.parent })
             }}
           >
-            <Copy size={14} className="opacity-40 mr-2" /> Duplicate
+            <Copy size={14} className="stroke-gray-400 mr-2" /> Duplicate
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => {
               setTemplateAddOpen(true)
             }}
           >
-            <Layout size={14} className="opacity-40 mr-2" /> Create template
+            <Layout size={14} className="stroke-gray-400 mr-2" /> Create template
           </DropdownMenuItem>
           <DropdownMenuItem
             className="text-red-500"
@@ -173,7 +155,12 @@ export function BlockActions(props: {
           setTemplateAddOpen(bool)
         }}
       >
-        <DialogContent className="w-96" onClick={(e) => e.stopPropagation()}>
+        <DialogContent
+          onMouseOver={(e) => e.stopPropagation()}
+          onMouseOut={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+          className="w-96"
+        >
           <DialogHeader>
             <DialogTitle>Add template</DialogTitle>
             <DialogDescription>Add a new template to your library.</DialogDescription>
@@ -215,7 +202,12 @@ export function BlockActions(props: {
           setBlockAddOpen(bool)
         }}
       >
-        <DialogContent className="w-96" onClick={(e) => e.stopPropagation()}>
+        <DialogContent
+          className="w-96"
+          onMouseOver={(e) => e.stopPropagation()}
+          onMouseOut={(e) => e.stopPropagation()}
+          onClick={(e) => e.stopPropagation()}
+        >
           <DialogHeader>
             <DialogTitle>Add component</DialogTitle>
             <DialogDescription>Add a new component to your page.</DialogDescription>
@@ -323,6 +315,7 @@ export function BlockActions(props: {
                   </FormItem>
                 )}
               />
+
               <Button disabled={blockAddForm.getValues('component') === ''} type="submit">
                 Add component
               </Button>
