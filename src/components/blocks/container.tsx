@@ -23,7 +23,7 @@ export const containerConfig: Config = {
       right: { default: [], name: 'Right' },
     },
     props: {
-      title: { name: 'Title', default: 'Container Title', type: 'string' },
+      title: { name: 'Title', default: 'Container Title', type: 'text' },
     },
   },
 }

@@ -37,6 +37,7 @@ import { Input } from '../ui/input'
 import { Button } from '../ui/button'
 import { ToggleGroup, ToggleGroupItem } from '../ui/toggle-group'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../ui/command'
+import { useMutationState } from '@tanstack/react-query'
 
 const blockAddSchema = z.object({
   name: z.string(),
@@ -50,7 +51,26 @@ const templateAddSchema = z.object({
 
 export function BlockItem(props: { index: number; page: Page; parent: { slot: string; node: Block | Page }; blockId: Block['id'] }) {
   const { blockGet } = useBlockGet({ id: props.blockId })
-  const block = blockGet.data
+
+  const mutationState = useMutationState<Block>({
+    filters: {
+      mutationKey: ['canvas', 'block', 'update', 'props', props.blockId],
+      status: 'pending',
+    },
+    select: (data) => {
+      return {
+        ...data.state.variables?.block,
+        props: {
+          ...data.state.variables?.block.props,
+          ...data.state.variables?.props,
+        },
+      }
+    },
+  })?.at(-1)
+
+  // const block = blockGet.data
+  const block = mutationState ?? blockGet.data
+
   const componentProps = block.props
   const { blockAdd } = useBlockAdd()
   const { blockMove } = useBlockMove()
@@ -79,16 +99,6 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
     resolver: zodResolver(templateAddSchema),
     defaultValues: { name: '' },
   })
-
-  // const mutationState = useMutationState<Block>({
-  //   filters: {
-  //     mutationKey: ['updateBlock', props.blockId],
-  //     status: 'pending',
-  //   },
-  //   select: (data) => (data.state.variables as Record<'block', Block>).block,
-  // })?.at(-1)
-
-  // const block = mutationState ?? blockGet.data
 
   const { closestEdge } = useDrop({
     dropRef: dropRef,

@@ -1,54 +1,35 @@
-import { useMutation } from '@tanstack/react-query'
-import { useRouteContext } from '@tanstack/react-router'
 import { useBlockGet } from '@/hooks/use-block-get'
-import { config, PropTypes } from '@/main'
+import { config, Props } from '@/main'
 import { useActive } from '@/hooks/use-active'
+import { Input } from '../ui/input'
+import { useBlockUpdateProps } from '@/hooks/use-block-update-props'
 
-export function PropsPanel() {
-  const context = useRouteContext({ from: '/pages/$id' })
-  const { active, setActive } = useActive()
+export function PropsPanel(props: { activeId: number }) {
+  const { blockGet } = useBlockGet({ id: props.activeId })
+  const { blockUpdateProps, blockOptimisic } = useBlockUpdateProps(blockGet.data.id)
+  const { setActive } = useActive()
+  const block = blockOptimisic ?? blockGet.data
 
-  const { blockGet } = useBlockGet({ id: active?.id })
-
-  const updateBlockProps = useMutation({
-    mutationFn: context.update,
-    mutationKey: ['block', 'update', 'props', blockGet.data.id],
-    onError: (err, _data) => {
-      console.error(err)
-    },
-    onSettled: async (id) => {
-      await context.queryClient.invalidateQueries({
-        queryKey: ['blocks', id],
-      })
-    },
-  })
-
-  // const AB = updateBlock.isPending ? updateBlock.variables.entry : blockGet.data
-
-  const block = blockGet.data
   const configItem = config[block.type]
   const configItemProps = configItem?.props
+  if (!configItemProps) return null
 
-  function renderInput(type: PropTypes, key: string) {
-    const defaultValue = block.props?.[key]
-    switch (type) {
-      case 'string': {
+  function renderInput(key: keyof Props) {
+    switch (configItemProps?.[key].type) {
+      case 'text': {
         return (
-          <input
+          <Input
             onChange={(e) => {
-              if (e.target.value.trim() === '') {
-                updateBlockProps.mutate({ entry: { ...block, props: { ...block.props, [key]: undefined } } })
-              } else {
-                updateBlockProps.mutate({ entry: { ...block, props: { ...block.props, [key]: e.target.value } } })
-              }
+              blockUpdateProps({ block, props: { [key]: e.target.value } })
             }}
-            defaultValue={defaultValue}
+            defaultValue={block.props[key]}
             type="text"
           />
         )
       }
       case 'number': {
-        return <input defaultValue={defaultValue} type="number" />
+        const defaultValue = configItemProps[key].default
+        return <Input defaultValue={defaultValue} type="number" />
       }
     }
   }
@@ -56,14 +37,9 @@ export function PropsPanel() {
   return (
     <div data-component="PropsPanel">
       <button onClick={() => setActive(undefined)}>Close</button>
-      {<pre>{JSON.stringify(block.props, null, 2)}</pre>}
-      {configItemProps &&
-        Object.keys(configItemProps).map((key) => (
-          <div>
-            <label>{configItemProps?.[key].name}</label>
-            {renderInput(configItemProps?.[key].type, key)}
-          </div>
-        ))}
+      {Object.keys(configItemProps).map((key) => {
+        return <div>{renderInput(key)}</div>
+      })}
     </div>
   )
 }

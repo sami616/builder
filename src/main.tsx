@@ -13,7 +13,24 @@ import { Toaster } from 'sonner'
 
 const queryClient = new QueryClient()
 
-export type PropTypes = 'string' | 'number'
+export type PropTypes = {
+  text: string
+  number: number
+  select: Array<{ name: string; value: string }>
+  switch: boolean
+}
+
+// Define a union type for PropItems, where type and default must match
+export type PropItem =
+  | { name: string; type: 'text'; default?: string }
+  | { name: string; type: 'number'; default?: number }
+  | { name: string; type: 'select'; default?: Array<{ name: string; value: string }> }
+  | { name: string; type: 'switch'; default?: boolean }
+
+// Props can have any key, but each value must be a PropItem (with type-default enforcement)
+export type Props = {
+  [key: string]: PropItem
+}
 
 export type Config = {
   [key: string]: {
@@ -31,7 +48,7 @@ export type Config = {
         }
       }
     }
-    props?: { [key: string]: { name: string; default?: any; type: PropTypes } }
+    props?: Props
   }
 }
 

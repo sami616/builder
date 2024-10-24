@@ -22,7 +22,7 @@ export const buttonConfig: Config = {
       icon: { name: 'Icon', validation: { maxItems: 1 } },
     },
     props: {
-      children: { name: 'Children', type: 'string' },
+      children: { name: 'Children', type: 'text' },
     },
   },
 }

@@ -6,6 +6,7 @@ import { BlockItem } from '@/components/editor/block-item'
 import { toast } from 'sonner'
 
 type Args = { blockId: Block['id']; index: number; parent: ComponentProps<typeof BlockItem>['parent'] }
+
 export function useBlockDelete() {
   const context = useRouteContext({ from: '/pages/$id' })
   const mutation = useMutation({

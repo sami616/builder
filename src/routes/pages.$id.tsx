@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { type Page } from '@/db'
 import { Suspense, useState } from 'react'
 import { ComponentPanel } from '@/components/editor/component-panel'
-// import { PropsPanel } from '@/components/editor/props-panel'
+import { PropsPanel } from '@/components/editor/props-panel'
 import { BlockLayerPanel } from '@/components/editor/block-layer-panel'
 import { DropZone } from '@/components/editor/drop-zone'
 import { BlockItem } from '@/components/editor/block-item'
@@ -15,10 +15,11 @@ import { useTemplateApply } from '@/hooks/use-template-apply'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
-import { Blocks, Smartphone, Tablet } from 'lucide-react'
+import { Blocks, Monitor, Smartphone, Tablet } from 'lucide-react'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Separator } from '@/components/ui/separator'
+import { useActive } from '@/hooks/use-active'
 
 export const Route = createFileRoute('/pages/$id')({
   component: Page,
@@ -40,7 +41,8 @@ function Page() {
   const { templateApply } = useTemplateApply()
   const blocks = Object.values(pageGet.data.slots)[0]
   const [activeTab, setActiveTab] = useState('components')
-  const [canvasSize, setCanvasSize] = useState<string | undefined>(undefined)
+  const [canvasSize, setCanvasSize] = useState<string | undefined>('none')
+  const { active } = useActive()
 
   return (
     <main className="h-[calc(100vh-62px)]">
@@ -50,7 +52,7 @@ function Page() {
             <ResizablePanel>
               <ScrollArea className="h-full w-full">
                 <Tabs defaultValue="components" value={activeTab} onValueChange={setActiveTab} className="w-full">
-                  <TabsList className="w-full rounded-none">
+                  <TabsList className="sticky top-0 z-20 w-full rounded-none">
                     <TabsTrigger className="grow" value="components">
                       Components
                     </TabsTrigger>
@@ -65,7 +67,6 @@ function Page() {
                     <TemplatePanel templates={templateGetMany.data} />
                   </TabsContent>
                 </Tabs>
-                <ScrollBar orientation="horizontal" />
               </ScrollArea>
             </ResizablePanel>
             <ResizableHandle />
@@ -82,18 +83,24 @@ function Page() {
         <ResizablePanel>
           <div className="py-0.5">
             <TooltipProvider>
-              <ToggleGroup size="sm" value={canvasSize} onValueChange={setCanvasSize} type="single">
+              <ToggleGroup
+                size="sm"
+                value={canvasSize}
+                onValueChange={(val) => {
+                  if (val) setCanvasSize(val)
+                }}
+                type="single"
+              >
                 <Tooltip>
                   <TooltipTrigger>
-                    <ToggleGroupItem value="360px">
-                      <Smartphone size={16} className="stroke-gray-400" />
+                    <ToggleGroupItem value="none">
+                      <Monitor size={16} className="stroke-gray-400" />
                     </ToggleGroupItem>
                   </TooltipTrigger>
                   <TooltipContent>
-                    <p>Mobile</p>
+                    <p>Desktop</p>
                   </TooltipContent>
                 </Tooltip>
-
                 <Tooltip>
                   <TooltipTrigger>
                     <ToggleGroupItem value="768px">
@@ -102,6 +109,16 @@ function Page() {
                   </TooltipTrigger>
                   <TooltipContent>
                     <p>Tablet</p>
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger>
+                    <ToggleGroupItem value="360px">
+                      <Smartphone size={16} className="stroke-gray-400" />
+                    </ToggleGroupItem>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Mobile</p>
                   </TooltipContent>
                 </Tooltip>
               </ToggleGroup>
@@ -144,7 +161,7 @@ function Page() {
           <ResizableHandle />
           <ResizablePanel minSize={20} defaultSize={20}>
             <ScrollArea className="h-full w-full">
-              {/* <PropsPanel /> */}
+              <Suspense fallback={null}>{active?.store === 'blocks' ? <PropsPanel activeId={active.id} /> : <p>No block selected</p>}</Suspense>
               <ScrollBar orientation="horizontal" />
             </ScrollArea>
           </ResizablePanel>
