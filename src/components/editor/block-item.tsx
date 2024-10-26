@@ -1,6 +1,7 @@
-import { useEffect, useRef, useState } from 'react'
+import { startTransition, useRef, useState } from 'react'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { useBlockHover } from '@/hooks/use-block-hover'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { useForm } from 'react-hook-form'
@@ -18,7 +19,6 @@ import { Missing } from '@/components/editor/missing'
 import clsx from 'clsx'
 import { useActive } from '@/hooks/use-active'
 import { toast } from 'sonner'
-import { useHovered } from '@/hooks/use-hovered'
 import { validateSlotBlock, validateSlotMax } from './block-layer-item-slot'
 import { Check, ChevronsUpDown, Copy, Layout, Plus, Trash } from 'lucide-react'
 import { PopoverContent, PopoverTrigger, Popover } from '../ui/popover'
@@ -37,7 +37,6 @@ import { Input } from '../ui/input'
 import { Button } from '../ui/button'
 import { ToggleGroup, ToggleGroupItem } from '../ui/toggle-group'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../ui/command'
-import { useMutationState } from '@tanstack/react-query'
 
 const blockAddSchema = z.object({
   name: z.string(),
@@ -52,24 +51,7 @@ const templateAddSchema = z.object({
 export function BlockItem(props: { index: number; page: Page; parent: { slot: string; node: Block | Page }; blockId: Block['id'] }) {
   const { blockGet } = useBlockGet({ id: props.blockId })
 
-  const mutationState = useMutationState<Block>({
-    filters: {
-      mutationKey: ['canvas', 'block', 'update', 'props', props.blockId],
-      status: 'pending',
-    },
-    select: (data) => {
-      return {
-        ...data.state.variables?.block,
-        props: {
-          ...data.state.variables?.block.props,
-          ...data.state.variables?.props,
-        },
-      }
-    },
-  })?.at(-1)
-
-  // const block = blockGet.data
-  const block = mutationState ?? blockGet.data
+  const block = blockGet.data
 
   const componentProps = block.props
   const { blockAdd } = useBlockAdd()
@@ -78,10 +60,8 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
   const { active, setActive } = useActive()
   const dropRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<HTMLDivElement>(null)
-  const { isHovered, setHovered } = useHovered()
   const context = useRouteContext({ from: '/pages/$id' })
   const isActiveBlock = active?.store === 'blocks' && active.id === block.id
-  const isHoveredBlock = isHovered(block.id)
   const { blockCopy } = useBlockCopy()
   const { blockDelete } = useBlockDelete()
   const { templateAdd } = useTemplateAdd()
@@ -89,6 +69,8 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
   const [blockAddOpen, setBlockAddOpen] = useState(false)
   const [templateAddOpen, setTemplateAddOpen] = useState(false)
   const [blockPickerOpen, setBlockPickerOpen] = useState(false)
+
+  const { setHover, removeHover } = useBlockHover(block.id, dropRef)
 
   const blockAddForm = useForm<z.infer<typeof blockAddSchema>>({
     resolver: zodResolver(blockAddSchema),
@@ -142,14 +124,6 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
   const isMissing = context.config[block.type] ? false : true
   const Component = context.config[block.type]?.component ?? (() => <Missing node={{ type: 'component', name: block.type }} />)
 
-  useEffect(() => {
-    if (actionsOpen || templateAddOpen || blockAddOpen) {
-      setHovered(block.id)
-    } else {
-      setHovered(undefined)
-    }
-  }, [actionsOpen, templateAddOpen, blockAddOpen, block])
-
   function disableAdd() {
     try {
       validateSlotMax({ target: { parent: props.parent } })
@@ -177,8 +151,7 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
               'outline-none',
               isDraggingSource && 'opacity-50',
               isActiveBlock && 'outline-rose-500',
-              isHoveredBlock && 'outline-emerald-500',
-              isHoveredBlock && isActiveBlock && 'outline-rose-600',
+              isActiveBlock && 'hover:outline-rose-600',
             ])}
             data-drop-id={`block-${blockGet.data.id}`}
             onClick={(e) => {
@@ -191,12 +164,12 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
             onMouseOver={(e) => {
               e.stopPropagation()
               if (actionsOpen || templateAddOpen || blockAddOpen) return
-              setHovered(block.id)
+              setHover()
             }}
             onMouseOut={(e) => {
               e.stopPropagation()
               if (actionsOpen || templateAddOpen || blockAddOpen) return
-              setHovered(undefined)
+              removeHover()
             }}
             ref={dropRef}
           >
@@ -220,10 +193,9 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
                   'scale-50',
                   'transition',
                   'hover:scale-100',
-                  isActiveBlock || isHoveredBlock ? 'flex' : 'hidden',
+                  isActiveBlock ? 'flex' : 'hidden',
                   isActiveBlock && 'bg-rose-500',
-                  isHoveredBlock && 'bg-emerald-500',
-                  isHoveredBlock && isActiveBlock && 'bg-rose-600',
+                  isActiveBlock && 'bg-rose-600',
                 ])}
               >
                 <Plus size={14} className="stroke-white" />
@@ -251,10 +223,9 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
                   'flex',
                   'transition',
                   'hover:scale-100',
-                  isActiveBlock || isHoveredBlock ? 'flex' : 'hidden',
+                  isActiveBlock ? 'flex' : 'hidden',
                   isActiveBlock && 'bg-rose-500',
-                  isHoveredBlock && 'bg-emerald-500',
-                  isHoveredBlock && isActiveBlock && 'bg-rose-600',
+                  isActiveBlock && 'bg-rose-600',
                 ])}
               >
                 <Plus size={14} className="stroke-white" />

@@ -14,7 +14,7 @@ import { useBlockCopy } from '@/hooks/use-block-copy'
 import { useTemplateAdd } from '@/hooks/use-template-add'
 import { useIsMutating } from '@tanstack/react-query'
 import { Block } from '@/db'
-import { ComponentProps, Dispatch, ReactNode, SetStateAction, useEffect, useState } from 'react'
+import { ComponentProps, Dispatch, ReactNode, SetStateAction, useRef, useState } from 'react'
 import { BlockLayerItem } from './block-layer-item'
 import { useActive } from '@/hooks/use-active'
 import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover'
@@ -29,7 +29,6 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import clsx from 'clsx'
 import { Input } from '../ui/input'
 import { validateSlotBlock, validateSlotMax } from './block-layer-item-slot'
-import { useHovered } from '@/hooks/use-hovered'
 
 type BlockLayerItemProps = ComponentProps<typeof BlockLayerItem>
 const blockAddSchema = z.object({
@@ -58,7 +57,7 @@ export function BlockLayerItemActions(props: {
   const [blockPickerOpen, setBlockPickerOpen] = useState(false)
   const [blockAddOpen, setBlockAddOpen] = useState(false)
   const [templateAddOpen, setTemplateAddOpen] = useState(false)
-  const { setHovered } = useHovered()
+  const actionsRef = useRef<HTMLDivElement>(null)
 
   const isActiveBlock = isActive({ store: 'blocks', id: props.block.id })
 
@@ -84,14 +83,6 @@ export function BlockLayerItemActions(props: {
     }
   }
 
-  useEffect(() => {
-    if (props.actionsOpen || templateAddOpen || blockAddOpen) {
-      setHovered(props.block.id)
-    } else {
-      setHovered(undefined)
-    }
-  }, [props.actionsOpen, templateAddOpen, blockAddOpen, props.block])
-
   return (
     <>
       <DropdownMenu
@@ -104,6 +95,7 @@ export function BlockLayerItemActions(props: {
           {props.trigger ? props.trigger : <MoreHorizontal size={16} className="stroke-inherit" />}
         </DropdownMenuTrigger>
         <DropdownMenuContent
+          ref={actionsRef}
           onMouseOver={(e) => e.stopPropagation()}
           onMouseOut={(e) => e.stopPropagation()}
           onClick={(e) => e.stopPropagation()}

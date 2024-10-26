@@ -17,7 +17,6 @@ import {
   DropdownMenuLabel,
 } from '@/components/ui/dropdown-menu'
 import { ActiveProvider } from '@/hooks/use-active'
-import { HoveredProvider } from '@/hooks/use-hovered'
 
 export const Route = createRootRouteWithContext<Context>()({
   component: () => (
@@ -50,11 +49,9 @@ export const Route = createRootRouteWithContext<Context>()({
         </div>
       </div>
 
-      <HoveredProvider>
-        <ActiveProvider>
-          <Outlet />
-        </ActiveProvider>
-      </HoveredProvider>
+      <ActiveProvider>
+        <Outlet />
+      </ActiveProvider>
     </>
   ),
 })

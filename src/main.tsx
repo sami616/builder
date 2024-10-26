@@ -91,13 +91,13 @@ const rootElement = document.getElementById('root')!
 if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement)
   root.render(
-    <StrictMode>
+    <>
       <Toaster />
       <QueryClientProvider client={queryClient}>
         <RouterProvider router={router} />
         <TanStackRouterDevtools initialIsOpen={false} router={router} />
         <ReactQueryDevtools initialIsOpen={false} client={queryClient} />
       </QueryClientProvider>
-    </StrictMode>,
+    </>,
   )
 }

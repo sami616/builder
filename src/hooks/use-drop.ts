@@ -1,5 +1,5 @@
 import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
-import { useState, useEffect, type RefObject, useRef } from 'react'
+import { useState, useEffect, type RefObject, useRef, startTransition } from 'react'
 import { DropTargetRecord, ElementDragPayload, type Input } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types'
 import { useIsMutating } from '@tanstack/react-query'
 import { isDragData } from '@/hooks/use-drag'

@@ -1,30 +1,43 @@
 import { useBlockGet } from '@/hooks/use-block-get'
-import { config, Props } from '@/main'
+import { config } from '@/main'
 import { useActive } from '@/hooks/use-active'
 import { Input } from '../ui/input'
 import { useBlockUpdateProps } from '@/hooks/use-block-update-props'
+import { Button } from '../ui/button'
+import { Save } from 'lucide-react'
+import { useState } from 'react'
+import { Label } from '../ui/label'
 
 export function PropsPanel(props: { activeId: number }) {
   const { blockGet } = useBlockGet({ id: props.activeId })
-  const { blockUpdateProps, blockOptimisic } = useBlockUpdateProps(blockGet.data.id)
+  const { blockUpdateProps } = useBlockUpdateProps()
   const { setActive } = useActive()
-  const block = blockOptimisic ?? blockGet.data
+  const [propState, setPropState] = useState<Record<string, any>>({})
+  const block = blockGet.data
 
   const configItem = config[block.type]
   const configItemProps = configItem?.props
   if (!configItemProps) return null
 
-  function renderInput(key: keyof Props) {
+  function renderInput(key: string) {
     switch (configItemProps?.[key].type) {
       case 'text': {
         return (
-          <Input
-            onChange={(e) => {
-              blockUpdateProps({ block, props: { [key]: e.target.value } })
-            }}
-            defaultValue={block.props[key]}
-            type="text"
-          />
+          <div className="gap-2 grid">
+            <Label>{configItemProps?.[key].name}</Label>
+            <div className="flex gap-2">
+              <Input
+                onChange={(e) => {
+                  setPropState({ ...propState, [key]: e.target.value })
+                }}
+                defaultValue={block.props[key]}
+                type="text"
+              />
+              <Button size="icon" onClick={() => blockUpdateProps({ block, props: { [key]: propState[key] } })}>
+                <Save size={16} />
+              </Button>
+            </div>
+          </div>
         )
       }
       case 'number': {

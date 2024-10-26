@@ -5,17 +5,14 @@ import { toast } from 'sonner'
 
 type Args = { block: Block; props: Block['props'] }
 
-export function useBlockUpdateProps(id: Block['id']) {
+export function useBlockUpdateProps() {
   const context = useRouteContext({ from: '/pages/$id' })
   const mutation = useMutation({
-    mutationKey: ['canvas', 'block', 'update', 'props', id],
+    mutationKey: ['canvas', 'block', 'update', 'props'],
     mutationFn: async (args: Args) => {
       const clonedEntry = structuredClone(args.block)
       clonedEntry.props = { ...clonedEntry.props, ...args.props }
       return context.update({ entry: clonedEntry })
-    },
-    onError: () => {
-      toast.error('Updating props failed')
     },
     onSuccess: (id) => {
       context.queryClient.invalidateQueries({ queryKey: ['blocks', id] })
@@ -24,19 +21,13 @@ export function useBlockUpdateProps(id: Block['id']) {
 
   async function blockUpdateProps(args: Args) {
     const promise = mutation.mutateAsync(args)
-    // toast.promise(promise, { loading: 'Updating props...', success: 'Updated props', error: 'Updating props failed' })
+    toast.promise(promise, {
+      loading: `Updating ${args.block.name}`,
+      success: `Updated ${args.block.name}`,
+      error: `Updating ${args.block.name} failed`,
+    })
     return promise
   }
 
-  const blockOptimisic = mutation.isPending
-    ? {
-        ...mutation.variables?.block,
-        props: {
-          ...mutation.variables?.block.props,
-          ...mutation.variables?.props,
-        },
-      }
-    : undefined
-
-  return { blockUpdateProps, blockOptimisic }
+  return { blockUpdateProps }
 }

@@ -4,7 +4,7 @@ import { isDragData } from '@/hooks/use-drag'
 import { useBlockAdd } from '@/hooks/use-block-add'
 import { useTemplateApply } from '@/hooks/use-template-apply'
 import { BlockLayerItem } from '@/components/editor/block-layer-item'
-import { Blocks } from 'lucide-react'
+import { Blocks, Loader } from 'lucide-react'
 import { Tree } from '../ui/tree'
 import { Suspense } from 'react'
 
@@ -37,8 +37,8 @@ export function BlockLayerPanel(props: { page: Page }) {
   return (
     <Tree>
       {blocks.map((blockId, index) => (
-        <Suspense key={blockId} fallback={null}>
-          <BlockLayerItem parent={{ node: props.page, slot: 'root' }} index={index} blockId={blockId} />
+        <Suspense key={blockId} fallback={<Loader size={17} className="stroke-gray-300 animate-spin mx-auto my-2" />}>
+          <BlockLayerItem key={blockId} parent={{ node: props.page, slot: 'root' }} index={index} blockId={blockId} />
         </Suspense>
       ))}
     </Tree>

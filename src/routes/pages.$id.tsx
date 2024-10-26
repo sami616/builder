@@ -15,7 +15,7 @@ import { useTemplateApply } from '@/hooks/use-template-apply'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
-import { Blocks, Monitor, Smartphone, Tablet } from 'lucide-react'
+import { Blocks, Loader, Monitor, Smartphone, Tablet } from 'lucide-react'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Separator } from '@/components/ui/separator'
@@ -126,7 +126,7 @@ function Page() {
           </div>
           <Separator />
           <ScrollArea className="h-full w-full">
-            <div className="mx-auto" style={{ maxWidth: canvasSize }}>
+            <div className="mx-auto min-h-full" style={{ maxWidth: canvasSize }}>
               {blocks.length === 0 && (
                 <DropZone
                   children={
@@ -148,7 +148,7 @@ function Page() {
               )}
               {blocks.map((blockId, index) => {
                 return (
-                  <Suspense key={blockId} fallback={null}>
+                  <Suspense key={blockId} fallback={<Loader size={17} className="stroke-gray-300 animate-spin mx-auto my-2" />}>
                     <BlockItem blockId={blockId} parent={{ node: pageGet.data, slot: 'root' }} index={index} page={pageGet.data} />
                   </Suspense>
                 )
@@ -161,7 +161,7 @@ function Page() {
           <ResizableHandle />
           <ResizablePanel minSize={20} defaultSize={20}>
             <ScrollArea className="h-full w-full">
-              <Suspense fallback={null}>{active?.store === 'blocks' ? <PropsPanel activeId={active.id} /> : <p>No block selected</p>}</Suspense>
+              {active?.store === 'blocks' ? <PropsPanel activeId={active.id} /> : <p>No block selected</p>}
               <ScrollBar orientation="horizontal" />
             </ScrollArea>
           </ResizablePanel>

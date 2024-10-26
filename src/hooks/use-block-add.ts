@@ -76,5 +76,5 @@ export function useBlockAdd() {
     toast.promise(promise, { loading: 'Adding layer...', success: 'Added layer', error: 'Layer adding failed' })
     return promise
   }
-  return { blockAdd }
+  return { blockAdd, mutation }
 }

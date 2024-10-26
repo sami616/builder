@@ -15,11 +15,11 @@ import { DragPreview } from './drag-preview'
 import clsx from 'clsx'
 import { BlockLayerItemActions } from '@/components/editor/block-layer-item-actions'
 import { useActive } from '@/hooks/use-active'
-import { useHovered } from '@/hooks/use-hovered'
 import { toast } from 'sonner'
 import { useRouteContext } from '@tanstack/react-router'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
 import { flash } from '@/lib/utils'
+import { useBlockHover } from '@/hooks/use-block-hover'
 
 export function BlockLayerItem(props: { blockId: Block['id']; index: number; parent: { slot: string; node: Block | Page } }) {
   const { setActive, isActive } = useActive()
@@ -30,13 +30,12 @@ export function BlockLayerItem(props: { blockId: Block['id']; index: number; par
   const { blockMove } = useBlockMove()
   const { blockAdd } = useBlockAdd()
   const { templateApply } = useTemplateApply()
-  const { isHovered, setHovered } = useHovered()
   const [actionsOpen, setActionsOpen] = useState(false)
-  const isHoveredBlock = isHovered(props.blockId)
   const isActiveBlock = isActive({ id: props.blockId, store: 'blocks' })
   const isLeaf = Object.keys(blockGet.data.slots).length === 0
   const context = useRouteContext({ from: '/pages/$id' })
   const [open, setOpen] = useState(false)
+  const { setHover, removeHover } = useBlockHover(props.blockId, dropRef)
 
   const { isDraggingSource, dragPreviewContainer } = useDrag({
     dragRef,
@@ -72,13 +71,24 @@ export function BlockLayerItem(props: { blockId: Block['id']; index: number; par
     },
   })
 
-  useEffect(() => {
-    if (actionsOpen) {
-      setHovered(props.blockId)
-    } else {
-      setHovered(undefined)
-    }
-  }, [actionsOpen, props.blockId])
+  // useEffect(() => {
+  //   const handleHover = (e: CustomEvent) => {
+  //     if (dropRef.current) {
+  //       if (e.detail.id === props.blockId) {
+  //         dropRef.current.classList.add('outline-emerald-500')
+  //       } else {
+  //         dropRef.current.classList.remove('outline-emerald-500')
+  //       }
+  //     }
+  //   }
+  //   // Listen for the custom hover event
+  //   document.addEventListener('canvas-hover', handleHover)
+  //
+  //   // Cleanup on unmount
+  //   return () => {
+  //     document.removeEventListener('canvas-hover', handleHover)
+  //   }
+  // }, [props.blockId])
 
   const isMissing = context.config[blockGet.data.type] ? false : true
 
@@ -96,8 +106,7 @@ export function BlockLayerItem(props: { blockId: Block['id']; index: number; par
           'outline-none',
           isDraggingSource && 'opacity-50',
           isActiveBlock && 'outline-rose-500',
-          isHoveredBlock && 'outline-emerald-500',
-          isHoveredBlock && isActiveBlock && 'outline-rose-600',
+          isActiveBlock && 'hover:outline-rose-600',
         ]),
         onClick: (e) => {
           e.stopPropagation()
@@ -109,12 +118,12 @@ export function BlockLayerItem(props: { blockId: Block['id']; index: number; par
         onMouseOver: (e) => {
           e.stopPropagation()
           if (actionsOpen) return
-          setHovered(props.blockId)
+          setHover()
         },
         onMouseOut: (e) => {
           e.stopPropagation()
           if (actionsOpen) return
-          setHovered(undefined)
+          removeHover()
         },
       }}
     >
