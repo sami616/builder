@@ -19,8 +19,8 @@ export function useTreeItem() {
   return context
 }
 
-export function Tree(props: { children: ReactNode }) {
-  return <ul>{props.children}</ul>
+export function Tree(props: { children: ReactNode; className?: string }) {
+  return <ul className={props.className}>{props.children}</ul>
 }
 
 export function TreeItem(props: {

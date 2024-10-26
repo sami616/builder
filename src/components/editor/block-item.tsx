@@ -50,9 +50,7 @@ const templateAddSchema = z.object({
 
 export function BlockItem(props: { index: number; page: Page; parent: { slot: string; node: Block | Page }; blockId: Block['id'] }) {
   const { blockGet } = useBlockGet({ id: props.blockId })
-
   const block = blockGet.data
-
   const componentProps = block.props
   const { blockAdd } = useBlockAdd()
   const { blockMove } = useBlockMove()

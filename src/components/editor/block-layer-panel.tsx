@@ -4,14 +4,17 @@ import { isDragData } from '@/hooks/use-drag'
 import { useBlockAdd } from '@/hooks/use-block-add'
 import { useTemplateApply } from '@/hooks/use-template-apply'
 import { BlockLayerItem } from '@/components/editor/block-layer-item'
-import { Blocks, Loader } from 'lucide-react'
+import { Blocks } from 'lucide-react'
 import { Tree } from '../ui/tree'
-import { Suspense } from 'react'
+import { useDeferredValue } from 'react'
+import clsx from 'clsx'
 
 export function BlockLayerPanel(props: { page: Page }) {
   const { blockAdd } = useBlockAdd()
   const { templateApply } = useTemplateApply()
   const blocks = Object.values(props.page.slots)[0]
+  const deferredBlocks = useDeferredValue(blocks)
+  const isStale = blocks !== deferredBlocks
 
   if (blocks.length === 0) {
     return (
@@ -35,11 +38,9 @@ export function BlockLayerPanel(props: { page: Page }) {
     )
   }
   return (
-    <Tree>
+    <Tree className={clsx(['transition-opacity', isStale ? 'opacity-50' : 'opacity-100'])}>
       {blocks.map((blockId, index) => (
-        <Suspense key={blockId} fallback={<Loader size={17} className="stroke-gray-300 animate-spin mx-auto my-2" />}>
-          <BlockLayerItem key={blockId} parent={{ node: props.page, slot: 'root' }} index={index} blockId={blockId} />
-        </Suspense>
+        <BlockLayerItem key={blockId} parent={{ node: props.page, slot: 'root' }} index={index} blockId={blockId} />
       ))}
     </Tree>
   )
