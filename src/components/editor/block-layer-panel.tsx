@@ -8,13 +8,14 @@ import { Blocks } from 'lucide-react'
 import { Tree } from '../ui/tree'
 import { useDeferredValue } from 'react'
 import clsx from 'clsx'
+import { useIsMutating } from '@tanstack/react-query'
 
 export function BlockLayerPanel(props: { page: Page }) {
   const { blockAdd } = useBlockAdd()
   const { templateApply } = useTemplateApply()
   const blocks = Object.values(props.page.slots)[0]
   const deferredBlocks = useDeferredValue(blocks)
-  const isStale = blocks !== deferredBlocks
+  const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
 
   if (blocks.length === 0) {
     return (
@@ -38,8 +39,8 @@ export function BlockLayerPanel(props: { page: Page }) {
     )
   }
   return (
-    <Tree className={clsx(['transition-opacity', isStale ? 'opacity-50' : 'opacity-100'])}>
-      {blocks.map((blockId, index) => (
+    <Tree className={clsx(['transition-opacity', isCanvasMutating ? 'opacity-50' : 'opacity-100'])}>
+      {deferredBlocks.map((blockId, index) => (
         <BlockLayerItem key={blockId} parent={{ node: props.page, slot: 'root' }} index={index} blockId={blockId} />
       ))}
     </Tree>

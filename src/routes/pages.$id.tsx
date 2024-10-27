@@ -21,6 +21,7 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/comp
 import { Separator } from '@/components/ui/separator'
 import { useActive } from '@/hooks/use-active'
 import clsx from 'clsx'
+import { useIsMutating } from '@tanstack/react-query'
 
 export const Route = createFileRoute('/pages/$id')({
   component: Page,
@@ -45,8 +46,7 @@ function Page() {
   const [activeTab, setActiveTab] = useState('components')
   const [canvasSize, setCanvasSize] = useState<string | undefined>('none')
   const { active } = useActive()
-
-  const isStale = blocks !== deferredBlocks
+  const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
 
   return (
     <main className="h-[calc(100vh-62px)]">
@@ -138,7 +138,7 @@ function Page() {
             <Separator />
             <ScrollArea className="h-full w-full">
               <div
-                className={clsx(['mx-auto', 'min-h-full', 'transition-opacity', isStale ? 'opacity-50' : 'opacity-100'])}
+                className={clsx(['mx-auto', 'min-h-full', 'transition-opacity', isCanvasMutating ? 'opacity-50' : 'opacity-100'])}
                 style={{ maxWidth: canvasSize }}
               >
                 {blocks.length === 0 && (
@@ -160,7 +160,7 @@ function Page() {
                     }}
                   />
                 )}
-                {blocks.map((blockId, index) => {
+                {deferredBlocks.map((blockId, index) => {
                   return <BlockItem key={blockId} blockId={blockId} parent={{ node: pageGet.data, slot: 'root' }} index={index} page={pageGet.data} />
                 })}
               </div>

@@ -51,7 +51,7 @@ export function PropsPanel(props: { activeId: number }) {
     <div data-component="PropsPanel">
       <button onClick={() => setActive(undefined)}>Close</button>
       {Object.keys(configItemProps).map((key) => {
-        return <div>{renderInput(key)}</div>
+        return <div key={key}>{renderInput(key)}</div>
       })}
     </div>
   )
