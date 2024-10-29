@@ -1,4 +1,4 @@
-import { useRef, useState } from 'react'
+import { useDeferredValue, useRef, useState } from 'react'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useBlockHover } from '@/hooks/use-block-hover'
@@ -119,6 +119,8 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
     return acc
   }, {})
 
+  const deferredComponentBlocks = useDeferredValue(componentBlocks)
+
   const isMissing = context.config[block.type] ? false : true
   const Component = context.config[block.type]?.component ?? (() => <Missing node={{ type: 'component', name: block.type }} />)
 
@@ -136,6 +138,11 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
       <ContextMenu
         onOpenChange={(bool) => {
           setActionsOpen(bool)
+          if (bool) {
+            setActive({ store: 'blocks', id: block.id })
+          } else {
+            setActive(undefined)
+          }
         }}
       >
         <ContextMenuTrigger asChild>
@@ -148,8 +155,7 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
               '-outline-offset-2',
               'outline-none',
               isDraggingSource && 'opacity-50',
-              isActiveBlock && 'outline-rose-500',
-              isActiveBlock && 'hover:outline-rose-600',
+              isActiveBlock && 'outline-rose-500 hover:outline-rose-600',
             ])}
             data-drop-id={`block-${blockGet.data.id}`}
             onClick={(e) => {
@@ -199,7 +205,7 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
                 <Plus size={14} className="stroke-white" />
               </button>
 
-              <Component {...componentProps} {...componentBlocks} />
+              <Component {...componentProps} {...deferredComponentBlocks} />
 
               <button
                 onClick={(e) => {

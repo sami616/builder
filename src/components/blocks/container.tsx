@@ -1,9 +1,9 @@
 import { type ReactNode } from '@tanstack/react-router'
 import { type Config } from '@/main'
 
-export function Container(props: { left?: ReactNode; right?: ReactNode; title?: string }) {
+export function Container(props: { padding?: string; left?: ReactNode; right?: ReactNode; background: string; title?: string }) {
   return (
-    <div style={{ padding: '1rem', background: '#efefef' }}>
+    <div style={{ padding: props.padding, background: props.background }}>
       <p>{props.title}</p>
       <div className="grid grid-cols-2">
         <div>{props.left}</div>
@@ -23,7 +23,29 @@ export const containerConfig: Config = {
       right: { default: [], name: 'Right' },
     },
     props: {
-      title: { name: 'Title', default: 'Container Title', type: 'text' },
+      title: { name: 'Title', default: 'Container Title', type: 'string' },
+      background: {
+        name: 'Background',
+        description: 'Container background color',
+        default: 'white',
+        type: 'string',
+        options: [
+          { name: 'White', value: 'white' },
+          { name: 'Black', value: 'black' },
+          { name: 'Red', value: 'red' },
+        ],
+      },
+
+      padding: {
+        name: 'Padding',
+        default: '1rem',
+        type: 'string',
+        options: [
+          { name: 'Small', value: '1rem' },
+          { name: 'Medium', value: '2rem' },
+          { name: 'Large', value: '3rem' },
+        ],
+      },
     },
   },
 }

@@ -1,11 +1,12 @@
+
 import { type Page, type Block } from '@/db'
 import { Config } from '@/main'
 import { useRef, useState } from 'react'
 import { NestedStructure, isComponentLeaf } from '@/components/editor/component-panel'
 import { useDrag } from '@/hooks/use-drag'
-import { Component, CircleAlert } from 'lucide-react'
+import { CircleAlert } from 'lucide-react'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
-import { TreeItem, TreeItemContent, TreeItemHead, TreeItemIcon, TreeItemLabel, TreeItemTrigger } from '@/components/ui/tree'
+import { TreeItem, TreeItemContent, TreeItemHead, TreeItemLabel, TreeItemTrigger } from '@/components/ui/tree'
 import { DragPreview } from './drag-preview'
 import clsx from 'clsx'
 
@@ -30,7 +31,7 @@ export function ComponentItem(props: { page: Page; type: Block['type']; value: N
     >
       <TreeItemHead customRef={isLeaf ? dragRef : undefined}>
         <TreeItemTrigger hide={isLeaf} />
-        <TreeItemIcon hide={!isLeaf} icon={Component} />
+        {/* <TreeItemIcon hide={!isLeaf} icon={Component} /> */}
         <TreeItemLabel label={props.type} />
         {isComponentLeaf(props.value) && props.value.deprecated && (
           <HoverCard>

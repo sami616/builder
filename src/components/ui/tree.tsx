@@ -80,7 +80,7 @@ export function TreeItemHead(props: {
 export function TreeItemIcon(props: { className?: string; hide?: boolean; icon: ComponentType<{ size?: number | string; className?: string }> }) {
   if (props.hide) return null
   const Icon = props.icon
-  return <Icon size={16} className={cn('shrink-0 stroke-emerald-500', props.className)} />
+  return <Icon size={16} className={cn('shrink-0 stroke-gray-400', props.className)} />
 }
 
 export function TreeItemLabel(props: { onRename?: (updatedName: string) => void; label?: string }) {

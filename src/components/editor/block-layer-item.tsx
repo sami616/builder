@@ -1,5 +1,5 @@
 import { type Page, type Block } from '@/db'
-import { useEffect, useRef, useState } from 'react'
+import { useRef, useState } from 'react'
 import { useDrag, isDragData } from '@/hooks/use-drag'
 import { useDrop } from '@/hooks/use-drop'
 import { useBlockUpdateName } from '@/hooks/use-block-update-name'
@@ -8,8 +8,8 @@ import { useTemplateApply } from '@/hooks/use-template-apply'
 import { BlockLayerItemSlot, validateSlotBlock, validateSlotMax } from '@/components/editor/block-layer-item-slot'
 import { useBlockAdd } from '@/hooks/use-block-add'
 import { useBlockMove } from '@/hooks/use-block-move'
-import { AlertCircle, Layers2 } from 'lucide-react'
-import { TreeItem, TreeItemContent, TreeItemHead, TreeItemIcon, TreeItemLabel, TreeItemTrigger } from '@/components/ui/tree'
+import { AlertCircle } from 'lucide-react'
+import { TreeItem, TreeItemContent, TreeItemHead, TreeItemLabel, TreeItemTrigger } from '@/components/ui/tree'
 import { DropIndicator } from './drop-indicator'
 import { DragPreview } from './drag-preview'
 import clsx from 'clsx'
@@ -71,25 +71,6 @@ export function BlockLayerItem(props: { blockId: Block['id']; index: number; par
     },
   })
 
-  // useEffect(() => {
-  //   const handleHover = (e: CustomEvent) => {
-  //     if (dropRef.current) {
-  //       if (e.detail.id === props.blockId) {
-  //         dropRef.current.classList.add('outline-emerald-500')
-  //       } else {
-  //         dropRef.current.classList.remove('outline-emerald-500')
-  //       }
-  //     }
-  //   }
-  //   // Listen for the custom hover event
-  //   document.addEventListener('canvas-hover', handleHover)
-  //
-  //   // Cleanup on unmount
-  //   return () => {
-  //     document.removeEventListener('canvas-hover', handleHover)
-  //   }
-  // }, [props.blockId])
-
   const isMissing = context.config[blockGet.data.type] ? false : true
 
   return (
@@ -105,8 +86,7 @@ export function BlockLayerItem(props: { blockId: Block['id']; index: number; par
           '-outline-offset-2',
           'outline-none',
           isDraggingSource && 'opacity-50',
-          isActiveBlock && 'outline-rose-500',
-          isActiveBlock && 'hover:outline-rose-600',
+          isActiveBlock && 'outline-rose-500 hover:outline-rose-600',
         ]),
         onClick: (e) => {
           e.stopPropagation()
@@ -129,7 +109,7 @@ export function BlockLayerItem(props: { blockId: Block['id']; index: number; par
     >
       <TreeItemHead customRef={dragRef}>
         <TreeItemTrigger hide={isLeaf} />
-        <TreeItemIcon icon={Layers2} />
+        {/* <TreeItemIcon icon={Layers2} /> */}
         <TreeItemLabel
           label={blockGet.data.name}
           onRename={(updatedName) => {

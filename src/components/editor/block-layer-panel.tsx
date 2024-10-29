@@ -4,7 +4,7 @@ import { isDragData } from '@/hooks/use-drag'
 import { useBlockAdd } from '@/hooks/use-block-add'
 import { useTemplateApply } from '@/hooks/use-template-apply'
 import { BlockLayerItem } from '@/components/editor/block-layer-item'
-import { Blocks } from 'lucide-react'
+import { Layers2 } from 'lucide-react'
 import { Tree } from '../ui/tree'
 import { useDeferredValue } from 'react'
 import clsx from 'clsx'
@@ -20,12 +20,8 @@ export function BlockLayerPanel(props: { page: Page }) {
   if (blocks.length === 0) {
     return (
       <DropZone
-        children={
-          <>
-            <Blocks size={20} className="stroke-gray-400" />
-            Start building
-          </>
-        }
+        icon={Layers2}
+        label="Drop to start building"
         data={{ parent: { slot: 'root', node: props.page } }}
         onDrop={({ source, target }) => {
           if (isDragData['template'](source.data)) {
@@ -39,10 +35,13 @@ export function BlockLayerPanel(props: { page: Page }) {
     )
   }
   return (
-    <Tree className={clsx(['transition-opacity', isCanvasMutating ? 'opacity-50' : 'opacity-100'])}>
-      {deferredBlocks.map((blockId, index) => (
-        <BlockLayerItem key={blockId} parent={{ node: props.page, slot: 'root' }} index={index} blockId={blockId} />
-      ))}
-    </Tree>
+    <>
+      <h4 className="font-medium text-sm p-4">Layers</h4>
+      <Tree className={clsx(['transition-opacity', isCanvasMutating ? 'opacity-50' : 'opacity-100'])}>
+        {deferredBlocks.map((blockId, index) => (
+          <BlockLayerItem key={blockId} parent={{ node: props.page, slot: 'root' }} index={index} blockId={blockId} />
+        ))}
+      </Tree>
+    </>
   )
 }

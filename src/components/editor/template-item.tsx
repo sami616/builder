@@ -10,7 +10,8 @@ import { TreeItem, TreeItemHead, TreeItemIcon, TreeItemLabel } from '@/component
 import { DropIndicator } from './drop-indicator'
 import { DragPreview } from './drag-preview'
 import clsx from 'clsx'
-import { TemplateActions } from './template-actions'
+import { TemplateItemActions } from './template-item-actions'
+import { useActive } from '@/hooks/use-active'
 
 export function TemplateItem(props: { template: Template; index: number }) {
   const dragRef = useRef<HTMLDivElement>(null)
@@ -20,6 +21,8 @@ export function TemplateItem(props: { template: Template; index: number }) {
   const { templateReorder } = useTemplateReorder()
   const { dragPreviewContainer, isDraggingSource } = useDrag({ dragRef, data: { id: 'template', index: props.index, node: props.template } })
   const [actionsOpen, setActionsOpen] = useState(false)
+  const { isActive, setActive } = useActive()
+  const isActiveTemplate = isActive({ store: 'templates', id: props.template.id })
 
   const { closestEdge } = useDrop({
     dropRef,
@@ -39,7 +42,21 @@ export function TemplateItem(props: { template: Template; index: number }) {
     <TreeItem
       customRef={dropRef}
       htmlProps={{
-        className: clsx([isDraggingSource && 'opacity-50']),
+        onClick: (e) => {
+          e.stopPropagation()
+          setActive((active) => {
+            if (active?.id === props.template.id) return undefined
+            return { store: 'templates', id: props.template.id }
+          })
+        },
+        className: clsx([
+          isDraggingSource && 'opacity-50',
+          'outline',
+          'outline-2',
+          '-outline-offset-2',
+          'outline-none',
+          isActiveTemplate && 'outline-rose-500 hover:outline-rose-600',
+        ]),
       }}
     >
       <TreeItemHead customRef={dragRef}>
@@ -50,7 +67,7 @@ export function TemplateItem(props: { template: Template; index: number }) {
           }}
           label={props.template.name}
         />
-        <TemplateActions template={props.template} setActionsOpen={setActionsOpen} actionsOpen={actionsOpen} />
+        <TemplateItemActions template={props.template} setActionsOpen={setActionsOpen} actionsOpen={actionsOpen} />
       </TreeItemHead>
       <DropIndicator closestEdge={closestEdge} variant="horizontal" />
       <DragPreview dragPreviewContainer={dragPreviewContainer}>{props.template.name}</DragPreview>

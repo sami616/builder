@@ -20,12 +20,18 @@ export type PropTypes = {
   switch: boolean
 }
 
+type Common = { name: string; description?: string }
+type String = Common & { type: 'string'; options?: Array<{ name: string; value: string }>; default?: string }
+type Number = Common & { type: 'number'; options?: Array<{ name: string; value: number }>; default?: number }
+type Boolean = Common & { type: 'boolean'; default?: boolean }
+type Object = Common & {
+  type: 'object'
+  options?: Record<string, String | Number | Boolean>
+  default?: Record<string, String | Number | Boolean>
+}
+
 // Define a union type for PropItems, where type and default must match
-export type PropItem =
-  | { name: string; type: 'text'; default?: string }
-  | { name: string; type: 'number'; default?: number }
-  | { name: string; type: 'select'; default?: Array<{ name: string; value: string }> }
-  | { name: string; type: 'switch'; default?: boolean }
+export type PropItem = String | Number | Boolean | Object
 
 // Props can have any key, but each value must be a PropItem (with type-default enforcement)
 export type Props = {
@@ -91,13 +97,13 @@ const rootElement = document.getElementById('root')!
 if (!rootElement.innerHTML) {
   const root = ReactDOM.createRoot(rootElement)
   root.render(
-    <>
+    <StrictMode>
       <Toaster />
       <QueryClientProvider client={queryClient}>
         <RouterProvider router={router} />
         <TanStackRouterDevtools initialIsOpen={false} router={router} />
         <ReactQueryDevtools initialIsOpen={false} client={queryClient} />
       </QueryClientProvider>
-    </>,
+    </StrictMode>,
   )
 }

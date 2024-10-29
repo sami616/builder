@@ -4,6 +4,7 @@ import { ComponentItem } from '@/components/editor/component-item'
 import { Config } from '@/main'
 import { useMemo } from 'react'
 import { Tree } from '../ui/tree'
+import { Component } from 'lucide-react'
 
 export function ComponentPanel(props: { page: Page }) {
   const context = useRouteContext({ from: '/pages/$id' })
@@ -11,6 +12,15 @@ export function ComponentPanel(props: { page: Page }) {
   const structure = useMemo(() => {
     return nestFolders(context.config)
   }, [])
+
+  if (Object.entries(structure).length === 0) {
+    return (
+      <div className="text-sm flex flex-col gap-2 justify-center items-center">
+        <Component size={40} className="stroke-gray-200" />
+        <p>No components loaded</p>
+      </div>
+    )
+  }
 
   return (
     <Tree>

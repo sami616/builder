@@ -3,7 +3,7 @@ import { isDragData } from '@/hooks/use-drag'
 import { useTemplateAdd } from '@/hooks/use-template-add'
 import { DropZone } from '@/components/editor/drop-zone'
 import { TemplateItem } from '@/components/editor/template-item'
-import { Layers2 } from 'lucide-react'
+import { Layout } from 'lucide-react'
 import { Tree } from '../ui/tree'
 
 export function TemplatePanel(props: { templates: Template[] }) {
@@ -18,12 +18,8 @@ export function TemplatePanel(props: { templates: Template[] }) {
           }
         }}
         disableDrop={({ source }) => isDragData['component'](source.data)}
-        children={
-          <>
-            <Layers2 size={16} className="stroke-gray-400" />
-            Create template
-          </>
-        }
+        label="Drop to create a template"
+        icon={Layout}
       />
     )
   return (

@@ -1,4 +1,4 @@
-import { Trash, Pen, MoreHorizontal } from 'lucide-react'
+import { Trash, MoreHorizontal } from 'lucide-react'
 import {
   DropdownMenuTrigger,
   DropdownMenu,
@@ -9,17 +9,29 @@ import {
 } from '../ui/dropdown-menu'
 import { useIsMutating } from '@tanstack/react-query'
 import { Template } from '@/db'
-import { useTreeItem } from '../ui/tree'
 import { useActive } from '@/hooks/use-active'
 import { useTemplateDelete } from '@/hooks/use-template-delete'
+import { Dispatch, SetStateAction } from 'react'
 
-export function TemplateItemActions(props: { template: Template }) {
+export function TemplateItemActions(props: { template: Template; actionsOpen: boolean; setActionsOpen: Dispatch<SetStateAction<boolean>> }) {
   const { templateDelete } = useTemplateDelete()
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
-  const { setRenaming } = useTreeItem()
-  const { setActive } = useActive()
+  const { setActive, isActive } = useActive()
+
+  const isActiveTemplate = isActive({ store: 'templates', id: props.template.id })
+
   return (
-    <DropdownMenu>
+    <DropdownMenu
+      open={props.actionsOpen}
+      onOpenChange={(bool) => {
+        props.setActionsOpen(bool)
+        if (bool) {
+          setActive({ store: 'templates', id: props.template.id })
+        } else {
+          setActive(undefined)
+        }
+      }}
+    >
       <DropdownMenuTrigger disabled={isCanvasMutating} className="shrink-0 stroke-gray-400 hover:enabled:stroke-gray-900">
         <MoreHorizontal size={16} className="stroke-inherit" />
       </DropdownMenuTrigger>
@@ -27,19 +39,13 @@ export function TemplateItemActions(props: { template: Template }) {
         <DropdownMenuLabel>Template actions</DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem
-          onClick={() => {
-            setRenaming(true)
-          }}
-        >
-          <Pen size={14} className="stroke-gray-400 mr-2" /> Rename
-        </DropdownMenuItem>
-        <DropdownMenuItem
+          className="text-red-500"
           onClick={async () => {
-            templateDelete({ template: props.template })
-            setActive(undefined)
+            await templateDelete({ template: props.template })
+            if (isActiveTemplate) setActive(undefined)
           }}
         >
-          <Trash size={14} className="stroke-gray-400 mr-2" /> Delete
+          <Trash size={14} className="mr-2" /> Delete
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

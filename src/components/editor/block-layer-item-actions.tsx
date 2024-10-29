@@ -89,6 +89,11 @@ export function BlockLayerItemActions(props: {
         open={props.actionsOpen}
         onOpenChange={(bool) => {
           props.setActionsOpen(bool)
+          if (bool) {
+            setActive({ store: 'blocks', id: props.block.id })
+          } else {
+            setActive(undefined)
+          }
         }}
       >
         <DropdownMenuTrigger disabled={isCanvasMutating} className="shrink-0 stroke-gray-400 hover:enabled:stroke-gray-900">

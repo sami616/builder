@@ -15,7 +15,7 @@ import { useTemplateApply } from '@/hooks/use-template-apply'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
-import { Blocks, Loader, Monitor, Smartphone, Tablet } from 'lucide-react'
+import { Layers2, Loader, Monitor, Smartphone, SquareDashedMousePointer, Tablet } from 'lucide-react'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Separator } from '@/components/ui/separator'
@@ -62,7 +62,7 @@ function Page() {
             <ResizablePanelGroup direction="vertical">
               <ResizablePanel>
                 <ScrollArea className="h-full w-full">
-                  <Tabs defaultValue="components" value={activeTab} onValueChange={setActiveTab} className="w-full">
+                  <Tabs defaultValue="components" value={activeTab} onValueChange={setActiveTab} className="w-full h-full flex flex-col">
                     <TabsList className="sticky top-0 z-20 w-full rounded-none">
                       <TabsTrigger className="grow" value="components">
                         Components
@@ -71,10 +71,10 @@ function Page() {
                         Templates
                       </TabsTrigger>
                     </TabsList>
-                    <TabsContent hidden={activeTab !== 'components'} forceMount value="components">
+                    <TabsContent className="grow" hidden={activeTab !== 'components'} forceMount value="components">
                       <ComponentPanel page={pageGet.data} />
                     </TabsContent>
-                    <TabsContent hidden={activeTab !== 'templates'} forceMount value="templates">
+                    <TabsContent className="grow" hidden={activeTab !== 'templates'} forceMount value="templates">
                       <TemplatePanel templates={templateGetMany.data} />
                     </TabsContent>
                   </Tabs>
@@ -82,7 +82,6 @@ function Page() {
               </ResizablePanel>
               <ResizableHandle />
               <ResizablePanel>
-                <h4 className="p-4">Layers</h4>
                 <ScrollArea className="h-full w-full">
                   <BlockLayerPanel page={pageGet.data} />
                   <ScrollBar orientation="horizontal" />
@@ -138,17 +137,13 @@ function Page() {
             <Separator />
             <ScrollArea className="h-full w-full">
               <div
-                className={clsx(['mx-auto', 'min-h-full', 'transition-opacity', isCanvasMutating ? 'opacity-50' : 'opacity-100'])}
+                className={clsx(['mx-auto', 'h-full', 'transition-opacity', isCanvasMutating ? 'opacity-50' : 'opacity-100'])}
                 style={{ maxWidth: canvasSize }}
               >
                 {blocks.length === 0 && (
                   <DropZone
-                    children={
-                      <>
-                        <Blocks size={20} className="stroke-gray-400" />
-                        Start building
-                      </>
-                    }
+                    label="Drop to start building"
+                    icon={Layers2}
                     data={{ parent: { slot: 'root', node: pageGet.data } }}
                     onDrop={({ source, target }) => {
                       if (isDragData['template'](source.data)) {
@@ -171,7 +166,14 @@ function Page() {
             <ResizableHandle />
             <ResizablePanel minSize={20} defaultSize={20}>
               <ScrollArea className="h-full w-full">
-                {active?.store === 'blocks' ? <PropsPanel activeId={active.id} /> : <p>No block selected</p>}
+                {active?.store === 'blocks' ? (
+                  <PropsPanel activeId={active.id} />
+                ) : (
+                  <div className="flex flex-col gap-2 h-full text-sm justify-center items-center">
+                    <SquareDashedMousePointer size={40} className="stroke-gray-200" />
+                    <p>No layer selected</p>
+                  </div>
+                )}
                 <ScrollBar orientation="horizontal" />
               </ScrollArea>
             </ResizablePanel>
