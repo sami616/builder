@@ -4,7 +4,6 @@ import { useRouteContext } from '@tanstack/react-router'
 import { type Block } from '@/db'
 import { BlockItem } from '@/components/editor/block-item'
 import { toast } from 'sonner'
-import { updateMany } from '@/api'
 
 type Args = { entries: Array<{ blockId: Block['id']; index: number; parent: ComponentProps<typeof BlockItem>['parent'] }> }
 
@@ -13,22 +12,29 @@ export function useBlockDeleteMany() {
   const mutation = useMutation({
     mutationKey: ['canvas', 'block', 'delete'],
     mutationFn: async (args: Args) => {
-      let removeList = []
-      let updateList = []
+      const removeList = []
+      const updateList = new Map<number, Args['entries'][number]['parent']['node']>() // Map to store each unique cloned parent node
+
       for (const entry of args.entries) {
         const tree = await context.getTree({ root: { store: 'blocks', id: entry.blockId }, entries: [] })
         removeList.push(...tree)
-        const clonedParentNode = structuredClone(entry.parent.node)
-        clonedParentNode.slots[entry.parent.slot].splice(entry.index, 1)
-        updateList.push(clonedParentNode)
+
+        let clonedParentNode
+        if (updateList.has(entry.parent.node.id)) {
+          // Use existing cloned parent if already processed
+          clonedParentNode = updateList.get(entry.parent.node.id)
+        } else {
+          // Clone and store if seeing this parent for the first time
+          clonedParentNode = structuredClone(entry.parent.node)
+          updateList.set(entry.parent.node.id, clonedParentNode)
+        }
+
+        clonedParentNode?.slots[entry.parent.slot].splice(entry.index, 1)
       }
 
-      await context.removeMany({ entries: removeList })
-      await context.updateMany({ entries: updateList })
+      await Promise.all([context.removeMany({ entries: removeList }), context.updateMany({ entries: Array.from(updateList.values()) })])
 
-      // await Promise.all([context.removeMany({ entries: removeList }), context.updateMany({ entries: updateList })])
-
-      return { updateList }
+      return { updateList: Array.from(updateList.values()) }
     },
     onSuccess: async ({ updateList }) => {
       updateList.forEach((item) => {
