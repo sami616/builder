@@ -1,5 +1,6 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { type Page } from '@/db'
+import { useShortcuts } from '@/hooks/useShortcuts'
 import { Suspense, useDeferredValue, useState } from 'react'
 import { ComponentPanel } from '@/components/editor/component-panel'
 import { PropsPanel } from '@/components/editor/props-panel'
@@ -47,6 +48,7 @@ function Page() {
   const [canvasSize, setCanvasSize] = useState<string | undefined>('none')
   const { active } = useActive()
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
+  useShortcuts()
 
   const singleActiveBlock = active.length === 1 && active[0]?.store === 'blocks' ? active[0] : false
 
