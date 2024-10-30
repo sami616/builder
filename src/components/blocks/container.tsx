@@ -31,8 +31,8 @@ export const containerConfig: Config = {
         type: 'string',
         options: [
           { name: 'White', value: 'white' },
-          { name: 'Black', value: 'black' },
-          { name: 'Red', value: 'red' },
+          { name: 'Light gray', value: '#efefefef' },
+          { name: 'Green', value: '#007f00' },
         ],
       },
 

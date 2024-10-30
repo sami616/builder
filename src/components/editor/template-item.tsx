@@ -21,7 +21,7 @@ export function TemplateItem(props: { template: Template; index: number }) {
   const { templateReorder } = useTemplateReorder()
   const { dragPreviewContainer, isDraggingSource } = useDrag({ dragRef, data: { id: 'template', index: props.index, node: props.template } })
   const [actionsOpen, setActionsOpen] = useState(false)
-  const { isActive, setActive } = useActive()
+  const { isActive, handleActiveClick } = useActive()
   const isActiveTemplate = isActive({ store: 'templates', id: props.template.id })
 
   const { closestEdge } = useDrop({
@@ -44,10 +44,7 @@ export function TemplateItem(props: { template: Template; index: number }) {
       htmlProps={{
         onClick: (e) => {
           e.stopPropagation()
-          setActive((active) => {
-            if (active?.id === props.template.id) return undefined
-            return { store: 'templates', id: props.template.id }
-          })
+          handleActiveClick({ metaKey: e.metaKey, node: props.template })
         },
         className: clsx([
           isDraggingSource && 'opacity-50',

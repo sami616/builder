@@ -22,7 +22,7 @@ import { flash } from '@/lib/utils'
 import { useBlockHover } from '@/hooks/use-block-hover'
 
 export function BlockLayerItem(props: { blockId: Block['id']; index: number; parent: { slot: string; node: Block | Page } }) {
-  const { setActive, isActive } = useActive()
+  const { isActive, handleActiveClick } = useActive()
   const dragRef = useRef<HTMLDivElement>(null)
   const dropRef = useRef<HTMLLIElement>(null)
   const { blockGet } = useBlockGet({ id: props.blockId })
@@ -90,10 +90,7 @@ export function BlockLayerItem(props: { blockId: Block['id']; index: number; par
         ]),
         onClick: (e) => {
           e.stopPropagation()
-          setActive((active) => {
-            if (active?.id === props.blockId) return undefined
-            return { store: 'blocks', id: props.blockId }
-          })
+          handleActiveClick({ metaKey: e.metaKey, node: blockGet.data })
         },
         onMouseOver: (e) => {
           e.stopPropagation()

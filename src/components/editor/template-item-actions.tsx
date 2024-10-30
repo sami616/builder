@@ -26,9 +26,9 @@ export function TemplateItemActions(props: { template: Template; actionsOpen: bo
       onOpenChange={(bool) => {
         props.setActionsOpen(bool)
         if (bool) {
-          setActive({ store: 'templates', id: props.template.id })
+          setActive([{ store: 'templates', id: props.template.id }])
         } else {
-          setActive(undefined)
+          setActive([])
         }
       }}
     >
@@ -42,7 +42,7 @@ export function TemplateItemActions(props: { template: Template; actionsOpen: bo
           className="text-red-500"
           onClick={async () => {
             await templateDelete({ template: props.template })
-            if (isActiveTemplate) setActive(undefined)
+            if (isActiveTemplate) setActive([])
           }}
         >
           <Trash size={14} className="mr-2" /> Delete

@@ -90,9 +90,9 @@ export function BlockLayerItemActions(props: {
         onOpenChange={(bool) => {
           props.setActionsOpen(bool)
           if (bool) {
-            setActive({ store: 'blocks', id: props.block.id })
+            setActive([{ store: 'blocks', id: props.block.id }])
           } else {
-            setActive(undefined)
+            setActive([])
           }
         }}
       >
@@ -136,7 +136,7 @@ export function BlockLayerItemActions(props: {
             className="text-red-500"
             onClick={async () => {
               await blockDelete({ index: props.index, blockId: props.block.id, parent: props.parent })
-              if (isActiveBlock) setActive(undefined)
+              if (isActiveBlock) setActive([])
             }}
           >
             <Trash size={14} className="mr-2" /> Delete

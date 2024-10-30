@@ -15,7 +15,6 @@ export function PropsPanel(props: { activeId: number }) {
   const { blockGet } = useBlockGet({ id: props.activeId })
   const { blockUpdateProps } = useBlockUpdateProps()
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
-  // const { setActive, isActive } = useActive()
   const block = blockGet.data
   const [propState, setPropState] = useState<Record<string, any>>(block.props)
 

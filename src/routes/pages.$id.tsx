@@ -48,6 +48,8 @@ function Page() {
   const { active } = useActive()
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
 
+  const singleActiveBlock = active.length === 1 && active[0]?.store === 'blocks' ? active[0] : false
+
   return (
     <main className="h-[calc(100vh-62px)]">
       <Suspense
@@ -166,8 +168,8 @@ function Page() {
             <ResizableHandle />
             <ResizablePanel minSize={20} defaultSize={20}>
               <ScrollArea className="h-full w-full">
-                {active?.store === 'blocks' ? (
-                  <PropsPanel activeId={active.id} />
+                {singleActiveBlock ? (
+                  <PropsPanel activeId={singleActiveBlock.id} />
                 ) : (
                   <div className="flex flex-col gap-2 h-full text-sm justify-center items-center">
                     <SquareDashedMousePointer size={40} className="stroke-gray-200" />

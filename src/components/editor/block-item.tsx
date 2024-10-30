@@ -55,11 +55,11 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
   const { blockAdd } = useBlockAdd()
   const { blockMove } = useBlockMove()
   const { templateApply } = useTemplateApply()
-  const { active, setActive } = useActive()
+  const { setActive, isActive, handleActiveClick } = useActive()
   const dropRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<HTMLDivElement>(null)
   const context = useRouteContext({ from: '/pages/$id' })
-  const isActiveBlock = active?.store === 'blocks' && active.id === block.id
+  const isActiveBlock = isActive({ store: 'blocks', id: block.id })
   const { blockCopy } = useBlockCopy()
   const { blockDelete } = useBlockDelete()
   const { templateAdd } = useTemplateAdd()
@@ -139,9 +139,9 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
         onOpenChange={(bool) => {
           setActionsOpen(bool)
           if (bool) {
-            setActive({ store: 'blocks', id: block.id })
+            setActive([{ store: 'blocks', id: block.id }])
           } else {
-            setActive(undefined)
+            setActive([])
           }
         }}
       >
@@ -160,10 +160,7 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
             data-drop-id={`block-${blockGet.data.id}`}
             onClick={(e) => {
               e.stopPropagation()
-              setActive((active) => {
-                if (active?.id === block.id) return undefined
-                return { store: 'blocks', id: block.id }
-              })
+              handleActiveClick({ metaKey: e.metaKey, node: block })
             }}
             onMouseOver={(e) => {
               e.stopPropagation()
@@ -177,7 +174,7 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
             }}
             ref={dropRef}
           >
-            <div ref={dragRef}>
+            <div ref={dragRef} className="group">
               <button
                 onClick={(e) => {
                   e.stopPropagation()
@@ -197,9 +194,9 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
                   'scale-50',
                   'transition',
                   'hover:scale-100',
-                  isActiveBlock ? 'flex' : 'hidden',
-                  isActiveBlock && 'bg-rose-500',
-                  isActiveBlock && 'bg-rose-600',
+                  'hidden',
+                  'group-hover:flex',
+                  isActiveBlock ? 'bg-rose-500 hover:bg-rose-600' : 'bg-emerald-500 hover:bg-emerald-600',
                 ])}
               >
                 <Plus size={14} className="stroke-white" />
@@ -224,12 +221,11 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
                   'origin-bottom',
                   '-ml-2.5',
                   'scale-50',
-                  'flex',
                   'transition',
                   'hover:scale-100',
-                  isActiveBlock ? 'flex' : 'hidden',
-                  isActiveBlock && 'bg-rose-500',
-                  isActiveBlock && 'bg-rose-600',
+                  'hidden',
+                  'group-hover:flex',
+                  isActiveBlock ? 'bg-rose-500 hover:bg-rose-600' : 'bg-emerald-500 hover:bg-emerald-600',
                 ])}
               >
                 <Plus size={14} className="stroke-white" />
@@ -279,7 +275,7 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
           <ContextMenuItem
             onClick={async () => {
               await blockDelete({ index: props.index, blockId: block.id, parent: props.parent })
-              if (isActiveBlock) setActive(undefined)
+              if (isActiveBlock) setActive([])
             }}
             className="text-red-500"
           >
