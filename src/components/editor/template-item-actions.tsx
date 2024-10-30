@@ -18,7 +18,7 @@ export function TemplateItemActions(props: { template: Template; actionsOpen: bo
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
   const { setActive, isActive } = useActive()
 
-  const isActiveTemplate = isActive({ store: 'templates', id: props.template.id })
+  const isActiveTemplate = isActive(props.template)
 
   return (
     <DropdownMenu
@@ -26,7 +26,7 @@ export function TemplateItemActions(props: { template: Template; actionsOpen: bo
       onOpenChange={(bool) => {
         props.setActionsOpen(bool)
         if (bool) {
-          setActive([{ store: 'templates', id: props.template.id }])
+          setActive([props.template])
         } else {
           setActive([])
         }

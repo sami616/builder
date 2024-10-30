@@ -10,12 +10,12 @@ export function usePageDeleteMany() {
   const mutation = useMutation({
     mutationKey: ['page', 'delete'],
     mutationFn: async (args: Args) => {
-      let accum = []
+      let trees = []
       for (const entry of args.entries) {
         const tree = await context.getTree({ root: { store: 'pages', id: entry.id }, entries: [] })
-        accum.push(...tree)
+        trees.push(...tree)
       }
-      await context.removeMany({ entries: accum })
+      await context.removeMany({ entries: trees })
     },
     onSuccess: async () => {
       await context.queryClient.invalidateQueries({ queryKey: ['pages'] })

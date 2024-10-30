@@ -59,7 +59,7 @@ export function BlockLayerItemActions(props: {
   const [templateAddOpen, setTemplateAddOpen] = useState(false)
   const actionsRef = useRef<HTMLDivElement>(null)
 
-  const isActiveBlock = isActive({ store: 'blocks', id: props.block.id })
+  const isActiveBlock = isActive({ ...props.block, meta: { index: props.index, parent: props.parent } })
 
   const blockAddForm = useForm<z.infer<typeof blockAddSchema>>({
     resolver: zodResolver(blockAddSchema),
@@ -90,7 +90,7 @@ export function BlockLayerItemActions(props: {
         onOpenChange={(bool) => {
           props.setActionsOpen(bool)
           if (bool) {
-            setActive([{ store: 'blocks', id: props.block.id }])
+            setActive([{ ...props.block, meta: { index: props.index, parent: props.parent } }])
           } else {
             setActive([])
           }

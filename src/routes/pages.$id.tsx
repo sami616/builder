@@ -46,8 +46,8 @@ function Page() {
   const deferredBlocks = useDeferredValue(blocks)
   const [activeTab, setActiveTab] = useState('components')
   const [canvasSize, setCanvasSize] = useState<string | undefined>('none')
-  const { active } = useActive()
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
+  const { active } = useActive()
   useShortcuts()
 
   const singleActiveBlock = active.length === 1 && active[0]?.store === 'blocks' ? active[0] : false

@@ -1,8 +1,8 @@
-import { Block, Template } from '@/db'
+import { Block, Page, Template } from '@/db'
 import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useState } from 'react'
 
 type Active = {
-  State: Array<{ store: 'blocks'; id: Block['id'] } | { store: 'templates'; id: Template['id'] }>
+  State: Array<(Block & { meta: { index: number; parent: { slot: string; node: Block | Page } } }) | Template>
   Set: Dispatch<SetStateAction<Active['State']>>
 }
 
@@ -10,7 +10,7 @@ const Context = createContext<{
   active: Active['State']
   setActive: Active['Set']
   isActive: (arg: Active['State'][number]) => boolean
-  handleActiveClick: (args: { metaKey: boolean; node: Block | Template }) => void
+  handleActiveClick: (args: { metaKey: boolean; node: Active['State'][number] }) => void
 } | null>(null)
 
 export function useActive() {
@@ -26,21 +26,21 @@ export function ActiveProvider(props: { children: ReactNode }) {
     return active.some((a) => a.store === arg.store && a.id === arg.id)
   }
 
-  function handleActiveClick(args: { metaKey: boolean; node: Block | Template }) {
-    const isActiveNode = isActive({ id: args.node.id, store: args.node.store })
+  function handleActiveClick(args: { metaKey: boolean; node: Active['State'][number] }) {
+    const isActiveNode = isActive(args.node)
     if (args.metaKey) {
       setActive((active) => {
         if (isActiveNode) return active.filter((a) => a.id !== args.node.id || a.store !== args.node.store)
-        return [...active, { store: args.node.store, id: args.node.id }]
+        return [...active, args.node]
       })
     } else {
       if (isActiveNode) {
         setActive((active) => {
-          if (active.length > 1) return [{ store: args.node.store, id: args.node.id }]
+          if (active.length > 1) return [args.node]
           return []
         })
       } else {
-        setActive([{ store: args.node.store, id: args.node.id }])
+        setActive([args.node])
       }
     }
   }

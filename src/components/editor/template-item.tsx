@@ -22,7 +22,7 @@ export function TemplateItem(props: { template: Template; index: number }) {
   const { dragPreviewContainer, isDraggingSource } = useDrag({ dragRef, data: { id: 'template', index: props.index, node: props.template } })
   const [actionsOpen, setActionsOpen] = useState(false)
   const { isActive, handleActiveClick } = useActive()
-  const isActiveTemplate = isActive({ store: 'templates', id: props.template.id })
+  const isActiveTemplate = isActive(props.template)
 
   const { closestEdge } = useDrop({
     dropRef,
