@@ -10,6 +10,9 @@ export function useTemplateDelete() {
   const mutation = useMutation({
     mutationKey: ['canvas', 'template', 'delete'],
     mutationFn: async (args: Args) => {
+      const tree = await context.getTree({ root: { store: 'templates', id: args.template.id } })
+      const removed = context.removeMany({ entries: tree })
+
       const tx = db.transaction('templates', 'readwrite')
       const order = args.template.order
       const index = tx.store.index('order')
@@ -23,8 +26,7 @@ export function useTemplateDelete() {
         cursor = await cursor.continue()
       }
 
-      const tree = await context.getTree({ root: { store: 'templates', id: args.template.id } })
-      return context.removeMany({ entries: tree })
+      return removed
     },
     onSuccess: () => {
       context.queryClient.invalidateQueries({ queryKey: ['templates'] })

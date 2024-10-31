@@ -13,11 +13,10 @@ import { useIsMutating } from '@tanstack/react-query'
 export function BlockLayerPanel(props: { page: Page }) {
   const { blockAdd } = useBlockAdd()
   const { templateApply } = useTemplateApply()
-  const blocks = Object.values(props.page.slots)[0]
-  const deferredBlocks = useDeferredValue(blocks)
+  const deferredBlocks = useDeferredValue(Object.values(props.page.slots)[0])
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
 
-  if (blocks.length === 0) {
+  if (deferredBlocks.length === 0) {
     return (
       <DropZone
         icon={Layers2}
