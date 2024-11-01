@@ -55,11 +55,11 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
   const { blockAdd } = useBlockAdd()
   const { blockMove } = useBlockMove()
   const { templateApply } = useTemplateApply()
-  const { setActive, isActive, handleActiveClick } = useActive()
+  const { setActive, isActiveBlock, handleActiveClick } = useActive()
   const dropRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<HTMLDivElement>(null)
   const context = useRouteContext({ from: '/pages/$id' })
-  const isActiveBlock = isActive({ ...block, meta: { index: props.index, parent: props.parent } })
+  const isActive = isActiveBlock({ ...block, meta: { index: props.index, parent: props.parent } })
   const { blockCopy } = useBlockCopy()
   const { blockDelete } = useBlockDelete()
   const { templateAdd } = useTemplateAdd()
@@ -155,7 +155,7 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
               '-outline-offset-2',
               'outline-none',
               isDraggingSource && 'opacity-50',
-              isActiveBlock && 'outline-rose-500 hover:outline-rose-600',
+              isActive && 'outline-rose-500 hover:outline-rose-600',
             ])}
             data-drop-id={`block-${blockGet.data.id}`}
             onClick={(e) => {
@@ -196,7 +196,7 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
                   'hover:scale-100',
                   'hidden',
                   'group-hover:flex',
-                  isActiveBlock ? 'bg-rose-500 hover:bg-rose-600' : 'bg-emerald-500 hover:bg-emerald-600',
+                  isActive ? 'bg-rose-500 hover:bg-rose-600' : 'bg-emerald-500 hover:bg-emerald-600',
                 ])}
               >
                 <Plus size={14} className="stroke-white" />
@@ -225,7 +225,7 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
                   'hover:scale-100',
                   'hidden',
                   'group-hover:flex',
-                  isActiveBlock ? 'bg-rose-500 hover:bg-rose-600' : 'bg-emerald-500 hover:bg-emerald-600',
+                  isActive ? 'bg-rose-500 hover:bg-rose-600' : 'bg-emerald-500 hover:bg-emerald-600',
                 ])}
               >
                 <Plus size={14} className="stroke-white" />
@@ -275,7 +275,7 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
           <ContextMenuItem
             onClick={async () => {
               await blockDelete({ index: props.index, blockId: block.id, parent: props.parent })
-              if (isActiveBlock) setActive([])
+              if (isActive) setActive([])
             }}
             className="text-red-500"
           >

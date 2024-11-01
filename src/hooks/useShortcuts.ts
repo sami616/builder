@@ -3,10 +3,10 @@ import { useActive } from './use-active'
 import { useBlockDelete } from './use-block-delete'
 import { useTemplateDelete } from './use-template-delete'
 import { useTemplateDeleteMany } from './use-template-delete-many'
-import { isBlock, isTemplate } from '@/api'
 import { useBlockCopy } from './use-block-copy'
 import { useBlockDeleteMany } from './use-block-delete-many'
 import { useBlockCopyMany } from './use-block-copy-many'
+import { isBlock, isTemplate } from '@/api'
 
 export function useShortcuts() {
   const { active, setActive } = useActive()
@@ -17,59 +17,48 @@ export function useShortcuts() {
   const { templateDelete } = useTemplateDelete()
   const { templateDeleteMany } = useTemplateDeleteMany()
 
-  const sortedActive = Object.groupBy(active, (a) => a.store)
+  const sortedActive = {
+    templates: active.filter((el) => isTemplate(el)),
+    blocks: active.filter((el) => isBlock(el)),
+  }
 
-  useHotkeys(
-    'ctrl+d',
-    async () => {
-      if (sortedActive.blocks) {
-        if (sortedActive.blocks.length === 1) {
-          const [block] = sortedActive.blocks
-          if (isBlock(block)) {
-            await blockCopy({ id: block.id, index: block.meta.index, parent: block.meta.parent })
-          }
-        }
-        if (sortedActive.blocks.length > 1) {
-          await blockCopyMany({
-            entries: sortedActive.blocks.map((block) => ({ id: block.id, parent: block.meta.parent, index: block.meta.index })),
-          })
-        }
+  useHotkeys('ctrl+d', async () => {
+    if (sortedActive.blocks) {
+      if (sortedActive.blocks.length === 1) {
+        const [block] = sortedActive.blocks
+        await blockCopy({ id: block.id, index: block.meta.index, parent: block.meta.parent })
       }
-    },
-    { enableOnFormTags: true },
-  )
+      if (sortedActive.blocks.length > 1) {
+        await blockCopyMany({
+          entries: sortedActive.blocks.map((block) => ({ id: block.id, parent: block.meta.parent, index: block.meta.index })),
+        })
+      }
+    }
+  })
 
-  useHotkeys(
-    'backspace',
-    async () => {
-      if (sortedActive.templates) {
-        if (sortedActive.templates.length === 1) {
-          const [template] = sortedActive.templates
-          if (isTemplate(template)) {
-            await templateDelete({ template })
-          }
-        }
-        if (sortedActive.templates.length > 1) {
-          await templateDeleteMany({ entries: sortedActive.templates })
-        }
+  useHotkeys('backspace', async () => {
+    if (sortedActive.templates) {
+      if (sortedActive.templates.length === 1) {
+        const [template] = sortedActive.templates
+        await templateDelete({ template })
       }
+      if (sortedActive.templates.length > 1) {
+        await templateDeleteMany({ entries: sortedActive.templates })
+      }
+    }
 
-      if (sortedActive.blocks) {
-        if (sortedActive.blocks.length === 1) {
-          const [block] = sortedActive.blocks
-          if (isBlock(block)) {
-            await blockDelete({ blockId: block.id, index: block.meta.index, parent: block.meta.parent })
-            setActive([])
-          }
-        }
-        if (sortedActive.blocks.length > 1) {
-          await blockDeleteMany({
-            entries: sortedActive.blocks.map((block) => ({ blockId: block.id, parent: block.meta.parent, index: block.meta.index })),
-          })
-          setActive([])
-        }
+    if (sortedActive.blocks) {
+      if (sortedActive.blocks.length === 1) {
+        const [block] = sortedActive.blocks
+        await blockDelete({ blockId: block.id, index: block.meta.index, parent: block.meta.parent })
+        setActive([])
       }
-    },
-    { enableOnFormTags: true },
-  )
+      if (sortedActive.blocks.length > 1) {
+        await blockDeleteMany({
+          entries: sortedActive.blocks.map((block) => ({ blockId: block.id, parent: block.meta.parent, index: block.meta.index })),
+        })
+        setActive([])
+      }
+    }
+  })
 }

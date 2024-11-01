@@ -22,7 +22,7 @@ import { flash } from '@/lib/utils'
 import { useBlockHover } from '@/hooks/use-block-hover'
 
 export function BlockLayerItem(props: { blockId: Block['id']; index: number; parent: { slot: string; node: Block | Page } }) {
-  const { isActive, handleActiveClick } = useActive()
+  const { isActiveBlock, handleActiveClick } = useActive()
   const dragRef = useRef<HTMLDivElement>(null)
   const dropRef = useRef<HTMLLIElement>(null)
   const { blockGet } = useBlockGet({ id: props.blockId })
@@ -31,7 +31,7 @@ export function BlockLayerItem(props: { blockId: Block['id']; index: number; par
   const { blockAdd } = useBlockAdd()
   const { templateApply } = useTemplateApply()
   const [actionsOpen, setActionsOpen] = useState(false)
-  const isActiveBlock = isActive({ ...blockGet.data, meta: { index: props.index, parent: props.parent } })
+  const isActive = isActiveBlock({ ...blockGet.data, meta: { index: props.index, parent: props.parent } })
   const isLeaf = Object.keys(blockGet.data.slots).length === 0
   const context = useRouteContext({ from: '/pages/$id' })
   const [open, setOpen] = useState(false)
@@ -86,7 +86,7 @@ export function BlockLayerItem(props: { blockId: Block['id']; index: number; par
           '-outline-offset-2',
           'outline-none',
           isDraggingSource && 'opacity-50',
-          isActiveBlock && 'outline-rose-500 hover:outline-rose-600',
+          isActive && 'outline-rose-500 hover:outline-rose-600',
         ]),
         onClick: (e) => {
           e.stopPropagation()

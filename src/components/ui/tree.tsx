@@ -108,12 +108,23 @@ export function TreeItemLabel(props: { onRename?: (updatedName: string) => void;
   }, [renaming])
 
   if (!props.label) return null
+
+  if (!renaming) {
+    return (
+      <div
+        className="grow text-sm p-1"
+        onDoubleClick={() => {
+          if (!props.onRename) return
+          setRenaming(true)
+        }}
+      >
+        {props.label}
+      </div>
+    )
+  }
+
   return (
     <form
-      onDoubleClick={() => {
-        if (!props.onRename) return
-        setRenaming(true)
-      }}
       className="grow"
       onSubmit={(e) => {
         e.preventDefault()
@@ -124,8 +135,7 @@ export function TreeItemLabel(props: { onRename?: (updatedName: string) => void;
       }}
     >
       <input
-        className="text-sm focus:outline-none w-full bg-gray-200 read-only:cursor-default  read-only:bg-transparent p-1 bg-none rounded"
-        readOnly={!renaming}
+        className="text-sm p-1 focus:outline-none w-full bg-gray-200 bg-none rounded"
         ref={inputRef}
         name="name"
         onKeyDown={(e) => {

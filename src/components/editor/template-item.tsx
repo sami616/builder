@@ -21,8 +21,8 @@ export function TemplateItem(props: { template: Template; index: number }) {
   const { templateReorder } = useTemplateReorder()
   const { dragPreviewContainer, isDraggingSource } = useDrag({ dragRef, data: { id: 'template', index: props.index, node: props.template } })
   const [actionsOpen, setActionsOpen] = useState(false)
-  const { isActive, handleActiveClick } = useActive()
-  const isActiveTemplate = isActive(props.template)
+  const { isActiveTemplate, handleActiveClick } = useActive()
+  const isActive = isActiveTemplate(props.template)
 
   const { closestEdge } = useDrop({
     dropRef,
@@ -52,7 +52,7 @@ export function TemplateItem(props: { template: Template; index: number }) {
           'outline-2',
           '-outline-offset-2',
           'outline-none',
-          isActiveTemplate && 'outline-rose-500 hover:outline-rose-600',
+          isActive && 'outline-rose-500 hover:outline-rose-600',
         ]),
       }}
     >

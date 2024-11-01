@@ -53,13 +53,13 @@ export function BlockLayerItemActions(props: {
   const { blockDelete } = useBlockDelete()
   const { templateAdd } = useTemplateAdd()
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
-  const { setActive, isActive } = useActive()
+  const { setActive, isActiveBlock } = useActive()
   const [blockPickerOpen, setBlockPickerOpen] = useState(false)
   const [blockAddOpen, setBlockAddOpen] = useState(false)
   const [templateAddOpen, setTemplateAddOpen] = useState(false)
   const actionsRef = useRef<HTMLDivElement>(null)
 
-  const isActiveBlock = isActive({ ...props.block, meta: { index: props.index, parent: props.parent } })
+  const isActive = isActiveBlock({ ...props.block, meta: { index: props.index, parent: props.parent } })
 
   const blockAddForm = useForm<z.infer<typeof blockAddSchema>>({
     resolver: zodResolver(blockAddSchema),
@@ -136,7 +136,7 @@ export function BlockLayerItemActions(props: {
             className="text-red-500"
             onClick={async () => {
               await blockDelete({ index: props.index, blockId: props.block.id, parent: props.parent })
-              if (isActiveBlock) setActive([])
+              if (isActive) setActive([])
             }}
           >
             <Trash size={14} className="mr-2" /> Delete

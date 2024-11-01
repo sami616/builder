@@ -16,9 +16,9 @@ import { Dispatch, SetStateAction } from 'react'
 export function TemplateItemActions(props: { template: Template; actionsOpen: boolean; setActionsOpen: Dispatch<SetStateAction<boolean>> }) {
   const { templateDelete } = useTemplateDelete()
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
-  const { setActive, isActive } = useActive()
+  const { setActive, isActiveTemplate } = useActive()
 
-  const isActiveTemplate = isActive(props.template)
+  const isActive = isActiveTemplate(props.template)
 
   return (
     <DropdownMenu
@@ -42,7 +42,7 @@ export function TemplateItemActions(props: { template: Template; actionsOpen: bo
           className="text-red-500"
           onClick={async () => {
             await templateDelete({ template: props.template })
-            if (isActiveTemplate) setActive([])
+            if (isActive) setActive([])
           }}
         >
           <Trash size={14} className="mr-2" /> Delete
