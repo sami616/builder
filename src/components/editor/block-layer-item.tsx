@@ -31,7 +31,7 @@ export function BlockLayerItem(props: { id: Block['id']; index: number; parent: 
   const { blockAdd } = useBlockAdd()
   const { templateApply } = useTemplateApply()
   const [actionsOpen, setActionsOpen] = useState(false)
-  const isActiveBlock = isActive({ ...blockGet.data, meta: { index: props.index, parent: props.parent } })
+  const isActiveBlock = isActive({ ...blockGet.data, index: props.index, parent: props.parent })
   const isLeaf = Object.keys(blockGet.data.slots).length === 0
   const context = useRouteContext({ from: '/pages/$id' })
   const [open, setOpen] = useState(false)
@@ -90,7 +90,7 @@ export function BlockLayerItem(props: { id: Block['id']; index: number; parent: 
         ]),
         onClick: (e) => {
           e.stopPropagation()
-          handleActiveClick({ metaKey: e.metaKey, node: { ...blockGet.data, meta: { index: props.index, parent: props.parent } } })
+          handleActiveClick({ metaKey: e.metaKey, node: { ...blockGet.data, index: props.index, parent: props.parent } })
         },
         onMouseOver: (e) => {
           e.stopPropagation()

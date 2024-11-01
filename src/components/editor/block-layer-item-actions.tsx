@@ -52,7 +52,7 @@ export function BlockLayerItemActions(props: {
         onOpenChange={(bool) => {
           props.setActionsOpen(bool)
           if (bool) {
-            setActive([{ ...props.block, meta: { index: props.index, parent: props.parent } }])
+            setActive([{ ...props.block, index: props.index, parent: props.parent }])
           } else {
             setActive([])
           }

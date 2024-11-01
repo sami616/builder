@@ -51,11 +51,11 @@ export function HotKeys(props: { children: ReactNode }) {
   useHotkeys('ctrl+d', async () => {
     if (sortedActive.blocks) {
       if (activeBlocksSingle) {
-        await blockCopy({ id: activeBlocksSingle.id, index: activeBlocksSingle.meta.index, parent: activeBlocksSingle.meta.parent })
+        await blockCopy({ id: activeBlocksSingle.id, index: activeBlocksSingle.index, parent: activeBlocksSingle.parent })
       }
       if (activeBlocksMany) {
         await blockCopyMany({
-          entries: activeBlocksMany.map((block) => ({ id: block.id, parent: block.meta.parent, index: block.meta.index })),
+          entries: activeBlocksMany.map((block) => ({ id: block.id, parent: block.parent, index: block.index })),
         })
       }
     }
@@ -82,22 +82,17 @@ export function HotKeys(props: { children: ReactNode }) {
       <BlockDialogDelete
         open={blockDeleteOpen}
         setOpen={setBlockDeleteOpen}
-        blocks={sortedActive.blocks.map((block) => ({ id: block.id, index: block.meta.index, parent: block.meta.parent }))}
+        blocks={sortedActive.blocks.map((block) => ({ id: block.id, index: block.index, parent: block.parent }))}
       />
       {activeBlocksSingle && (
         <>
-          <BlockDialogAdd
-            open={blockAddOpen}
-            setOpen={setBlockAddOpen}
-            parent={activeBlocksSingle.meta.parent}
-            index={activeBlocksSingle.meta.index}
-          />
+          <BlockDialogAdd open={blockAddOpen} setOpen={setBlockAddOpen} parent={activeBlocksSingle.parent} index={activeBlocksSingle.index} />
           <BlockDialogAddTemplate
             open={templateAddOpen}
             setOpen={setTemplateAddOpen}
             block={activeBlocksSingle}
-            parent={activeBlocksSingle.meta.parent}
-            index={activeBlocksSingle.meta.index}
+            parent={activeBlocksSingle.parent}
+            index={activeBlocksSingle.index}
           />
         </>
       )}

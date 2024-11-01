@@ -74,8 +74,8 @@ export function BlockLayerItemSlot(props: { block: Block; slot: string; parent: 
         {isMissing && <TreeItemLabel label={`Slot (${props.slot}) missing`} />}
       </TreeItemHead>
       <TreeItemContent>
-        {props.block.slots[props.slot].map((blockId, index) => (
-          <BlockLayerItem index={index} parent={{ slot: props.slot, node: props.block }} id={blockId} key={blockId} />
+        {props.block.slots[props.slot].map((id, index) => (
+          <BlockLayerItem index={index} parent={{ slot: props.slot, node: props.block }} id={id} key={id} />
         ))}
       </TreeItemContent>
     </TreeItem>

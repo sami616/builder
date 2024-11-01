@@ -16,9 +16,7 @@ import { Dispatch, SetStateAction } from 'react'
 export function TemplateItemActions(props: { template: Template; actionsOpen: boolean; setActionsOpen: Dispatch<SetStateAction<boolean>> }) {
   const { templateDelete } = useTemplateDelete()
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
-  const { setActive, isActive } = useActive()
-
-  const isActiveTemplate = isActive(props.template)
+  const { setActive } = useActive()
 
   return (
     <DropdownMenu

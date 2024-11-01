@@ -1,7 +1,7 @@
 import { Block, Page, Template } from '@/db'
 import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useState } from 'react'
 
-type ActiveBlock = Block & { meta: { index: number; parent: { slot: string; node: Block | Page } } }
+type ActiveBlock = Block & { index: number; parent: { slot: string; node: Block | Page } }
 type ActiveTemplate = Template
 
 type Active = {

@@ -159,8 +159,8 @@ function Page() {
                       }}
                     />
                   )}
-                  {deferredBlocks.map((blockId, index) => {
-                    return <BlockItem key={blockId} id={blockId} parent={{ node: pageGet.data, slot: 'root' }} index={index} page={pageGet.data} />
+                  {deferredBlocks.map((id, index) => {
+                    return <BlockItem key={id} id={id} parent={{ node: pageGet.data, slot: 'root' }} index={index} page={pageGet.data} />
                   })}
                 </div>
                 <ScrollBar orientation="horizontal" />

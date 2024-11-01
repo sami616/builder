@@ -43,7 +43,7 @@ export function useBlockAdd() {
       }
 
       const date = new Date()
-      const blockId = await context.add({
+      const id = await context.add({
         entry: {
           store: 'blocks',
           type: args.source.type,
@@ -59,9 +59,9 @@ export function useBlockAdd() {
         let addIndex = args.target.index
         let { edge } = args.target
         if (edge === 'bottom') addIndex += 1
-        clonedParentNode.slots[slot].splice(addIndex, 0, blockId)
+        clonedParentNode.slots[slot].splice(addIndex, 0, id)
       } else {
-        clonedParentNode.slots[slot].push(blockId)
+        clonedParentNode.slots[slot].push(id)
       }
 
       return context.update({ entry: clonedParentNode })

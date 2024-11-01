@@ -49,7 +49,7 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
   const dropRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<HTMLDivElement>(null)
   const context = useRouteContext({ from: '/pages/$id' })
-  const isActiveBlock = isActive({ ...block, meta: { index: props.index, parent: props.parent } })
+  const isActiveBlock = isActive({ ...block, index: props.index, parent: props.parent })
   const { blockCopy } = useBlockCopy()
   const { blockDelete } = useBlockDelete()
   const [actionsOpen, setActionsOpen] = useState(false)
@@ -95,8 +95,8 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
   const componentBlocks = Object.keys(block.slots).reduce<{
     [key: string]: JSX.Element[] | JSX.Element
   }>((acc, slot) => {
-    acc[slot] = block.slots[slot].map((blockId, index) => {
-      return <BlockItem index={index} parent={{ slot, node: block }} page={props.page} key={blockId} id={blockId} />
+    acc[slot] = block.slots[slot].map((id, index) => {
+      return <BlockItem index={index} parent={{ slot, node: block }} page={props.page} key={id} id={id} />
     })
 
     return acc
@@ -122,7 +122,7 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
         onOpenChange={(bool) => {
           setActionsOpen(bool)
           if (bool) {
-            setActive([{ ...block, meta: { index: props.index, parent: props.parent } }])
+            setActive([{ ...block, index: props.index, parent: props.parent }])
           } else {
             setActive([])
           }
@@ -143,7 +143,7 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
             data-drop-id={`block-${blockGet.data.id}`}
             onClick={(e) => {
               e.stopPropagation()
-              handleActiveClick({ metaKey: e.metaKey, node: { ...block, meta: { index: props.index, parent: props.parent } } })
+              handleActiveClick({ metaKey: e.metaKey, node: { ...block, index: props.index, parent: props.parent } })
             }}
             onMouseOver={(e) => {
               e.stopPropagation()
