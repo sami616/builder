@@ -1,12 +1,11 @@
 import { type Template } from '@/db'
-import { Layout } from 'lucide-react'
 import { useRef, useState } from 'react'
 import { useTemplateUpdateName } from '@/hooks/use-template-update-name'
 import { useTemplateAdd } from '@/hooks/use-template-add'
 import { useTemplateReorder } from '@/hooks/use-template-reorder'
 import { useDrag, isDragData } from '@/hooks/use-drag'
 import { useDrop } from '@/hooks/use-drop'
-import { TreeItem, TreeItemHead, TreeItemIcon, TreeItemLabel } from '@/components/ui/tree'
+import { TreeItem, TreeItemHead, TreeItemLabel } from '@/components/ui/tree'
 import { DropIndicator } from './drop-indicator'
 import { DragPreview } from './drag-preview'
 import clsx from 'clsx'
@@ -57,7 +56,6 @@ export function TemplateItem(props: { template: Template; index: number }) {
       }}
     >
       <TreeItemHead customRef={dragRef}>
-        <TreeItemIcon icon={Layout} />
         <TreeItemLabel
           onRename={async (updatedName) => {
             await templateUpdateName({ template: props.template, name: updatedName })
