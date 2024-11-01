@@ -1,4 +1,3 @@
-import { isBlock, isTemplate } from '@/api'
 import { Block, Page, Template } from '@/db'
 import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useState } from 'react'
 
@@ -13,8 +12,7 @@ type Active = {
 const Context = createContext<{
   active: Active['State']
   setActive: Active['Set']
-  isActiveBlock: (arg: Active['State'][number]) => boolean
-  isActiveTemplate: (arg: Active['State'][number]) => boolean
+  isActive: (arg: Active['State'][number]) => boolean
   handleActiveClick: (args: { metaKey: boolean; node: Active['State'][number] }) => void
 } | null>(null)
 
@@ -29,14 +27,6 @@ export function ActiveProvider(props: { children: ReactNode }) {
 
   function isActive(arg: Active['State'][number]) {
     return active.some((a) => a.store === arg.store && a.id === arg.id)
-  }
-
-  function isActiveBlock(arg: ActiveBlock | ActiveTemplate): arg is ActiveBlock {
-    return isActive(arg) && isBlock(arg) && 'meta' in arg
-  }
-
-  function isActiveTemplate(arg: ActiveBlock | ActiveTemplate): arg is ActiveTemplate {
-    return isActive(arg) && isTemplate(arg)
   }
 
   function handleActiveClick(args: { metaKey: boolean; node: Active['State'][number] }) {
@@ -58,5 +48,5 @@ export function ActiveProvider(props: { children: ReactNode }) {
     }
   }
 
-  return <Context.Provider value={{ isActiveTemplate, isActiveBlock, active, setActive, handleActiveClick }}>{props.children}</Context.Provider>
+  return <Context.Provider value={{ isActive, active, setActive, handleActiveClick }}>{props.children}</Context.Provider>
 }

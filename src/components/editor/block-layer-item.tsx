@@ -21,21 +21,21 @@ import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/
 import { flash } from '@/lib/utils'
 import { useBlockHover } from '@/hooks/use-block-hover'
 
-export function BlockLayerItem(props: { blockId: Block['id']; index: number; parent: { slot: string; node: Block | Page } }) {
-  const { isActiveBlock, handleActiveClick } = useActive()
+export function BlockLayerItem(props: { id: Block['id']; index: number; parent: { slot: string; node: Block | Page } }) {
+  const { isActive, handleActiveClick } = useActive()
   const dragRef = useRef<HTMLDivElement>(null)
   const dropRef = useRef<HTMLLIElement>(null)
-  const { blockGet } = useBlockGet({ id: props.blockId })
+  const { blockGet } = useBlockGet({ id: props.id })
   const { blockUpdateName } = useBlockUpdateName()
   const { blockMove } = useBlockMove()
   const { blockAdd } = useBlockAdd()
   const { templateApply } = useTemplateApply()
   const [actionsOpen, setActionsOpen] = useState(false)
-  const isActive = isActiveBlock({ ...blockGet.data, meta: { index: props.index, parent: props.parent } })
+  const isActiveBlock = isActive({ ...blockGet.data, meta: { index: props.index, parent: props.parent } })
   const isLeaf = Object.keys(blockGet.data.slots).length === 0
   const context = useRouteContext({ from: '/pages/$id' })
   const [open, setOpen] = useState(false)
-  const { setHover, removeHover } = useBlockHover(props.blockId, dropRef)
+  const { setHover, removeHover } = useBlockHover(props.id, dropRef)
 
   const { isDraggingSource, dragPreviewContainer } = useDrag({
     dragRef,
@@ -86,7 +86,7 @@ export function BlockLayerItem(props: { blockId: Block['id']; index: number; par
           '-outline-offset-2',
           'outline-none',
           isDraggingSource && 'opacity-50',
-          isActive && 'outline-rose-500 hover:outline-rose-600',
+          isActiveBlock && 'outline-rose-500 hover:outline-rose-600',
         ]),
         onClick: (e) => {
           e.stopPropagation()

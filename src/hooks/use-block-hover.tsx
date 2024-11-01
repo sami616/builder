@@ -1,11 +1,11 @@
 import { Block } from '@/db'
 import { RefObject, useEffect } from 'react'
 
-export function useBlockHover(blockId: Block['id'], element: RefObject<HTMLElement | null>) {
+export function useBlockHover(id: Block['id'], element: RefObject<HTMLElement | null>) {
   useEffect(() => {
     function handleHover(e: CustomEvent) {
       if (element.current) {
-        if (e.detail.id === blockId) {
+        if (e.detail.id === id) {
           element.current.classList.add('outline-emerald-500')
         } else {
           element.current.classList.remove('outline-emerald-500')
@@ -20,10 +20,10 @@ export function useBlockHover(blockId: Block['id'], element: RefObject<HTMLEleme
     return () => {
       document.removeEventListener('canvas-hover', handleHover as (e: Event) => void)
     }
-  }, [blockId])
+  }, [id])
 
   function setHover() {
-    const event = new CustomEvent('canvas-hover', { bubbles: true, detail: { id: blockId } })
+    const event = new CustomEvent('canvas-hover', { bubbles: true, detail: { id } })
     element.current?.dispatchEvent(event)
   }
   function removeHover() {

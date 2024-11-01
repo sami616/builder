@@ -2,11 +2,13 @@ import { useMutation } from '@tanstack/react-query'
 import { db, type Template } from '@/db'
 import { useRouteContext } from '@tanstack/react-router'
 import { toast } from 'sonner'
+import { useActive } from './use-active'
 
 type Args = { entries: Array<Template> }
 
 export function useTemplateDeleteMany() {
   const context = useRouteContext({ from: '/pages/$id' })
+  const { setActive } = useActive()
   const mutation = useMutation({
     mutationKey: ['canvas', 'template', 'deleteMany'],
     mutationFn: async (args: Args) => {
@@ -39,6 +41,7 @@ export function useTemplateDeleteMany() {
     },
     onSuccess: () => {
       context.queryClient.invalidateQueries({ queryKey: ['templates'] })
+      setActive([])
     },
   })
 

@@ -1,6 +1,5 @@
 import { createFileRoute } from '@tanstack/react-router'
 import { type Page } from '@/db'
-import { useShortcuts } from '@/hooks/useShortcuts'
 import { Suspense, useDeferredValue, useState } from 'react'
 import { ComponentPanel } from '@/components/editor/component-panel'
 import { PropsPanel } from '@/components/editor/props-panel'
@@ -23,6 +22,7 @@ import { Separator } from '@/components/ui/separator'
 import { useActive } from '@/hooks/use-active'
 import clsx from 'clsx'
 import { useIsMutating } from '@tanstack/react-query'
+import { HotKeys } from '@/components/editor/hotkeys'
 
 export const Route = createFileRoute('/pages/$id')({
   component: Page,
@@ -48,142 +48,143 @@ function Page() {
   const [canvasSize, setCanvasSize] = useState<string | undefined>('none')
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
   const { active } = useActive()
-  useShortcuts()
 
   const singleActiveBlock = active.length === 1 && active[0]?.store === 'blocks' ? active[0] : false
 
   return (
-    <main className="h-[calc(100vh-62px)]">
-      <Suspense
-        fallback={
-          <div className="flex h-full w-full items-center justify-center">
-            <Loader size={20} className="animate-spin stroke-gray-400" />
-          </div>
-        }
-      >
-        <ResizablePanelGroup direction="horizontal">
-          <ResizablePanel minSize={20} defaultSize={20}>
-            <ResizablePanelGroup direction="vertical">
-              <ResizablePanel>
-                <ScrollArea className="h-full w-full">
-                  <Tabs defaultValue="components" value={activeTab} onValueChange={setActiveTab} className="w-full h-full flex flex-col">
-                    <TabsList className="sticky top-0 z-20 w-full rounded-none">
-                      <TabsTrigger className="grow" value="components">
-                        Components
-                      </TabsTrigger>
-                      <TabsTrigger className="grow" value="templates">
-                        Templates
-                      </TabsTrigger>
-                    </TabsList>
-                    <TabsContent className="grow" hidden={activeTab !== 'components'} forceMount value="components">
-                      <ComponentPanel page={pageGet.data} />
-                    </TabsContent>
-                    <TabsContent className="grow" hidden={activeTab !== 'templates'} forceMount value="templates">
-                      <TemplatePanel templates={templateGetMany.data} />
-                    </TabsContent>
-                  </Tabs>
-                </ScrollArea>
-              </ResizablePanel>
-              <ResizableHandle />
-              <ResizablePanel>
-                <ScrollArea className="h-full w-full">
-                  <BlockLayerPanel page={pageGet.data} />
-                  <ScrollBar orientation="horizontal" />
-                </ScrollArea>
-              </ResizablePanel>
-            </ResizablePanelGroup>
-          </ResizablePanel>
-          <ResizableHandle />
-          <ResizablePanel>
-            <div className="py-0.5">
-              <TooltipProvider>
-                <ToggleGroup
-                  size="sm"
-                  value={canvasSize}
-                  onValueChange={(val) => {
-                    if (val) setCanvasSize(val)
-                  }}
-                  type="single"
-                >
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <ToggleGroupItem value="none">
-                        <Monitor size={16} className="stroke-gray-400" />
-                      </ToggleGroupItem>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Desktop</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <ToggleGroupItem value="768px">
-                        <Tablet size={16} className="stroke-gray-400" />
-                      </ToggleGroupItem>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Tablet</p>
-                    </TooltipContent>
-                  </Tooltip>
-                  <Tooltip>
-                    <TooltipTrigger asChild>
-                      <ToggleGroupItem value="360px">
-                        <Smartphone size={16} className="stroke-gray-400" />
-                      </ToggleGroupItem>
-                    </TooltipTrigger>
-                    <TooltipContent>
-                      <p>Mobile</p>
-                    </TooltipContent>
-                  </Tooltip>
-                </ToggleGroup>
-              </TooltipProvider>
+    <HotKeys>
+      <main className="h-[calc(100vh-62px)]">
+        <Suspense
+          fallback={
+            <div className="flex h-full w-full items-center justify-center">
+              <Loader size={20} className="animate-spin stroke-gray-400" />
             </div>
-            <Separator />
-            <ScrollArea className="h-full w-full">
-              <div
-                className={clsx(['mx-auto', 'h-full', 'transition-opacity', isCanvasMutating ? 'opacity-50' : 'opacity-100'])}
-                style={{ maxWidth: canvasSize }}
-              >
-                {blocks.length === 0 && (
-                  <DropZone
-                    label="Drop to start building"
-                    icon={Layers2}
-                    data={{ parent: { slot: 'root', node: pageGet.data } }}
-                    onDrop={({ source, target }) => {
-                      if (isDragData['template'](source.data)) {
-                        templateApply({ source: source.data, target: target.data })
-                      }
-                      if (isDragData['component'](source.data)) {
-                        blockAdd({ source: source.data, target: target.data })
-                      }
-                    }}
-                  />
-                )}
-                {deferredBlocks.map((blockId, index) => {
-                  return <BlockItem key={blockId} blockId={blockId} parent={{ node: pageGet.data, slot: 'root' }} index={index} page={pageGet.data} />
-                })}
-              </div>
-              <ScrollBar orientation="horizontal" />
-            </ScrollArea>
-          </ResizablePanel>
-          <>
-            <ResizableHandle />
+          }
+        >
+          <ResizablePanelGroup direction="horizontal">
             <ResizablePanel minSize={20} defaultSize={20}>
+              <ResizablePanelGroup direction="vertical">
+                <ResizablePanel>
+                  <ScrollArea className="h-full w-full">
+                    <Tabs defaultValue="components" value={activeTab} onValueChange={setActiveTab} className="w-full h-full flex flex-col">
+                      <TabsList className="sticky top-0 z-20 w-full rounded-none">
+                        <TabsTrigger className="grow" value="components">
+                          Components
+                        </TabsTrigger>
+                        <TabsTrigger className="grow" value="templates">
+                          Templates
+                        </TabsTrigger>
+                      </TabsList>
+                      <TabsContent className="grow" hidden={activeTab !== 'components'} forceMount value="components">
+                        <ComponentPanel page={pageGet.data} />
+                      </TabsContent>
+                      <TabsContent className="grow" hidden={activeTab !== 'templates'} forceMount value="templates">
+                        <TemplatePanel templates={templateGetMany.data} />
+                      </TabsContent>
+                    </Tabs>
+                  </ScrollArea>
+                </ResizablePanel>
+                <ResizableHandle />
+                <ResizablePanel>
+                  <ScrollArea className="h-full w-full">
+                    <BlockLayerPanel page={pageGet.data} />
+                    <ScrollBar orientation="horizontal" />
+                  </ScrollArea>
+                </ResizablePanel>
+              </ResizablePanelGroup>
+            </ResizablePanel>
+            <ResizableHandle />
+            <ResizablePanel>
+              <div className="py-0.5">
+                <TooltipProvider>
+                  <ToggleGroup
+                    size="sm"
+                    value={canvasSize}
+                    onValueChange={(val) => {
+                      if (val) setCanvasSize(val)
+                    }}
+                    type="single"
+                  >
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <ToggleGroupItem value="none">
+                          <Monitor size={16} className="stroke-gray-400" />
+                        </ToggleGroupItem>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Desktop</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <ToggleGroupItem value="768px">
+                          <Tablet size={16} className="stroke-gray-400" />
+                        </ToggleGroupItem>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Tablet</p>
+                      </TooltipContent>
+                    </Tooltip>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <ToggleGroupItem value="360px">
+                          <Smartphone size={16} className="stroke-gray-400" />
+                        </ToggleGroupItem>
+                      </TooltipTrigger>
+                      <TooltipContent>
+                        <p>Mobile</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </ToggleGroup>
+                </TooltipProvider>
+              </div>
+              <Separator />
               <ScrollArea className="h-full w-full">
-                {singleActiveBlock ? (
-                  <PropsPanel activeId={singleActiveBlock.id} />
-                ) : (
-                  <div className="flex flex-col gap-2 h-full text-sm justify-center items-center">
-                    <SquareDashedMousePointer size={40} className="stroke-gray-200" />
-                    <p>No layer selected</p>
-                  </div>
-                )}
+                <div
+                  className={clsx(['mx-auto', 'h-full', 'transition-opacity', isCanvasMutating ? 'opacity-50' : 'opacity-100'])}
+                  style={{ maxWidth: canvasSize }}
+                >
+                  {blocks.length === 0 && (
+                    <DropZone
+                      label="Drop to start building"
+                      icon={Layers2}
+                      data={{ parent: { slot: 'root', node: pageGet.data } }}
+                      onDrop={({ source, target }) => {
+                        if (isDragData['template'](source.data)) {
+                          templateApply({ source: source.data, target: target.data })
+                        }
+                        if (isDragData['component'](source.data)) {
+                          blockAdd({ source: source.data, target: target.data })
+                        }
+                      }}
+                    />
+                  )}
+                  {deferredBlocks.map((blockId, index) => {
+                    return <BlockItem key={blockId} id={blockId} parent={{ node: pageGet.data, slot: 'root' }} index={index} page={pageGet.data} />
+                  })}
+                </div>
                 <ScrollBar orientation="horizontal" />
               </ScrollArea>
             </ResizablePanel>
-          </>
-        </ResizablePanelGroup>
-      </Suspense>
-    </main>
+            <>
+              <ResizableHandle />
+              <ResizablePanel minSize={20} defaultSize={20}>
+                <ScrollArea className="h-full w-full">
+                  {singleActiveBlock ? (
+                    <PropsPanel activeId={singleActiveBlock.id} />
+                  ) : (
+                    <div className="flex flex-col gap-2 h-full text-sm justify-center items-center">
+                      <SquareDashedMousePointer size={40} className="stroke-gray-200" />
+                      <p>No layer selected</p>
+                    </div>
+                  )}
+                  <ScrollBar orientation="horizontal" />
+                </ScrollArea>
+              </ResizablePanel>
+            </>
+          </ResizablePanelGroup>
+        </Suspense>
+      </main>
+    </HotKeys>
   )
 }

@@ -1,6 +1,4 @@
 import { useDeferredValue, useRef, useState } from 'react'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useBlockHover } from '@/hooks/use-block-hover'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -20,8 +18,7 @@ import clsx from 'clsx'
 import { useActive } from '@/hooks/use-active'
 import { toast } from 'sonner'
 import { validateSlotBlock, validateSlotMax } from './block-layer-item-slot'
-import { Check, ChevronsUpDown, Copy, Layout, Plus, Trash } from 'lucide-react'
-import { PopoverContent, PopoverTrigger, Popover } from '../ui/popover'
+import { Copy, Layout, Plus, Trash } from 'lucide-react'
 import {
   ContextMenu,
   ContextMenuLabel,
@@ -32,11 +29,8 @@ import {
 } from '@/components/ui/context-menu'
 import { useBlockCopy } from '@/hooks/use-block-copy'
 import { useBlockDelete } from '@/hooks/use-block-delete'
-import { useTemplateAdd } from '@/hooks/use-template-add'
-import { Input } from '../ui/input'
-import { Button } from '../ui/button'
-import { ToggleGroup, ToggleGroupItem } from '../ui/toggle-group'
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../ui/command'
+import { BlockDialogAdd } from './block-dialog-add'
+import { BlockDialogAddTemplate } from './block-dialog-add-template'
 
 const blockAddSchema = z.object({
   name: z.string(),
@@ -44,40 +38,29 @@ const blockAddSchema = z.object({
   component: z.string(),
 })
 
-const templateAddSchema = z.object({
-  name: z.string(),
-})
-
-export function BlockItem(props: { index: number; page: Page; parent: { slot: string; node: Block | Page }; blockId: Block['id'] }) {
-  const { blockGet } = useBlockGet({ id: props.blockId })
+export function BlockItem(props: { index: number; page: Page; parent: { slot: string; node: Block | Page }; id: Block['id'] }) {
+  const { blockGet } = useBlockGet({ id: props.id })
   const block = blockGet.data
   const componentProps = block.props
   const { blockAdd } = useBlockAdd()
   const { blockMove } = useBlockMove()
   const { templateApply } = useTemplateApply()
-  const { setActive, isActiveBlock, handleActiveClick } = useActive()
+  const { setActive, isActive, handleActiveClick } = useActive()
   const dropRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<HTMLDivElement>(null)
   const context = useRouteContext({ from: '/pages/$id' })
-  const isActive = isActiveBlock({ ...block, meta: { index: props.index, parent: props.parent } })
+  const isActiveBlock = isActive({ ...block, meta: { index: props.index, parent: props.parent } })
   const { blockCopy } = useBlockCopy()
   const { blockDelete } = useBlockDelete()
-  const { templateAdd } = useTemplateAdd()
   const [actionsOpen, setActionsOpen] = useState(false)
   const [blockAddOpen, setBlockAddOpen] = useState(false)
   const [templateAddOpen, setTemplateAddOpen] = useState(false)
-  const [blockPickerOpen, setBlockPickerOpen] = useState(false)
 
   const { setHover, removeHover } = useBlockHover(block.id, dropRef)
 
   const blockAddForm = useForm<z.infer<typeof blockAddSchema>>({
     resolver: zodResolver(blockAddSchema),
     defaultValues: { name: '', edge: 'bottom', component: '' },
-  })
-
-  const templateAddForm = useForm<z.infer<typeof templateAddSchema>>({
-    resolver: zodResolver(templateAddSchema),
-    defaultValues: { name: '' },
   })
 
   const { closestEdge } = useDrop({
@@ -113,7 +96,7 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
     [key: string]: JSX.Element[] | JSX.Element
   }>((acc, slot) => {
     acc[slot] = block.slots[slot].map((blockId, index) => {
-      return <BlockItem index={index} parent={{ slot, node: block }} page={props.page} key={blockId} blockId={blockId} />
+      return <BlockItem index={index} parent={{ slot, node: block }} page={props.page} key={blockId} id={blockId} />
     })
 
     return acc
@@ -155,7 +138,7 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
               '-outline-offset-2',
               'outline-none',
               isDraggingSource && 'opacity-50',
-              isActive && 'outline-rose-500 hover:outline-rose-600',
+              isActiveBlock && 'outline-rose-500 hover:outline-rose-600',
             ])}
             data-drop-id={`block-${blockGet.data.id}`}
             onClick={(e) => {
@@ -196,7 +179,7 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
                   'hover:scale-100',
                   'hidden',
                   'group-hover:flex',
-                  isActive ? 'bg-rose-500 hover:bg-rose-600' : 'bg-emerald-500 hover:bg-emerald-600',
+                  isActiveBlock ? 'bg-rose-500 hover:bg-rose-600' : 'bg-emerald-500 hover:bg-emerald-600',
                 ])}
               >
                 <Plus size={14} className="stroke-white" />
@@ -225,7 +208,7 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
                   'hover:scale-100',
                   'hidden',
                   'group-hover:flex',
-                  isActive ? 'bg-rose-500 hover:bg-rose-600' : 'bg-emerald-500 hover:bg-emerald-600',
+                  isActiveBlock ? 'bg-rose-500 hover:bg-rose-600' : 'bg-emerald-500 hover:bg-emerald-600',
                 ])}
               >
                 <Plus size={14} className="stroke-white" />
@@ -273,9 +256,8 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
             </ContextMenuItem>
           )}
           <ContextMenuItem
-            onClick={async () => {
-              await blockDelete({ index: props.index, blockId: block.id, parent: props.parent })
-              if (isActive) setActive([])
+            onClick={() => {
+              blockDelete({ index: props.index, id: block.id, parent: props.parent })
             }}
             className="text-red-500"
           >
@@ -284,179 +266,8 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
         </ContextMenuContent>
       </ContextMenu>
 
-      <Dialog
-        open={blockAddOpen}
-        onOpenChange={(bool) => {
-          blockAddForm.reset()
-          setBlockAddOpen(bool)
-        }}
-      >
-        <DialogContent
-          onClick={(e) => e.stopPropagation()}
-          onMouseOut={(e) => e.stopPropagation()}
-          onMouseOver={(e) => e.stopPropagation()}
-          className="w-96"
-        >
-          <DialogHeader>
-            <DialogTitle>Add component</DialogTitle>
-            <DialogDescription>Add a new component to your page.</DialogDescription>
-          </DialogHeader>
-          <Form {...blockAddForm}>
-            <form
-              onSubmit={blockAddForm.handleSubmit(async (values) => {
-                blockAdd({
-                  name: values.name.trim() === '' ? undefined : values.name.trim(),
-                  source: { id: 'component', type: values.component },
-                  target: { edge: values.edge, parent: props.parent, index: props.index },
-                })
-                setBlockAddOpen(false)
-              })}
-              className="grid gap-4"
-            >
-              <FormField
-                control={blockAddForm.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input type="text" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={blockAddForm.control}
-                name="edge"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Placement</FormLabel>
-                    <FormControl>
-                      <ToggleGroup
-                        size="sm"
-                        value={field.value ?? undefined}
-                        onValueChange={(val) => {
-                          if (val) field.onChange(val)
-                        }}
-                        type="single"
-                      >
-                        <ToggleGroupItem className="grow" value="bottom">
-                          Below
-                        </ToggleGroupItem>
-                        <ToggleGroupItem className="grow" value="top">
-                          Above
-                        </ToggleGroupItem>
-                      </ToggleGroup>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={blockAddForm.control}
-                name="component"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Component</FormLabel>
-                    <FormControl>
-                      <Popover open={blockPickerOpen} onOpenChange={setBlockPickerOpen}>
-                        <PopoverTrigger asChild>
-                          <Button variant="outline" role="combobox" aria-expanded={blockPickerOpen} className="w-full justify-between">
-                            {field.value ? Object.keys(context.config).find((key) => key === field.value) : 'Select component...'}
-                            <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
-                          </Button>
-                        </PopoverTrigger>
-                        <PopoverContent className="w-full p-0">
-                          <Command>
-                            <CommandInput placeholder="Search components..." />
-                            <CommandList>
-                              <CommandEmpty>No component found.</CommandEmpty>
-                              <CommandGroup>
-                                {Object.entries(context.config).map(([key, configItem]) => {
-                                  try {
-                                    validateSlotBlock({ source: { data: { id: 'component', type: key } }, target: { parent: props.parent } })
-                                    return (
-                                      <CommandItem
-                                        key={key}
-                                        value={key}
-                                        onSelect={(args) => {
-                                          setBlockPickerOpen(false)
-                                          field.onChange(args)
-                                        }}
-                                      >
-                                        <Check className={clsx('mr-2 size-4', field.value === key ? 'opacity-100' : 'opacity-0')} />
-                                        {configItem.name}
-                                      </CommandItem>
-                                    )
-                                  } catch (e) {
-                                    return null
-                                  }
-                                })}
-                              </CommandGroup>
-                            </CommandList>
-                          </Command>
-                        </PopoverContent>
-                      </Popover>
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button disabled={blockAddForm.getValues('component') === ''} type="submit">
-                Add component
-              </Button>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
-      <Dialog
-        open={templateAddOpen}
-        onOpenChange={(bool) => {
-          templateAddForm.reset()
-          setTemplateAddOpen(bool)
-        }}
-      >
-        <DialogContent
-          onClick={(e) => e.stopPropagation()}
-          onMouseOut={(e) => e.stopPropagation()}
-          onMouseOver={(e) => e.stopPropagation()}
-          className="w-96"
-        >
-          <DialogHeader>
-            <DialogTitle>Add template</DialogTitle>
-            <DialogDescription>Add a new template to your library.</DialogDescription>
-          </DialogHeader>
-
-          <Form {...templateAddForm}>
-            <form
-              onSubmit={templateAddForm.handleSubmit(async (values) => {
-                templateAdd({
-                  name: values.name.trim() === '' ? undefined : values.name.trim(),
-                  source: { id: 'block', index: props.index, node: block, parent: props.parent },
-                })
-                setTemplateAddOpen(false)
-              })}
-              className="grid gap-4"
-            >
-              <FormField
-                control={templateAddForm.control}
-                name="name"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Name</FormLabel>
-                    <FormControl>
-                      <Input type="text" {...field} />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <Button type="submit">Add template</Button>
-            </form>
-          </Form>
-        </DialogContent>
-      </Dialog>
+      <BlockDialogAdd open={blockAddOpen} setOpen={setBlockAddOpen} parent={props.parent} index={props.index} />
+      <BlockDialogAddTemplate open={templateAddOpen} setOpen={setTemplateAddOpen} block={block} parent={props.parent} index={props.index} />
     </>
   )
 }

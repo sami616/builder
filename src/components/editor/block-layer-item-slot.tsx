@@ -75,7 +75,7 @@ export function BlockLayerItemSlot(props: { block: Block; slot: string; parent: 
       </TreeItemHead>
       <TreeItemContent>
         {props.block.slots[props.slot].map((blockId, index) => (
-          <BlockLayerItem index={index} parent={{ slot: props.slot, node: props.block }} blockId={blockId} key={blockId} />
+          <BlockLayerItem index={index} parent={{ slot: props.slot, node: props.block }} id={blockId} key={blockId} />
         ))}
       </TreeItemContent>
     </TreeItem>

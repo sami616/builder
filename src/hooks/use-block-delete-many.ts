@@ -4,11 +4,13 @@ import { useRouteContext } from '@tanstack/react-router'
 import { type Block } from '@/db'
 import { BlockItem } from '@/components/editor/block-item'
 import { toast } from 'sonner'
+import { useActive } from './use-active'
 
-type Args = { entries: Array<{ blockId: Block['id']; index: number; parent: ComponentProps<typeof BlockItem>['parent'] }> }
+type Args = { entries: Array<{ id: Block['id']; index: number; parent: ComponentProps<typeof BlockItem>['parent'] }> }
 
 export function useBlockDeleteMany() {
   const context = useRouteContext({ from: '/pages/$id' })
+  const { setActive } = useActive()
   const mutation = useMutation({
     mutationKey: ['canvas', 'block', 'delete'],
     mutationFn: async (args: Args) => {
@@ -21,7 +23,7 @@ export function useBlockDeleteMany() {
       const sortedEntries = args.entries.sort((a, b) => b.index - a.index)
 
       for (const entry of sortedEntries) {
-        const tree = await context.getTree({ root: { store: 'blocks', id: entry.blockId }, entries: [] })
+        const tree = await context.getTree({ root: { store: 'blocks', id: entry.id }, entries: [] })
         removeList.push(...tree)
 
         const clonedParentNode = updateList.get(entry.parent.node.id) ?? structuredClone(entry.parent.node)
@@ -37,6 +39,7 @@ export function useBlockDeleteMany() {
       updateList.forEach((item) => {
         context.queryClient.invalidateQueries({ queryKey: [item.store, item.id] })
       })
+      setActive([])
     },
   })
 
