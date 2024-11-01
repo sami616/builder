@@ -7,8 +7,10 @@ export function useBlockHover(id: Block['id'], element: RefObject<HTMLElement | 
       if (element.current) {
         if (e.detail.id === id) {
           element.current.classList.add('outline-emerald-500')
+          element.current.dataset.hovered = 'true'
         } else {
           element.current.classList.remove('outline-emerald-500')
+          element.current.dataset.hovered = 'false'
         }
       }
     }
