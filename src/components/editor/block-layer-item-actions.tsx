@@ -6,6 +6,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuItem,
+  DropdownMenuShortcut,
 } from '../ui/dropdown-menu'
 import { useBlockDelete } from '@/hooks/use-block-delete'
 import { useBlockCopy } from '@/hooks/use-block-copy'
@@ -79,6 +80,7 @@ export function BlockLayerItemActions(props: {
           >
             <Plus size={14} className="stroke-gray-400 mr-2" />
             Add component
+            <DropdownMenuShortcut>A</DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => {
@@ -86,6 +88,7 @@ export function BlockLayerItemActions(props: {
             }}
           >
             <Copy size={14} className="stroke-gray-400 mr-2" /> Duplicate
+            <DropdownMenuShortcut>D</DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem
             onClick={() => {
@@ -93,6 +96,7 @@ export function BlockLayerItemActions(props: {
             }}
           >
             <Layout size={14} className="stroke-gray-400 mr-2" /> Create template
+            <DropdownMenuShortcut>T</DropdownMenuShortcut>
           </DropdownMenuItem>
           <DropdownMenuItem
             className="text-red-500"
@@ -101,6 +105,7 @@ export function BlockLayerItemActions(props: {
             }}
           >
             <Trash size={14} className="mr-2" /> Delete
+            <DropdownMenuShortcut>⌫</DropdownMenuShortcut>
           </DropdownMenuItem>
         </DropdownMenuContent>
       </DropdownMenu>

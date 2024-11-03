@@ -6,6 +6,7 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuItem,
+  DropdownMenuShortcut,
 } from '../ui/dropdown-menu'
 import { useIsMutating } from '@tanstack/react-query'
 import { Template } from '@/db'
@@ -43,6 +44,7 @@ export function TemplateItemActions(props: { template: Template; actionsOpen: bo
           }}
         >
           <Trash size={14} className="mr-2" /> Delete
+          <DropdownMenuShortcut>⌫</DropdownMenuShortcut>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

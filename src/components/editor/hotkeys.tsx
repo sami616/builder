@@ -33,7 +33,7 @@ export function HotKeys(props: { children: ReactNode }) {
   const activeTemplateSingle = sortedActive.templates.length === 1 ? sortedActive.templates.at(0) : undefined
   const activeTemplatesMany = sortedActive.templates.length > 1 ? sortedActive.templates : undefined
 
-  useHotkeys('ctrl+a', async () => {
+  useHotkeys('a', async () => {
     if (sortedActive.blocks) {
       if (activeBlocksSingle) {
         setBlockAddOpen(true)
@@ -41,14 +41,14 @@ export function HotKeys(props: { children: ReactNode }) {
     }
   })
 
-  useHotkeys('ctrl+t', async () => {
+  useHotkeys('t', async () => {
     if (sortedActive.blocks) {
       if (activeBlocksSingle) {
         setTemplateAddOpen(true)
       }
     }
   })
-  useHotkeys('ctrl+d', async () => {
+  useHotkeys('d', async () => {
     if (sortedActive.blocks) {
       if (activeBlocksSingle) {
         await blockCopy({ id: activeBlocksSingle.id, index: activeBlocksSingle.index, parent: activeBlocksSingle.parent })
