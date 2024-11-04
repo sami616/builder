@@ -32,7 +32,7 @@ export function useTemplateDelete() {
     },
     onSuccess: () => {
       context.queryClient.invalidateQueries({ queryKey: ['templates'] })
-      setActive([])
+      setActive({ store: 'none', items: [] })
     },
   })
 

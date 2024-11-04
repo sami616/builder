@@ -1,3 +1,4 @@
+import { isBlock } from '@/api'
 import { Block, Page, Template } from '@/db'
 import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useState } from 'react'
 
@@ -5,15 +6,17 @@ type ActiveBlock = Block & { index: number; parent: { slot: string; node: Block 
 type ActiveTemplate = Template
 
 type Active = {
-  State: Array<ActiveBlock | ActiveTemplate>
+  State: { store: 'blocks'; items: Array<ActiveBlock> } | { store: 'templates'; items: Array<ActiveTemplate> } | { store: 'none'; items: [] }
+  IsActive: { store: 'blocks'; item: ActiveBlock } | { store: 'templates'; item: ActiveTemplate }
+  HandleActiveClick: { metaKey: boolean } & ({ store: 'blocks'; item: ActiveBlock } | { store: 'templates'; item: Template })
   Set: Dispatch<SetStateAction<Active['State']>>
 }
 
 const Context = createContext<{
   active: Active['State']
   setActive: Active['Set']
-  isActive: (arg: Active['State'][number]) => boolean
-  handleActiveClick: (args: { metaKey: boolean; node: Active['State'][number] }) => void
+  isActive: (arg: Active['IsActive']) => boolean
+  handleActiveClick: (args: Active['HandleActiveClick']) => void
 } | null>(null)
 
 export function useActive() {
@@ -23,28 +26,82 @@ export function useActive() {
 }
 
 export function ActiveProvider(props: { children: ReactNode }) {
-  const [active, setActive] = useState<Active['State']>([])
+  const [active, setActive] = useState<Active['State']>({ store: 'none', items: [] })
 
-  function isActive(arg: Active['State'][number]) {
-    return active.some((a) => a.store === arg.store && a.id === arg.id)
+  function isActive(arg: Active['IsActive']): boolean {
+    if (!active) return false
+    return active.items.some((a) => a.store === arg.store && a.id === arg.item.id)
   }
 
-  function handleActiveClick(args: { metaKey: boolean; node: Active['State'][number] }) {
-    const isActiveNode = isActive(args.node)
+  function handleActiveClick(args: Active['HandleActiveClick']) {
+    const isActiveNode = isActive(args)
+
     if (args.metaKey) {
+      // setActive((active) => {
+      //   if (active.store === 'none') {
+      //     if (isBlock(args.item)) {
+      //       return { store: 'blocks', items: [args.item] }
+      //     }
+      //     return { store: 'templates', items: [args.item] }
+      //   }
+      //
+      //   if (active.store === args.store) {
+      //     if (isActiveNode) {
+      //       return { store: args.store, items: active.items.filter((a) => a.id !== args.item.id || a.store !== args.item.store) }
+      //     } else {
+      //       return { store: args.store, items: [...active.items, args.item] }
+      //     }
+      //   } else {
+      //     return active
+      //   }
+      // })
+
       setActive((active) => {
-        if (isActiveNode) return active.filter((a) => a.id !== args.node.id || a.store !== args.node.store)
-        return [...active, args.node]
+        switch (active.store) {
+          case 'blocks':
+            if (args.store === 'blocks') {
+              if (isActiveNode) {
+                return { store: args.store, items: active.items.filter((a) => a.id !== args.item.id || a.store !== args.item.store) }
+              } else {
+                return { store: args.store, items: [...active.items, args.item] }
+              }
+            }
+            return active
+          case 'templates':
+            if (args.store === 'templates') {
+              if (isActiveNode) {
+                return { store: args.store, items: active.items.filter((a) => a.id !== args.item.id || a.store !== args.item.store) }
+              } else {
+                return { store: args.store, items: [...active.items, args.item] }
+              }
+            }
+            return active
+          case 'none':
+            if (isBlock(args.item)) {
+              return { store: 'blocks', items: [args.item] }
+            }
+            return { store: 'templates', items: [args.item] }
+        }
       })
     } else {
-      if (isActiveNode) {
-        setActive((active) => {
-          if (active.length > 1) return [args.node]
-          return []
-        })
-      } else {
-        setActive([args.node])
-      }
+      setActive((active) => {
+        if (isActiveNode) {
+          if (active.items.length > 1) {
+            if (isBlock(args.item)) {
+              return { store: 'blocks', items: [args.item] }
+            } else {
+              return { store: 'templates', items: [args.item] }
+            }
+          }
+          return { store: 'none', items: [] }
+        } else {
+          if (isBlock(args.item)) {
+            return { store: 'blocks', items: [args.item] }
+          } else {
+            return { store: 'templates', items: [args.item] }
+          }
+        }
+      })
     }
   }
 

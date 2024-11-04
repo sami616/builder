@@ -28,7 +28,7 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
   const dropRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<HTMLDivElement>(null)
   const context = useRouteContext({ from: '/pages/$id' })
-  const isActiveBlock = isActive({ ...block, index: props.index, parent: props.parent })
+  const isActiveBlock = isActive({ store: 'blocks', item: { ...block, index: props.index, parent: props.parent } })
   const [actionsOpen, setActionsOpen] = useState(false)
   const { setHover, removeHover } = useBlockHover(block.id, dropRef)
 
@@ -81,9 +81,9 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
         onOpenChange={(bool) => {
           setActionsOpen(bool)
           if (bool) {
-            setActive([{ ...block, index: props.index, parent: props.parent }])
+            setActive({ store: 'blocks', items: [{ ...block, index: props.index, parent: props.parent }] })
           } else {
-            setActive([])
+            setActive({ store: 'none', items: [] })
           }
         }}
       >
@@ -103,7 +103,7 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
             data-drop-id={`block-${blockGet.data.id}`}
             onClick={(e) => {
               e.stopPropagation()
-              handleActiveClick({ metaKey: e.metaKey, node: { ...block, index: props.index, parent: props.parent } })
+              handleActiveClick({ metaKey: e.metaKey, store: 'blocks', item: { ...block, index: props.index, parent: props.parent } })
             }}
             onMouseOver={(e) => {
               e.stopPropagation()

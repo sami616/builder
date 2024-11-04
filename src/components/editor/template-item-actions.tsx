@@ -25,9 +25,9 @@ export function TemplateItemActions(props: { template: Template; actionsOpen: bo
       onOpenChange={(bool) => {
         props.setActionsOpen(bool)
         if (bool) {
-          setActive([props.template])
+          setActive({ store: 'templates', items: [props.template] })
         } else {
-          setActive([])
+          setActive({ store: 'none', items: [] })
         }
       }}
     >

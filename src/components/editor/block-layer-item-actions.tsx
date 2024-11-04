@@ -53,9 +53,9 @@ export function BlockLayerItemActions(props: {
         onOpenChange={(bool) => {
           props.setActionsOpen(bool)
           if (bool) {
-            setActive([{ ...props.block, index: props.index, parent: props.parent }])
+            setActive({ store: 'blocks', items: [{ ...props.block, index: props.index, parent: props.parent }] })
           } else {
-            setActive([])
+            setActive({ store: 'none', items: [] })
           }
         }}
       >

@@ -23,7 +23,7 @@ export function useBlockDelete() {
     },
     onSuccess: async ({ store, id }) => {
       context.queryClient.invalidateQueries({ queryKey: [store, id] })
-      setActive([])
+      setActive({ store: 'none', items: [] })
     },
   })
 

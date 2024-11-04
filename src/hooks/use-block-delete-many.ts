@@ -39,7 +39,7 @@ export function useBlockDeleteMany() {
       updateList.forEach((item) => {
         context.queryClient.invalidateQueries({ queryKey: [item.store, item.id] })
       })
-      setActive([])
+      setActive({ store: 'none', items: [] })
     },
   })
 
