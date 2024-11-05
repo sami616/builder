@@ -1,11 +1,11 @@
 import { config } from '@/main'
 import { SquareDashedMousePointer, X } from 'lucide-react'
 import { useActive } from '@/hooks/use-active'
+import { PropInputs } from './prop-inputs'
 import { Button } from '../ui/button'
 import { Separator } from '../ui/separator'
-import { PropsInputs } from './props-inputs'
 
-export function PropsPanel() {
+export function PropPanel() {
   const { active, setActive } = useActive()
   const activeBlock = active.store === 'blocks' && active.items.length === 1 ? active.items[0] : undefined
 
@@ -23,19 +23,21 @@ export function PropsPanel() {
 
   return (
     <div data-component="PropsPanel">
-      <div className="sticky top-0 bg-white flex gap-2 justify-between items-center">
-        <h4 className="font-medium text-sm p-2">{activeBlock.name} props</h4>
-        <Button className="shrink-0" variant="ghost" size="icon" onClick={() => setActive({ store: 'none', items: [] })}>
-          <X size={16} />
-        </Button>
+      <div className="sticky top-0 bg-white">
+        <div className="flex gap-2 justify-between items-center">
+          <h4 className="font-medium text-sm p-2">{activeBlock.name} props</h4>
+          <Button className="shrink-0" variant="ghost" size="icon" onClick={() => setActive({ store: 'none', items: [] })}>
+            <X size={16} />
+          </Button>
+        </div>
+        <Separator />
       </div>
-      <Separator />
 
       <div className="p-2">
         {Object.keys(configItemProps).map((key) => {
           return (
             <div key={key}>
-              <PropsInputs activeBlockId={activeBlock.id} configItemPropsKey={key} configItemProps={configItemProps} />
+              <PropInputs activeBlockId={activeBlock.id} configItemPropsKey={key} configItemProps={configItemProps} />
             </div>
           )
         })}

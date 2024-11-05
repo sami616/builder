@@ -37,25 +37,6 @@ export function ActiveProvider(props: { children: ReactNode }) {
     const isActiveNode = isActive(args)
 
     if (args.metaKey) {
-      // setActive((active) => {
-      //   if (active.store === 'none') {
-      //     if (isBlock(args.item)) {
-      //       return { store: 'blocks', items: [args.item] }
-      //     }
-      //     return { store: 'templates', items: [args.item] }
-      //   }
-      //
-      //   if (active.store === args.store) {
-      //     if (isActiveNode) {
-      //       return { store: args.store, items: active.items.filter((a) => a.id !== args.item.id || a.store !== args.item.store) }
-      //     } else {
-      //       return { store: args.store, items: [...active.items, args.item] }
-      //     }
-      //   } else {
-      //     return active
-      //   }
-      // })
-
       setActive((active) => {
         switch (active.store) {
           case 'blocks':

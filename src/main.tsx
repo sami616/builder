@@ -22,28 +22,28 @@ export type PropTypes = {
 
 type Common = { name: string; description?: string }
 
-export type String = Common & {
+export type StringProp = Common & {
   type: 'string'
   config?: { autoComplete?: HTMLInputAutoCompleteAttribute; minLength?: number; maxLength: number }
   options?: Array<{ name: string; value: string }>
   default?: string
 }
 
-type Number = Common & {
+export type NumberProp = Common & {
   type: 'number'
   config?: { autoComplete?: HTMLInputAutoCompleteAttribute; min?: number; max: number; step?: number }
   default?: number
 }
 
-type Boolean = Common & { type: 'boolean'; default?: boolean }
+export type BooleanProp = Common & { type: 'boolean'; default?: boolean }
 
-type Object = Common & {
+export type ObjectProp = Common & {
   type: 'object'
-  options?: Record<string, String | Number | Boolean>
+  options?: Record<string, PropItem>
 }
 
 // Define a union type for PropItems, where type and default must match
-export type PropItem = String | Number | Boolean | Object
+export type PropItem = StringProp | NumberProp | BooleanProp | ObjectProp
 
 // Props can have any key, but each value must be a PropItem (with type-default enforcement)
 export type Props = {

@@ -3,12 +3,12 @@ import { Button } from '../ui/button'
 import { Check } from 'lucide-react'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectValue, SelectTrigger } from '../ui/select'
 import { useBlockUpdateProps } from '@/hooks/use-block-update-props'
-import { String } from '@/main'
+import { StringProp } from '@/main'
 import { useIsMutating } from '@tanstack/react-query'
 import { Block } from '@/db'
-import { InputLabel } from './props-inputs'
+import { PropInputLabel } from './prop-input-label'
 
-export function PropsInputString(props: { block: Block; propKey: string; prop: String }) {
+export function PropInputString(props: { block: Block; propKey: string; prop: StringProp }) {
   const { blockUpdateProps } = useBlockUpdateProps()
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
 
@@ -24,7 +24,7 @@ export function PropsInputString(props: { block: Block; propKey: string; prop: S
           blockUpdateProps({ block: props.block, props: { [props.propKey]: formData.get(props.propKey) } })
         }}
       >
-        <InputLabel prop={props.prop} propKey={props.propKey} />
+        <PropInputLabel prop={props.prop} propKey={props.propKey} />
         <div className="flex gap-2">
           <Input
             id={props.propKey}
@@ -44,7 +44,7 @@ export function PropsInputString(props: { block: Block; propKey: string; prop: S
 
   return (
     <div className="gap-2 grid p-2">
-      <InputLabel prop={props.prop} propKey={props.propKey} />
+      <PropInputLabel prop={props.prop} propKey={props.propKey} />
       <div className="flex gap-2">
         <Select
           value={props.block.props[props.propKey]}

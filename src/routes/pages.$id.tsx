@@ -2,7 +2,7 @@ import { createFileRoute } from '@tanstack/react-router'
 import { type Page } from '@/db'
 import { Suspense, useDeferredValue, useState } from 'react'
 import { ComponentPanel } from '@/components/editor/component-panel'
-import { PropsPanel } from '@/components/editor/props-panel'
+import { PropPanel } from '@/components/editor/prop-panel'
 import { BlockLayerPanel } from '@/components/editor/block-layer-panel'
 import { DropZone } from '@/components/editor/drop-zone'
 import { BlockItem } from '@/components/editor/block-item'
@@ -15,11 +15,10 @@ import { useTemplateApply } from '@/hooks/use-template-apply'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
-import { Layers2, Loader, Monitor, Smartphone, SquareDashedMousePointer, Tablet } from 'lucide-react'
+import { Layers2, Loader, Monitor, Smartphone, Tablet } from 'lucide-react'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Separator } from '@/components/ui/separator'
-import { useActive } from '@/hooks/use-active'
 import clsx from 'clsx'
 import { useIsMutating } from '@tanstack/react-query'
 import { HotKeys } from '@/components/editor/hotkeys'
@@ -47,7 +46,6 @@ function Page() {
   const [activeTab, setActiveTab] = useState('components')
   const [canvasSize, setCanvasSize] = useState<string | undefined>('none')
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
-  const { active } = useActive()
 
   return (
     <HotKeys>
@@ -168,7 +166,7 @@ function Page() {
               <ResizableHandle />
               <ResizablePanel minSize={20} defaultSize={20}>
                 <ScrollArea className="h-full w-full">
-                  <PropsPanel />
+                  <PropPanel />
                   <ScrollBar orientation="horizontal" />
                 </ScrollArea>
               </ResizablePanel>
