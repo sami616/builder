@@ -35,7 +35,7 @@ export function BlockLayerPanel(props: { page: Page }) {
   }
   return (
     <>
-      <h4 className="font-medium text-sm p-4">Layers</h4>
+      <h4 className="font-medium text-sm p-2">Layers</h4>
       <Tree className={clsx(['transition-opacity', isCanvasMutating ? 'opacity-50' : 'opacity-100'])}>
         {deferredBlocks.map((id, index) => (
           <BlockLayerItem key={id} parent={{ node: props.page, slot: 'root' }} index={index} id={id} />

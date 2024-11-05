@@ -1,5 +1,5 @@
 import { buttonConfig, headingConfig, containerConfig } from '@/components/blocks'
-import { StrictMode } from 'react'
+import { HTMLInputAutoCompleteAttribute, StrictMode } from 'react'
 import { get, getMany, add, update, updateMany, addMany, remove, removeMany, getTree, isPage, isBlock, duplicateTree } from '@/api'
 import ReactDOM from 'react-dom/client'
 import { RouterProvider, createRouter } from '@tanstack/react-router'
@@ -21,13 +21,25 @@ export type PropTypes = {
 }
 
 type Common = { name: string; description?: string }
-type String = Common & { type: 'string'; options?: Array<{ name: string; value: string }>; default?: string }
-type Number = Common & { type: 'number'; options?: Array<{ name: string; value: number }>; default?: number }
+
+export type String = Common & {
+  type: 'string'
+  config?: { autoComplete?: HTMLInputAutoCompleteAttribute; minLength?: number; maxLength: number }
+  options?: Array<{ name: string; value: string }>
+  default?: string
+}
+
+type Number = Common & {
+  type: 'number'
+  config?: { autoComplete?: HTMLInputAutoCompleteAttribute; min?: number; max: number; step?: number }
+  default?: number
+}
+
 type Boolean = Common & { type: 'boolean'; default?: boolean }
+
 type Object = Common & {
   type: 'object'
   options?: Record<string, String | Number | Boolean>
-  default?: Record<string, String | Number | Boolean>
 }
 
 // Define a union type for PropItems, where type and default must match

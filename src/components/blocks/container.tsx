@@ -35,11 +35,77 @@ export const containerConfig: Config = {
           { name: 'Green', value: '#007f00' },
         ],
       },
-
+      opacity: {
+        type: 'number',
+        description: 'The opacity of the container',
+        default: 1,
+        name: 'Opacity',
+        config: {
+          autoComplete: 'off',
+          min: 0,
+          max: 1,
+          step: 0.1,
+        },
+      },
+      paddingObject: {
+        type: 'object',
+        name: 'Padding',
+        description: 'Container padding',
+        options: {
+          top: {
+            name: 'Top',
+            type: 'string',
+            description: 'Top padding',
+            options: [
+              { name: 'None', value: '0rem' },
+              { name: 'Small', value: '0.5rem' },
+              { name: 'Medium', value: '1rem' },
+              { name: 'Large', value: '2rem' },
+            ],
+            default: '0rem',
+          },
+          right: {
+            name: 'Right',
+            type: 'string',
+            description: 'Right padding',
+            options: [
+              { name: 'None', value: '0rem' },
+              { name: 'Small', value: '0.5rem' },
+              { name: 'Medium', value: '1rem' },
+              { name: 'Large', value: '2rem' },
+            ],
+            default: '0rem',
+          },
+          bottom: {
+            name: 'Bottom',
+            type: 'string',
+            description: 'Bottom padding',
+            options: [
+              { name: 'None', value: '0rem' },
+              { name: 'Small', value: '0.5rem' },
+              { name: 'Medium', value: '1rem' },
+              { name: 'Large', value: '2rem' },
+            ],
+            default: '0rem',
+          },
+          left: {
+            name: 'Left',
+            type: 'string',
+            options: [
+              { name: 'None', value: '0rem' },
+              { name: 'Small', value: '0.5rem' },
+              { name: 'Medium', value: '1rem' },
+              { name: 'Large', value: '2rem' },
+            ],
+            default: '0rem',
+          },
+        },
+      },
       padding: {
         name: 'Padding',
         default: '1rem',
         type: 'string',
+        description: 'Left padding',
         options: [
           { name: 'Small', value: '1rem' },
           { name: 'Medium', value: '2rem' },

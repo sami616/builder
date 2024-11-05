@@ -1,7 +1,6 @@
 import { useHotkeys } from 'react-hotkeys-hook'
 import { useActive } from '@/hooks/use-active'
 import { useBlockDelete } from '@/hooks/use-block-delete'
-import { useTemplateDeleteMany } from '@/hooks/use-template-delete-many'
 import { useBlockCopy } from '@/hooks/use-block-copy'
 import { useBlockCopyMany } from '@/hooks/use-block-copy-many'
 import { BlockDialogAdd } from './block-dialog-add'
@@ -10,13 +9,14 @@ import { useState } from 'react'
 import { ReactNode } from '@tanstack/react-router'
 import { BlockDialogDelete } from './block-dialog-delete'
 import { TemplateDialogDelete } from './template-dialog-delete'
+import { useTemplateDelete } from '@/hooks/use-template-delete'
 
 export function HotKeys(props: { children: ReactNode }) {
   const { active } = useActive()
   const { blockCopy } = useBlockCopy()
   const { blockCopyMany } = useBlockCopyMany()
   const { blockDelete } = useBlockDelete()
-  const { templateDeleteMany } = useTemplateDeleteMany()
+  const { templateDelete } = useTemplateDelete()
 
   const [templateDeleteOpen, setTemplateDeleteOpen] = useState(false)
   const [blockDeleteOpen, setBlockDeleteOpen] = useState(false)
@@ -54,10 +54,10 @@ export function HotKeys(props: { children: ReactNode }) {
 
   useHotkeys('backspace', async () => {
     if (activeTemplateSingle) {
-      setTemplateDeleteOpen(true)
+      templateDelete({ template: activeTemplateSingle })
     }
     if (activeTemplatesMany) {
-      await templateDeleteMany({ entries: activeTemplatesMany })
+      setTemplateDeleteOpen(true)
     }
     if (activeBlocksSingle) {
       await blockDelete(activeBlocksSingle)

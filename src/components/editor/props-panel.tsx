@@ -1,176 +1,45 @@
-import { config, Props } from '@/main'
-import { Input } from '../ui/input'
-import { useBlockUpdateProps } from '@/hooks/use-block-update-props'
+import { config } from '@/main'
+import { SquareDashedMousePointer, X } from 'lucide-react'
+import { useActive } from '@/hooks/use-active'
 import { Button } from '../ui/button'
-import { Check, Info } from 'lucide-react'
-import { useEffect, useState } from 'react'
-import { Label } from '../ui/label'
-import { useIsMutating } from '@tanstack/react-query'
-import { Select, SelectContent, SelectGroup, SelectItem, SelectValue, SelectTrigger } from '../ui/select'
-import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card'
-import { Block } from '@/db'
+import { Separator } from '../ui/separator'
+import { PropsInputs } from './props-inputs'
 
-export function PropsPanel(props: { block: Block }) {
-  const { blockUpdateProps } = useBlockUpdateProps()
-  const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
-  const [propState, setPropState] = useState<Record<string, any>>(props.block.props)
+export function PropsPanel() {
+  const { active, setActive } = useActive()
+  const activeBlock = active.store === 'blocks' && active.items.length === 1 ? active.items[0] : undefined
 
-  const configItem = config[props.block.type]
-  const configItemProps = configItem.props
-  if (!configItemProps) return null
-
-  useEffect(() => {
-    setPropState(props.block.props)
-  }, [props.block])
-
-  function renderInput(key: string) {
-    switch (configItemProps?.[key].type) {
-      case 'string': {
-        const prop = configItemProps[key]
-        const { options } = prop
-        if (!options) {
-          return (
-            <div className="gap-2 grid p-2">
-              <PropLabel prop={prop} labelKey={key} />
-              <div className="flex gap-2">
-                <Input
-                  id={key}
-                  disabled={isCanvasMutating}
-                  onChange={(e) => {
-                    setPropState({ ...propState, [key]: e.target.value })
-                  }}
-                  value={propState[key]}
-                  type="text"
-                />
-                <Button
-                  disabled={isCanvasMutating}
-                  size="icon"
-                  variant="ghost"
-                  onClick={() => blockUpdateProps({ block: props.block, props: { [key]: propState[key] } })}
-                >
-                  <Check size={16} />
-                </Button>
-              </div>
-            </div>
-          )
-        }
-
-        return (
-          <div className="gap-2 grid p-2">
-            <PropLabel prop={prop} labelKey={key} />
-            <div className="flex gap-2">
-              <Select
-                value={propState[key]}
-                onValueChange={(val) => {
-                  blockUpdateProps({ block: props.block, props: { [key]: val } })
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select" />
-                </SelectTrigger>
-                <SelectContent id={key}>
-                  <SelectGroup>
-                    {options.map((opt) => {
-                      return (
-                        <SelectItem key={opt.name} value={opt.value}>
-                          {opt.name}
-                        </SelectItem>
-                      )
-                    })}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        )
-      }
-      case 'number': {
-        const prop = configItemProps[key]
-        const { options } = prop
-        if (!options) {
-          return (
-            <div className="gap-2 grid p-2">
-              <PropLabel prop={prop} labelKey={key} />
-              <div className="flex gap-2">
-                <Input
-                  id={key}
-                  disabled={isCanvasMutating}
-                  onChange={(e) => {
-                    setPropState({ ...propState, [key]: Number(e.target.value) })
-                  }}
-                  value={propState[key]}
-                  type="number"
-                />
-                <Button
-                  disabled={isCanvasMutating}
-                  size="icon"
-                  variant="ghost"
-                  onClick={() => blockUpdateProps({ block: props.block, props: { [key]: Number(propState[key]) } })}
-                >
-                  <Check size={16} />
-                </Button>
-              </div>
-            </div>
-          )
-        }
-
-        return (
-          <div className="gap-2 grid p-2">
-            <PropLabel prop={prop} labelKey={key} />
-            <div className="flex gap-2">
-              <Select
-                value={propState[key]}
-                onValueChange={(val) => {
-                  blockUpdateProps({ block: props.block, props: { [key]: Number(val) } })
-                }}
-              >
-                <SelectTrigger>
-                  <SelectValue placeholder="Select" />
-                </SelectTrigger>
-                <SelectContent id={key}>
-                  <SelectGroup>
-                    {options.map((opt) => {
-                      return (
-                        <SelectItem key={opt.name} value={String(opt.value)}>
-                          {opt.name}
-                        </SelectItem>
-                      )
-                    })}
-                  </SelectGroup>
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-        )
-      }
-    }
+  if (!activeBlock) {
+    return (
+      <div className="flex flex-col gap-2 h-full text-sm justify-center items-center">
+        <SquareDashedMousePointer size={40} className="stroke-gray-200" />
+        <p>No layer selected</p>
+      </div>
+    )
   }
 
-  return (
-    <div data-component="PropsPanel" className="px-2">
-      {/* <button onClick={() => setActive(undefined)}>Close</button> */}
-      <h4 className="font-medium text-sm p-2">{props.block.name} props</h4>
-      {Object.keys(configItemProps).map((key) => {
-        return <div key={key}>{renderInput(key)}</div>
-      })}
-    </div>
-  )
-}
+  const configItem = config[activeBlock.type]
+  const configItemProps = configItem.props ?? {}
 
-export function PropLabel(props: { prop: Props[keyof Props]; labelKey: string }) {
   return (
-    <Label htmlFor={props.labelKey} className="flex gap-2 items-center">
-      {props.prop.name}
-      {props.prop.description && (
-        <HoverCard>
-          <HoverCardTrigger>
-            <Info size={14} className="stroke-gray-500" />
-          </HoverCardTrigger>
-          <HoverCardContent>
-            <p className="text-sm">{props.prop.description}</p>
-          </HoverCardContent>
-        </HoverCard>
-      )}
-    </Label>
+    <div data-component="PropsPanel">
+      <div className="sticky top-0 bg-white flex gap-2 justify-between items-center">
+        <h4 className="font-medium text-sm p-2">{activeBlock.name} props</h4>
+        <Button className="shrink-0" variant="ghost" size="icon" onClick={() => setActive({ store: 'none', items: [] })}>
+          <X size={16} />
+        </Button>
+      </div>
+      <Separator />
+
+      <div className="p-2">
+        {Object.keys(configItemProps).map((key) => {
+          return (
+            <div key={key}>
+              <PropsInputs activeBlockId={activeBlock.id} configItemPropsKey={key} configItemProps={configItemProps} />
+            </div>
+          )
+        })}
+      </div>
+    </div>
   )
 }

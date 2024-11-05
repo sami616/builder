@@ -49,8 +49,6 @@ function Page() {
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
   const { active } = useActive()
 
-  const singleActiveBlock = active.store === 'blocks' && active.items.length === 1 ? active.items[0] : false
-
   return (
     <HotKeys>
       <main className="h-[calc(100vh-62px)]">
@@ -170,14 +168,7 @@ function Page() {
               <ResizableHandle />
               <ResizablePanel minSize={20} defaultSize={20}>
                 <ScrollArea className="h-full w-full">
-                  {singleActiveBlock ? (
-                    <PropsPanel block={singleActiveBlock} />
-                  ) : (
-                    <div className="flex flex-col gap-2 h-full text-sm justify-center items-center">
-                      <SquareDashedMousePointer size={40} className="stroke-gray-200" />
-                      <p>No layer selected</p>
-                    </div>
-                  )}
+                  <PropsPanel />
                   <ScrollBar orientation="horizontal" />
                 </ScrollArea>
               </ResizablePanel>
