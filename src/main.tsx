@@ -39,7 +39,8 @@ export type BooleanProp = Common & { type: 'boolean'; default?: boolean }
 
 export type ObjectProp = Common & {
   type: 'object'
-  options?: Record<string, PropItem>
+  config?: { collapsible?: { defaultOpen: boolean }; cols: 1 | 2 | 3 | 4 }
+  options: Record<string, PropItem>
 }
 
 // Define a union type for PropItems, where type and default must match

@@ -35,6 +35,12 @@ export const containerConfig: Config = {
           { name: 'Green', value: '#007f00' },
         ],
       },
+      scrollProgress: {
+        type: 'boolean',
+        name: 'Scroll progress',
+        description: 'Show a progress indicator when scrolling',
+        default: false,
+      },
       opacity: {
         type: 'number',
         description: 'The opacity of the container',

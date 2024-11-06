@@ -14,6 +14,8 @@ export function PropInputString(props: { block: Block; propKey: string; prop: St
 
   const { options } = props.prop
 
+  const propKeys = ['one', 'two']
+
   if (!options) {
     return (
       <form
