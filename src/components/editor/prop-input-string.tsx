@@ -11,10 +11,22 @@ import { PropInputLabel } from './prop-input-label'
 export function PropInputString(props: { block: Block; propKey: string; prop: StringProp }) {
   const { blockUpdateProps } = useBlockUpdateProps()
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
-
   const { options } = props.prop
 
-  const propKeys = ['one', 'two']
+  type NestedObject<T> = T | { [key: string]: NestedObject<T> }
+
+  function createPath<T>(keys: string[], value: T): NestedObject<T> {
+    return keys.reduceRight<NestedObject<T>>((acc, key) => {
+      return { [key]: acc }
+    }, value)
+  }
+
+  // Usage example:
+  // const keys = ['one', 'two', 'three']
+  // const value = 3
+  //
+  // const result = createPath(keys, value)
+  // console.log(result)
 
   if (!options) {
     return (
