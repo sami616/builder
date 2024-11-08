@@ -13,43 +13,149 @@ import { Toaster } from 'sonner'
 
 const queryClient = new QueryClient()
 
-export type PropTypes = {
-  text: string
-  number: number
-  select: Array<{ name: string; value: string }>
-  switch: boolean
+export function evaluateRule(rule: HiddenSchema['rules'][number], props: Block['props']) {
+  const [propertyID, operator, propertyValue] = rule
+
+  const actualValue = props[propertyID]
+
+  // const actualValue = sdk.entry.fields?.[propertyID]?.getValue()
+  switch (operator) {
+    case '===': {
+      switch (propertyValue) {
+        case 'undefined':
+          return actualValue === undefined
+        case 'null':
+          return actualValue === null
+        default:
+          return actualValue === propertyValue
+      }
+    }
+    case '!==':
+      switch (propertyValue) {
+        case 'undefined':
+          return actualValue !== undefined
+        case 'null':
+          return actualValue !== null
+        default:
+          return actualValue !== propertyValue
+      }
+    case '>':
+      switch (typeof actualValue) {
+        case 'number': {
+          if (typeof propertyValue !== 'number') return false
+          return actualValue > propertyValue
+        }
+        default: {
+          if (actualValue?.length) {
+            return actualValue.length > propertyValue
+          }
+          return false
+        }
+      }
+    case '<':
+      switch (typeof actualValue) {
+        case 'number': {
+          if (typeof propertyValue !== 'number') return false
+          return actualValue < propertyValue
+        }
+        default: {
+          if (actualValue?.length) {
+            return actualValue.length < propertyValue
+          }
+          return false
+        }
+      }
+    case '>=':
+      switch (typeof actualValue) {
+        case 'number': {
+          if (typeof propertyValue !== 'number') return false
+          return actualValue >= propertyValue
+        }
+        default: {
+          if (actualValue?.length) {
+            return actualValue.length >= propertyValue
+          }
+          return false
+        }
+      }
+    case '<=':
+      switch (typeof actualValue) {
+        case 'number': {
+          if (typeof propertyValue !== 'number') return false
+          return actualValue <= propertyValue
+        }
+        default: {
+          if (actualValue?.length) {
+            return actualValue.length <= propertyValue
+          }
+          return false
+        }
+      }
+  }
 }
 
-type Common = { name: string; description?: string }
+export function evaluateCondition(props: Block['props'], hidden?: HiddenSchema) {
+  if (!hidden) return false
+  if (hidden.operator === '&&') {
+    return hidden.rules.every((rule) => evaluateRule(rule, props))
+  } else if (hidden.operator === '||') {
+    return hidden.rules.some((rule) => evaluateRule(rule, props))
+  }
+}
 
-export type StringProp = Common & {
+export type HiddenSchema = {
+  operator: '&&' | '||'
+  rules: Array<[string, '===' | '!==' | '>' | '<' | '>=' | '<=', string | number | boolean]>
+}
+
+type Common = { id: string; name: string; description?: string; hidden?: HiddenSchema }
+
+export type StringField = Common & {
   type: 'string'
   config?: { autoComplete?: HTMLInputAutoCompleteAttribute; minLength?: number; maxLength: number }
   options?: Array<{ name: string; value: string }>
   default?: string
 }
 
-export type NumberProp = Common & {
+export type ColourField = Common & {
+  type: 'colour'
+  config?: { readOnly?: boolean }
+  options: {
+    solid?: Array<{ name?: string; value: string }>
+    gradient?: Array<{ name?: string; value: string }>
+  }
+  default?: string
+}
+
+export type NumberField = Common & {
   type: 'number'
   config?: { autoComplete?: HTMLInputAutoCompleteAttribute; min?: number; max: number; step?: number }
   default?: number
 }
 
-export type BooleanProp = Common & { type: 'boolean'; default?: boolean }
+export type BooleanField = Common & { type: 'boolean'; default?: boolean }
 
-export type ObjectProp = Common & {
-  type: 'object'
-  config?: { collapsible?: { defaultOpen: boolean }; cols: 1 | 2 | 3 | 4 }
-  options: Record<string, PropItem>
+type GroupBase = Omit<Common, 'name'> & {
+  type: 'group'
+  props: Array<Field | Group>
+  config?: { cols?: 1 | 2 }
 }
 
-// Define a union type for PropItems, where type and default must match
-export type PropItem = StringProp | NumberProp | BooleanProp | ObjectProp
-
-// Props can have any key, but each value must be a PropItem (with type-default enforcement)
-export type Props = {
-  [key: string]: PropItem
+type GroupWithCollapsible = GroupBase & {
+  name: string
+  config: { cols?: 1 | 2; collapsible: { defaultOpen: boolean } }
 }
+
+type GroupWithoutCollapsible = GroupBase & {
+  name?: string
+  config?: { border?: boolean; cols?: 1 | 2; collapsible?: never }
+}
+
+export type Group = GroupWithCollapsible | GroupWithoutCollapsible
+
+export type Field = StringField | ColourField | NumberField | BooleanField | Group
+
+export type Props = Array<Field | Group>
 
 export type Config = {
   [key: string]: {

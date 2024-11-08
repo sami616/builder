@@ -10,6 +10,6 @@ export const headingConfig: Config = {
     name: 'Heading',
     folder: ['Elements', 'Text'],
     slots: {},
-    props: { children: { name: 'Children', type: 'text', default: 'Default heading' } },
+    props: [{ id: 'children', name: 'Children', type: 'string', default: 'Default heading' }],
   },
 }

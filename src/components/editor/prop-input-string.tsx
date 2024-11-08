@@ -3,48 +3,39 @@ import { Button } from '../ui/button'
 import { Check } from 'lucide-react'
 import { Select, SelectContent, SelectGroup, SelectItem, SelectValue, SelectTrigger } from '../ui/select'
 import { useBlockUpdateProps } from '@/hooks/use-block-update-props'
-import { StringProp } from '@/main'
+import { evaluateCondition, StringField } from '@/main'
 import { useIsMutating } from '@tanstack/react-query'
 import { Block } from '@/db'
 import { PropInputLabel } from './prop-input-label'
+import { useId } from 'react'
 
-export function PropInputString(props: { block: Block; propKey: string; prop: StringProp }) {
+export function PropInputString(props: { block: Block; field: StringField }) {
   const { blockUpdateProps } = useBlockUpdateProps()
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
-  const { options } = props.prop
+  const { options } = props.field
+  const id = useId()
 
-  type NestedObject<T> = T | { [key: string]: NestedObject<T> }
-
-  function createPath<T>(keys: string[], value: T): NestedObject<T> {
-    return keys.reduceRight<NestedObject<T>>((acc, key) => {
-      return { [key]: acc }
-    }, value)
-  }
-
-  // Usage example:
-  // const keys = ['one', 'two', 'three']
-  // const value = 3
-  //
-  // const result = createPath(keys, value)
-  // console.log(result)
+  const hidden = evaluateCondition(props.block.props, props.field.hidden)
+  if (hidden) return null
 
   if (!options) {
     return (
       <form
-        className="gap-2 grid p-2"
+        className="gap-2 grid"
         onSubmit={(e) => {
           e.preventDefault()
           const formData = new FormData(e.currentTarget)
-          blockUpdateProps({ block: props.block, props: { [props.propKey]: formData.get(props.propKey) } })
+          blockUpdateProps({ block: props.block, props: { [props.field.id]: formData.get(id) } })
         }}
       >
-        <PropInputLabel prop={props.prop} propKey={props.propKey} />
+        <PropInputLabel field={props.field} for={id} />
         <div className="flex gap-2">
           <Input
-            id={props.propKey}
-            name={props.propKey}
-            defaultValue={props.block.props[props.propKey]}
-            {...props.prop.config}
+            id={id}
+            name={id}
+            className="bg-white"
+            defaultValue={props.block.props[props.field.id]}
+            {...props.field.config}
             disabled={isCanvasMutating}
             type="text"
           />
@@ -57,19 +48,20 @@ export function PropInputString(props: { block: Block; propKey: string; prop: St
   }
 
   return (
-    <div className="gap-2 grid p-2">
-      <PropInputLabel prop={props.prop} propKey={props.propKey} />
+    <div className="gap-2 grid">
+      <PropInputLabel field={props.field} for={id} />
       <div className="flex gap-2">
         <Select
-          value={props.block.props[props.propKey]}
+          value={props.block.props[props.field.id]}
           onValueChange={(val) => {
-            blockUpdateProps({ block: props.block, props: { [props.propKey]: val } })
+            blockUpdateProps({ block: props.block, props: { [props.field.id]: val } })
           }}
         >
-          <SelectTrigger>
+          <SelectTrigger className="bg-white">
             <SelectValue placeholder="Select" />
           </SelectTrigger>
-          <SelectContent id={props.propKey}>
+
+          <SelectContent id={id}>
             <SelectGroup>
               {options.map((opt) => {
                 return (

@@ -1,7 +1,7 @@
 import { config } from '@/main'
 import { SquareDashedMousePointer, X } from 'lucide-react'
 import { useActive } from '@/hooks/use-active'
-import { PropInputs } from './prop-inputs'
+import { PropInput } from './prop-input'
 import { Button } from '../ui/button'
 import { Separator } from '../ui/separator'
 
@@ -19,7 +19,7 @@ export function PropPanel() {
   }
 
   const configItem = config[activeBlock.type]
-  const configItemProps = configItem.props ?? {}
+  const configItemProps = configItem.props ?? []
 
   return (
     <div data-component="PropsPanel">
@@ -33,13 +33,9 @@ export function PropPanel() {
         <Separator />
       </div>
 
-      <div className="p-2">
-        {Object.keys(configItemProps).map((key) => {
-          return (
-            <div key={key}>
-              <PropInputs activeBlockId={activeBlock.id} configItemPropsKey={key} configItemProps={configItemProps} />
-            </div>
-          )
+      <div className="p-4 gap-4 grid">
+        {configItemProps.map((field) => {
+          return <PropInput key={field.id} activeBlockId={activeBlock.id} field={field} configItemProps={configItemProps} />
         })}
       </div>
     </div>

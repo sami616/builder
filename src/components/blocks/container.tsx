@@ -20,28 +20,38 @@ export const containerConfig: Config = {
     // folder: ['UI', 'Elements', 'Layout'],
     slots: {
       left: { default: [], name: 'Left', validation: { maxItems: 2, disabledComponents: ['Button'] } },
-      right: { default: [], name: 'Right' },
+      right: { name: 'Right' },
     },
-    props: {
-      title: { name: 'Title', default: 'Container Title', type: 'string' },
-      background: {
+    props: [
+      {
+        id: 'title',
+        name: 'Title',
+        default: 'Container Title',
+        type: 'string',
+        hidden: {
+          operator: '&&',
+          rules: [['scrollProgress', '===', true]],
+        },
+      },
+      {
+        id: 'background',
         name: 'Background',
         description: 'Container background color',
-        default: 'white',
-        type: 'string',
-        options: [
-          { name: 'White', value: 'white' },
-          { name: 'Light gray', value: '#efefefef' },
-          { name: 'Green', value: '#007f00' },
-        ],
+        config: {},
+        type: 'colour',
+        options: {
+          solid: [{ value: '#ffffff' }, { value: '#efefefef' }, { name: 'green', value: '#007f00' }],
+        },
       },
-      scrollProgress: {
+      {
+        id: 'scrollProgress',
         type: 'boolean',
         name: 'Scroll progress',
         description: 'Show a progress indicator when scrolling',
         default: false,
       },
-      opacity: {
+      {
+        id: 'opacity',
         type: 'number',
         description: 'The opacity of the container',
         default: 1,
@@ -53,71 +63,58 @@ export const containerConfig: Config = {
           step: 0.1,
         },
       },
-      paddingObject: {
-        type: 'object',
-        name: 'Padding',
-        description: 'Container padding',
-        options: {
-          top: {
-            name: 'Top',
-            type: 'string',
-            description: 'Top padding',
-            options: [
-              { name: 'None', value: '0rem' },
-              { name: 'Small', value: '0.5rem' },
-              { name: 'Medium', value: '1rem' },
-              { name: 'Large', value: '2rem' },
-            ],
-            default: '0rem',
-          },
-          right: {
-            name: 'Right',
-            type: 'string',
-            description: 'Right padding',
-            options: [
-              { name: 'None', value: '0rem' },
-              { name: 'Small', value: '0.5rem' },
-              { name: 'Medium', value: '1rem' },
-              { name: 'Large', value: '2rem' },
-            ],
-            default: '0rem',
-          },
-          bottom: {
-            name: 'Bottom',
-            type: 'string',
-            description: 'Bottom padding',
-            options: [
-              { name: 'None', value: '0rem' },
-              { name: 'Small', value: '0.5rem' },
-              { name: 'Medium', value: '1rem' },
-              { name: 'Large', value: '2rem' },
-            ],
-            default: '0rem',
-          },
-          left: {
-            name: 'Left',
-            type: 'string',
-            options: [
-              { name: 'None', value: '0rem' },
-              { name: 'Small', value: '0.5rem' },
-              { name: 'Medium', value: '1rem' },
-              { name: 'Large', value: '2rem' },
-            ],
-            default: '0rem',
-          },
+      {
+        id: 'layout',
+        type: 'group',
+        name: 'Layout',
+        description: 'Container layout options',
+        config: {
+          border: false,
+          cols: 2,
+          // collapsible: {
+          //   defaultOpen: true,
+          // },
         },
-      },
-      padding: {
-        name: 'Padding',
-        default: '1rem',
-        type: 'string',
-        description: 'Left padding',
-        options: [
-          { name: 'Small', value: '1rem' },
-          { name: 'Medium', value: '2rem' },
-          { name: 'Large', value: '3rem' },
+        props: [
+          {
+            name: 'Padding',
+            id: 'padding',
+            default: '0rem',
+            type: 'string',
+            description: 'Padding',
+            options: [
+              { name: 'None', value: '0rem' },
+              { name: 'Small', value: '1rem' },
+              { name: 'Medium', value: '2rem' },
+              { name: 'Large', value: '3rem' },
+            ],
+          },
+          {
+            name: 'Margin',
+            id: 'margin',
+            default: '0rem',
+            type: 'string',
+            description: 'Padding',
+            hidden: {
+              operator: '&&',
+              rules: [['scrollProgress', '===', true]],
+            },
+            options: [
+              { name: 'None', value: '0rem' },
+              { name: 'Small', value: '1rem' },
+              { name: 'Medium', value: '2rem' },
+              { name: 'Large', value: '3rem' },
+            ],
+          },
+          {
+            name: 'NestedGroup',
+            type: 'group',
+            config: { collapsible: { defaultOpen: true }, cols: 1 },
+            id: 'nestedGroup',
+            props: [{ type: 'string', id: 'nestedField', name: 'Nested field', default: 'Nested value' }],
+          },
         ],
       },
-    },
+    ],
   },
 }

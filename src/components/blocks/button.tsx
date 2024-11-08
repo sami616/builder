@@ -21,8 +21,6 @@ export const buttonConfig: Config = {
     slots: {
       icon: { name: 'Icon', validation: { maxItems: 1 } },
     },
-    props: {
-      children: { name: 'Children', type: 'string', config: { maxLength: 20, minLength: 10 } },
-    },
+    props: [{ id: 'children', name: 'Children', type: 'string', config: { maxLength: 20, minLength: 10 } }],
   },
 }

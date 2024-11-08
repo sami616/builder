@@ -2,31 +2,34 @@ import { Input } from '../ui/input'
 import { Button } from '../ui/button'
 import { Check } from 'lucide-react'
 import { useBlockUpdateProps } from '@/hooks/use-block-update-props'
-import { NumberProp } from '@/main'
+import { NumberField } from '@/main'
 import { useIsMutating } from '@tanstack/react-query'
 import { Block } from '@/db'
 import { PropInputLabel } from './prop-input-label'
+import { useId } from 'react'
 
-export function PropInputNumber(props: { block: Block; propKey: string; prop: NumberProp }) {
+export function PropInputNumber(props: { block: Block; field: NumberField }) {
   const { blockUpdateProps } = useBlockUpdateProps()
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
+  const id = useId()
 
   return (
     <form
-      className="gap-2 grid p-2"
+      className="gap-2 grid"
       onSubmit={(e) => {
         e.preventDefault()
         const formData = new FormData(e.currentTarget)
-        blockUpdateProps({ block: props.block, props: { [props.propKey]: formData.get(props.propKey) } })
+        blockUpdateProps({ block: props.block, props: { [props.field.id]: Number(formData.get(id)) } })
       }}
     >
-      <PropInputLabel prop={props.prop} propKey={props.propKey} />
+      <PropInputLabel field={props.field} for={id} />
       <div className="flex gap-2">
         <Input
-          id={props.propKey}
-          name={props.propKey}
-          defaultValue={props.block.props[props.propKey]}
-          {...props.prop.config}
+          id={id}
+          name={id}
+          className="bg-white"
+          defaultValue={props.block.props[props.field.id]}
+          {...props.field.config}
           disabled={isCanvasMutating}
           type="number"
         />

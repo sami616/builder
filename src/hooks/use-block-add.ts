@@ -4,6 +4,7 @@ import { useRouteContext } from '@tanstack/react-router'
 import { type Block, type Page } from '@/db'
 import { DragData } from '@/hooks/use-drag'
 import { toast } from 'sonner'
+import { Props } from '@/main'
 
 type Args = {
   name?: string
@@ -24,14 +25,19 @@ export function useBlockAdd() {
       const configItem = context.config[args.source.type]
       const slot = args.target.parent.slot
 
-      let defaultProps: Record<string, any> = {}
-
-      if (configItem.props) {
-        const propKeys = Object.keys(configItem.props)
-        defaultProps = propKeys.reduce((props, propKey) => {
-          return { ...props, [propKey]: configItem.props?.[propKey].default }
-        }, {})
+      function getDefaultProps(props?: Props, defaultProps: { [key: string]: any } = {}) {
+        if (!props) return defaultProps
+        props.forEach((prop) => {
+          if (prop.type === 'group') {
+            getDefaultProps(prop.props, defaultProps)
+          } else {
+            defaultProps[prop.id] = prop.default
+          }
+        })
+        return defaultProps
       }
+
+      const defaultProps = getDefaultProps(configItem.props)
 
       let defaultSlots: Record<string, Array<Block['id']>> = {}
 
