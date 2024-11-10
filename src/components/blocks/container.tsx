@@ -28,6 +28,9 @@ export const containerConfig: Config = {
         name: 'Title',
         default: 'Container Title',
         type: 'string',
+        config: {
+          required: true,
+        },
         hidden: {
           operator: '&&',
           rules: [['scrollProgress', '===', true]],
@@ -65,17 +68,47 @@ export const containerConfig: Config = {
       },
       {
         id: 'layout',
-        type: 'group',
+        type: 'collapsible',
         name: 'Layout',
-        description: 'Container layout options',
         config: {
-          border: false,
-          cols: 2,
-          // collapsible: {
-          //   defaultOpen: true,
-          // },
+          defaultOpen: false,
         },
+        description: 'Container layout options',
         props: [
+          {
+            type: 'grid',
+            cols: 2,
+            name: 'My group',
+            description: 'My group',
+            id: 'my-cols',
+            hidden: { operator: '&&', rules: [['scrollProgress', '===', true]] },
+            props: [
+              {
+                type: 'string',
+                name: 'Width',
+                id: 'width',
+                default: '100%',
+                description: 'Width',
+                options: [
+                  { name: 'Full', value: '100%' },
+                  { name: 'Half', value: '50%' },
+                  { name: 'Quarter', value: '25%' },
+                ],
+              },
+              {
+                type: 'string',
+                name: 'Height',
+                id: 'height',
+                default: '100%',
+                description: 'Height',
+                options: [
+                  { name: 'Full', value: '100%' },
+                  { name: 'Half', value: '50%' },
+                  { name: 'Quarter', value: '25%' },
+                ],
+              },
+            ],
+          },
           {
             name: 'Padding',
             id: 'padding',
@@ -108,8 +141,10 @@ export const containerConfig: Config = {
           },
           {
             name: 'NestedGroup',
-            type: 'group',
-            config: { collapsible: { defaultOpen: true }, cols: 1 },
+            type: 'collapsible',
+            config: {
+              defaultOpen: true,
+            },
             id: 'nestedGroup',
             props: [{ type: 'string', id: 'nestedField', name: 'Nested field', default: 'Nested value' }],
           },

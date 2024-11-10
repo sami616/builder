@@ -63,6 +63,7 @@ export function PageAdd() {
                     url: values.url ?? '',
                     createdAt: new Date(),
                     updatedAt: new Date(),
+                    publishedAt: undefined,
                     slots: { root: [] },
                     status: 'draft',
                   },

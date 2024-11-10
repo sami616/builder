@@ -12,6 +12,7 @@ import { useBlockUpdateProps } from '@/hooks/use-block-update-props'
 import { useIsMutating } from '@tanstack/react-query'
 import { TooltipProvider, TooltipTrigger } from '@radix-ui/react-tooltip'
 import { Tooltip, TooltipContent } from '../ui/tooltip'
+import { toast } from 'sonner'
 
 export function PropInputColour(props: { block: Block; field: ColourField }) {
   const value = props.block.props[props.field.id]
@@ -62,7 +63,7 @@ export function PropInputColour(props: { block: Block; field: ColourField }) {
             {options.solid && (
               <TabsContent value="solid" className="flex flex-wrap gap-1">
                 {options.solid?.map((solid) => (
-                  <TooltipProvider>
+                  <TooltipProvider key={solid.value}>
                     <Tooltip>
                       <TooltipTrigger asChild>
                         <div
@@ -83,7 +84,7 @@ export function PropInputColour(props: { block: Block; field: ColourField }) {
               <TabsContent value="gradient">
                 <div className="flex flex-wrap gap-1 mb-2">
                   {options.gradient?.map((gradeint) => (
-                    <TooltipProvider>
+                    <TooltipProvider key={gradeint.value}>
                       <Tooltip>
                         <TooltipTrigger asChild>
                           <div
@@ -107,7 +108,14 @@ export function PropInputColour(props: { block: Block; field: ColourField }) {
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
-                  <Button onClick={() => navigator.clipboard.writeText(value)} variant="outline" size="icon">
+                  <Button
+                    onClick={async () => {
+                      await navigator.clipboard.writeText(value)
+                      toast.success('Copied to clipboard')
+                    }}
+                    variant="outline"
+                    size="icon"
+                  >
                     <Copy size={16} className="stroke-gray-400" />
                   </Button>
                 </TooltipTrigger>

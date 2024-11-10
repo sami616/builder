@@ -28,7 +28,7 @@ export function useBlockAdd() {
       function getDefaultProps(props?: Props, defaultProps: { [key: string]: any } = {}) {
         if (!props) return defaultProps
         props.forEach((prop) => {
-          if (prop.type === 'group') {
+          if (prop.type === 'collapsible' || prop.type === 'grid') {
             getDefaultProps(prop.props, defaultProps)
           } else {
             defaultProps[prop.id] = prop.default

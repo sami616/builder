@@ -108,11 +108,11 @@ export type HiddenSchema = {
   rules: Array<[string, '===' | '!==' | '>' | '<' | '>=' | '<=', string | number | boolean]>
 }
 
-type Common = { id: string; name: string; description?: string; hidden?: HiddenSchema }
+type Common = { id: string; name?: string; description?: string; hidden?: HiddenSchema }
 
 export type StringField = Common & {
   type: 'string'
-  config?: { autoComplete?: HTMLInputAutoCompleteAttribute; minLength?: number; maxLength: number }
+  config?: { autoComplete?: HTMLInputAutoCompleteAttribute; required?: boolean; minLength?: number; maxLength?: number }
   options?: Array<{ name: string; value: string }>
   default?: string
 }
@@ -129,33 +129,29 @@ export type ColourField = Common & {
 
 export type NumberField = Common & {
   type: 'number'
-  config?: { autoComplete?: HTMLInputAutoCompleteAttribute; min?: number; max: number; step?: number }
+  config?: { autoComplete?: HTMLInputAutoCompleteAttribute; required?: boolean; min?: number; max?: number; step?: number }
   default?: number
 }
 
 export type BooleanField = Common & { type: 'boolean'; default?: boolean }
 
-type GroupBase = Omit<Common, 'name'> & {
-  type: 'group'
-  props: Array<Field | Group>
-  config?: { cols?: 1 | 2 }
+export type CollapsibleField = Common & {
+  type: 'collapsible'
+  props: Array<Field | CollapsibleField>
+  config: {
+    defaultOpen?: boolean
+  }
 }
 
-type GroupWithCollapsible = GroupBase & {
-  name: string
-  config: { cols?: 1 | 2; collapsible: { defaultOpen: boolean } }
+export type GridField = Common & {
+  type: 'grid'
+  props: Array<Field | CollapsibleField>
+  cols?: 1 | 2 | 3
 }
 
-type GroupWithoutCollapsible = GroupBase & {
-  name?: string
-  config?: { border?: boolean; cols?: 1 | 2; collapsible?: never }
-}
+export type Field = StringField | ColourField | NumberField | BooleanField | CollapsibleField | GridField
 
-export type Group = GroupWithCollapsible | GroupWithoutCollapsible
-
-export type Field = StringField | ColourField | NumberField | BooleanField | Group
-
-export type Props = Array<Field | Group>
+export type Props = Array<Field>
 
 export type Config = {
   [key: string]: {

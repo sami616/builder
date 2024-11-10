@@ -69,6 +69,7 @@ export type Page = {
   url: string
   description: string
   status: 'published' | 'draft' | 'changed'
+  publishedAt?: Date
   slots: { [index: string]: Array<Block['id']> }
 } & Sys
 
