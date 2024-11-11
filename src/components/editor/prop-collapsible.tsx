@@ -15,7 +15,7 @@ export function PropCollapsible(props: { block: Block; field: CollapsibleField }
   return (
     <Collapsible asChild defaultOpen={props.field.config.defaultOpen}>
       <div className="rounded grid border border-gray-200">
-        <CollapsibleTrigger className="bg-gray-100 flex p-4 gap-2 justify-between">
+        <CollapsibleTrigger className="bg-gray-100 flex py-2 px-4 gap-2 justify-between items-center">
           <PropInputLabel variant="head" field={props.field} />
           <ChevronDown size={16} />
         </CollapsibleTrigger>

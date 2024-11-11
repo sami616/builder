@@ -140,7 +140,7 @@ export const containerConfig: Config = {
             ],
           },
           {
-            name: 'NestedGroup',
+            name: 'Nested group',
             type: 'collapsible',
             config: {
               defaultOpen: true,

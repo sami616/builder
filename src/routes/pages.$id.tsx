@@ -103,8 +103,8 @@ function Page() {
                   >
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <ToggleGroupItem value="none">
-                          <Monitor size={16} className="stroke-gray-400" />
+                        <ToggleGroupItem className="group" value="none">
+                          <Monitor size={16} className="stroke-gray-400 group-aria-checked:stroke-rose-500" />
                         </ToggleGroupItem>
                       </TooltipTrigger>
                       <TooltipContent>
@@ -113,8 +113,8 @@ function Page() {
                     </Tooltip>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <ToggleGroupItem value="768px">
-                          <Tablet size={16} className="stroke-gray-400" />
+                        <ToggleGroupItem className="group" value="768px">
+                          <Tablet size={16} className="stroke-gray-400 group-aria-checked:stroke-rose-500" />
                         </ToggleGroupItem>
                       </TooltipTrigger>
                       <TooltipContent>
@@ -123,8 +123,8 @@ function Page() {
                     </Tooltip>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <ToggleGroupItem value="360px">
-                          <Smartphone size={16} className="stroke-gray-400" />
+                        <ToggleGroupItem className="group" value="360px">
+                          <Smartphone size={16} className="stroke-gray-400 group-aria-checked:stroke-rose-500" />
                         </ToggleGroupItem>
                       </TooltipTrigger>
                       <TooltipContent>

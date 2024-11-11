@@ -39,7 +39,7 @@ export function PropInputColour(props: { block: Block; field: ColourField }) {
               ) : (
                 <Paintbrush className="h-4 w-4" />
               )}
-              <div className="truncate flex-1">{value ? (name ?? value) : 'Pick a color'}</div>
+              <div className="text-sm truncate flex-1">{value ? (name ?? value) : 'Pick a color'}</div>
             </div>
           </Button>
         </PopoverTrigger>

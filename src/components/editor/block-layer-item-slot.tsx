@@ -69,7 +69,6 @@ export function BlockLayerItemSlot(props: { block: Block; slot: string; parent: 
         {!isMissing && <TreeItemTrigger hide={!hasSlotEntries} />}
         {!isMissing && <TreeItemIcon hide={hasSlotEntries} icon={CircleDashed} />}
         {!isMissing && <TreeItemLabel label={context.config[props.block.type].slots?.[props.slot]?.name} />}
-
         {isMissing && <TreeItemIcon icon={AlertCircle} className="stroke-red-500" />}
         {isMissing && <TreeItemLabel label={`Slot (${props.slot}) missing`} />}
       </TreeItemHead>

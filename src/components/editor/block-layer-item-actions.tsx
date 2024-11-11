@@ -79,9 +79,10 @@ export function BlockLayerItemActions(props: {
             }}
           >
             <Plus size={14} className="stroke-gray-400 mr-2" />
-            Add component
+            Add
             <DropdownMenuShortcut>A</DropdownMenuShortcut>
           </DropdownMenuItem>
+
           <DropdownMenuItem
             onClick={() => {
               blockCopy({ index: props.index, id: props.block.id, parent: props.parent })
@@ -90,6 +91,7 @@ export function BlockLayerItemActions(props: {
             <Copy size={14} className="stroke-gray-400 mr-2" /> Duplicate
             <DropdownMenuShortcut>D</DropdownMenuShortcut>
           </DropdownMenuItem>
+
           <DropdownMenuItem
             onClick={() => {
               setTemplateAddOpen(true)
