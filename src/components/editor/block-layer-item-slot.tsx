@@ -81,10 +81,9 @@ export function BlockLayerItemSlot(props: { block: Block; slot: string; parent: 
   )
 }
 
-export function validateDropSelf(sourceElement: Element, targetElement: Element) {
-  const sourceId = sourceElement.closest('[data-drop-id^="block"]')?.getAttribute('data-drop-id')
-
-  const targetEl = targetElement.closest('[data-drop-id^="block"]')
+export function validateDropSelf(sourceEl: Element | null, targetEl: Element | null) {
+  if (!sourceEl || !targetEl) throw new Error('No source or target element')
+  const sourceId = sourceEl.getAttribute('data-drop-id')
   const targetId = targetEl?.getAttribute('data-drop-id')
 
   const commonParent = targetEl?.closest(`[data-drop-id="${sourceId}"]`)

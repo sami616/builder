@@ -130,8 +130,12 @@ export function BlockDialogMove(props: {
                               {allNodes.map((node) => {
                                 if (!node) return null
                                 try {
-                                  // validateDropSelf(sourceEl: document.querySelector(`[data-drop-id="block-${node.id}"]`), targetEl: null)
-                                  // validateSlotBlock({ source: { data: { id: 'component', type: key } }, target: { parent: props.parent } })
+                                  if (isBlock(node)) {
+                                    const sourceEl = document.querySelector(`#canvas [data-drop-id="block-${props.block.id}"]`)
+                                    const targetEl = document.querySelector(`#canvas [data-drop-id="block-${node.id}"]`)
+                                    validateDropSelf(sourceEl, targetEl)
+                                  }
+
                                   return (
                                     <CommandItem
                                       key={node.id}
@@ -192,21 +196,29 @@ export function BlockDialogMove(props: {
                       </DropdownMenuTrigger>
                       <DropdownMenuContent className="w-56" align="start">
                         {Object.keys(selectedNode.slots).map((slot) => {
-                          return (
-                            <DropdownMenuItem
-                              onSelect={() => {
-                                field.onChange(slot)
-                                if (selectedNode.slots[slot].length) {
-                                  blockMoveForm.setValue('index', '1')
-                                } else {
-                                  blockMoveForm.setValue('index', '')
-                                }
-                              }}
-                            >
-                              <Check className={clsx('mr-2 size-4', field.value === slot ? 'opacity-100' : 'opacity-0')} />
-                              {isBlock(selectedNode) ? context.config[selectedNode.type].slots?.[slot].name : slot}
-                            </DropdownMenuItem>
-                          )
+                          try {
+                            if (isBlock(props.block)) {
+                              validateSlotBlock({
+                                source: { data: { id: props.block.type, type: props.block.type } },
+                                target: { parent: { node: selectedNode, slot } },
+                              })
+                            }
+                            return (
+                              <DropdownMenuItem
+                                onSelect={() => {
+                                  field.onChange(slot)
+                                  if (selectedNode.slots[slot].length) {
+                                    blockMoveForm.setValue('index', '1')
+                                  } else {
+                                    blockMoveForm.setValue('index', '')
+                                  }
+                                }}
+                              >
+                                <Check className={clsx('mr-2 size-4', field.value === slot ? 'opacity-100' : 'opacity-0')} />
+                                {isBlock(selectedNode) ? context.config[selectedNode.type].slots?.[slot].name : slot}
+                              </DropdownMenuItem>
+                            )
+                          } catch (e) {}
                         })}
                       </DropdownMenuContent>
                     </DropdownMenu>

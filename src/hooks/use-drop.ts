@@ -85,10 +85,10 @@ export function useDrop<Data extends Record<string, any>>(props: {
         // Prevent dropping on self or own children
 
         if (isDragData['block'](source.data)) {
-          const sourceId = source.element.closest('[data-drop-id^="block"]')?.getAttribute('data-drop-id')
-          const targetId = element.closest('[data-drop-id^="block"]')?.getAttribute('data-drop-id')
+          const sourceEl = source.element.closest('[data-drop-id^="block"]')
+          const targetEl = element.closest('[data-drop-id^="block"]')
           try {
-            validateDropSelf(source.element, element)
+            validateDropSelf(sourceEl, targetEl)
           } catch (e) {
             return false
           }
