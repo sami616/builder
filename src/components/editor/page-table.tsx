@@ -25,12 +25,14 @@ import { PageTableColumnFilters } from '@/components/editor/page-table-column-fi
 import { PageDialogDelete } from '@/components/editor/page-dialog-delete'
 import { PageAdd } from '@/components/editor/page-dialog-add'
 import clsx from 'clsx'
+import { PageDialogEdit } from './page-dialog-edit'
 
 export function PageTable() {
   const navigate = useNavigate({ from: '/pages' })
   const { pageGetMany } = usePageGetMany()
   const { pageImport } = usePageImport()
   const [deleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
+  const [editDialogOpen, setIsEditDialogOpen] = useState(false)
   const pageCRUDPending = Boolean(useIsMutating({ mutationKey: ['page'] }))
 
   const columns: ColumnDef<Page>[] = useMemo(
@@ -62,8 +64,8 @@ export function PageTable() {
         },
       },
       {
-        accessorKey: 'name',
-        header: 'Name',
+        accessorKey: 'title',
+        header: 'Title',
         enableHiding: false,
       },
       {
@@ -113,7 +115,14 @@ export function PageTable() {
         enableHiding: false,
         enableColumnFilter: false,
         cell: ({ row }) => {
-          return <PageTableActionsRow page={row.original} table={table} setIsDeleteDialogOpen={setIsDeleteDialogOpen} />
+          return (
+            <PageTableActionsRow
+              page={row.original}
+              table={table}
+              setIsEditDialogOpen={setIsEditDialogOpen}
+              setIsDeleteDialogOpen={setIsDeleteDialogOpen}
+            />
+          )
         },
       },
     ],
@@ -216,6 +225,7 @@ export function PageTable() {
         setIsDeleteDialogOpen={setIsDeleteDialogOpen}
         deleteDialogOpen={deleteDialogOpen}
       />
+      {selectedPages[0] && <PageDialogEdit selectedPage={selectedPages[0]} open={editDialogOpen} setOpen={setIsEditDialogOpen} />}
     </>
   )
 }

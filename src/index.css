@@ -57,10 +57,40 @@
   }
 }
 @layer base {
+  :root {
+    interpolate-size: allow-keywords; /* 👈 */
+  }
   * {
     @apply border-border;
   }
   body {
     @apply bg-background text-foreground;
+  }
+  [data-collapsible] {
+    overflow: hidden;
+    &[data-state='open'] {
+      animation: slideDown 0.2s ease-out;
+    }
+    &[data-state='closed'] {
+      animation: slideUp 0.2s ease-out;
+    }
+  }
+
+  @keyframes slideDown {
+    from {
+      height: 0;
+    }
+    to {
+      height: var(--radix-collapsible-content-height);
+    }
+  }
+
+  @keyframes slideUp {
+    from {
+      height: var(--radix-collapsible-content-height);
+    }
+    to {
+      height: 0;
+    }
   }
 }

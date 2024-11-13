@@ -9,13 +9,18 @@ import {
 } from '@/components/ui/dropdown-menu'
 import { usePageCopy } from '@/hooks/use-page-copy'
 import { Button } from '@/components/ui/button'
-import { Clipboard, Trash, FileDown, CopyIcon, MoreHorizontal } from 'lucide-react'
+import { Clipboard, Trash, FileDown, CopyIcon, MoreHorizontal, Pen } from 'lucide-react'
 import { Page } from '@/db'
 import { type Table } from '@tanstack/react-table'
 import { useIsMutating } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
 
-export function PageTableActionsRow(props: { table: Table<Page>; page: Page; setIsDeleteDialogOpen: (open: boolean) => void }) {
+export function PageTableActionsRow(props: {
+  table: Table<Page>
+  page: Page
+  setIsEditDialogOpen: (open: boolean) => void
+  setIsDeleteDialogOpen: (open: boolean) => void
+}) {
   const { pageExport } = usePageExport()
   const { pageCopy } = usePageCopy()
   const pageCRUDPending = Boolean(useIsMutating({ mutationKey: ['page'] }))
@@ -37,6 +42,17 @@ export function PageTableActionsRow(props: { table: Table<Page>; page: Page; set
         <DropdownMenuSeparator />
 
         <DropdownMenuLabel>Actions</DropdownMenuLabel>
+
+        <DropdownMenuItem
+          disabled={pageCRUDPending}
+          onClick={(e) => {
+            e.stopPropagation()
+            props.table.setRowSelection(() => ({ [props.page.id]: true }))
+            props.setIsEditDialogOpen(true)
+          }}
+        >
+          <Pen size={14} className="stroke-gray-400 mr-2" /> Edit
+        </DropdownMenuItem>
         <DropdownMenuItem
           disabled={pageCRUDPending}
           onClick={async (e) => {

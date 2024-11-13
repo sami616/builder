@@ -3,6 +3,7 @@ import { useState, useEffect, type RefObject, useRef } from 'react'
 import { DropTargetRecord, ElementDragPayload, type Input } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types'
 import { useIsMutating } from '@tanstack/react-query'
 import { isDragData } from '@/hooks/use-drag'
+import { validateDropSelf } from '@/components/editor/block-layer-item-slot'
 
 export type Target<Data extends Record<string, any>> = Omit<DropTargetRecord, 'data'> & { data: WithEdge<Data> }
 
@@ -82,21 +83,29 @@ export function useDrop<Data extends Record<string, any>>(props: {
       },
       canDrop: ({ source, element, input }) => {
         // Prevent dropping on self or own children
+
         if (isDragData['block'](source.data)) {
           const sourceId = source.element.closest('[data-drop-id^="block"]')?.getAttribute('data-drop-id')
-
-          const targetEl = element.closest('[data-drop-id^="block"]')
-          const targetId = targetEl?.getAttribute('data-drop-id')
-
-          const commonParent = targetEl?.closest(`[data-drop-id="${sourceId}"]`)
-          const dropSourceId = commonParent?.getAttribute('data-drop-id')
-
-          const commonChild = commonParent?.querySelector(`[data-drop-id="${targetId}"]`)
-          const childOrSelf = dropSourceId === targetId ? commonParent : commonChild
-
-          if (childOrSelf) {
-            if (commonParent?.contains(childOrSelf)) return false
+          const targetId = element.closest('[data-drop-id^="block"]')?.getAttribute('data-drop-id')
+          try {
+            validateDropSelf(source.element, element)
+          } catch (e) {
+            return false
           }
+          // const sourceId = source.element.closest('[data-drop-id^="block"]')?.getAttribute('data-drop-id')
+          //
+          // const targetEl = element.closest('[data-drop-id^="block"]')
+          // const targetId = targetEl?.getAttribute('data-drop-id')
+          //
+          // const commonParent = targetEl?.closest(`[data-drop-id="${sourceId}"]`)
+          // const dropSourceId = commonParent?.getAttribute('data-drop-id')
+          //
+          // const commonChild = commonParent?.querySelector(`[data-drop-id="${targetId}"]`)
+          // const childOrSelf = dropSourceId === targetId ? commonParent : commonChild
+          //
+          // if (childOrSelf) {
+          //   if (commonParent?.contains(childOrSelf)) return false
+          // }
         }
 
         if (isCanvasMutating) return false

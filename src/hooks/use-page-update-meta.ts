@@ -3,32 +3,35 @@ import { useRouteContext } from '@tanstack/react-router'
 import { Page } from '@/db'
 import { toast } from 'sonner'
 
-type Args = { page: Page; name: string }
+type Args = { page: Page } & Pick<Page, 'title' | 'description' | 'url' | 'slug'>
 
-export function usePageUpdateName() {
-  const context = useRouteContext({ from: '/pages/$id' })
+export function usePageUpdateMeta() {
+  const context = useRouteContext({ from: '/pages/' })
 
   const mutation = useMutation({
-    mutationKey: ['page', 'update', 'name'],
+    mutationKey: ['page', 'update', 'meta'],
     mutationFn: (args: Args) => {
       const clonedEntry = structuredClone(args.page)
-      const date = new Date()
-      clonedEntry.updatedAt = date
-      clonedEntry.title = args.name
+      clonedEntry.title = args.title
+      clonedEntry.description = args.description
+      clonedEntry.slug = args.slug
+      clonedEntry.url = args.url
+      clonedEntry.updatedAt = new Date()
+      clonedEntry.status = 'changed'
       return context.update({ entry: clonedEntry })
     },
-    onSuccess: (id) => {
+    onSuccess: () => {
       context.queryClient.invalidateQueries({
-        queryKey: ['pages', id],
+        queryKey: ['pages'],
       })
     },
   })
 
-  async function pageUpdateName(args: Args) {
+  async function pageUpdateMeta(args: Args) {
     const promise = mutation.mutateAsync(args)
     toast.promise(promise, { loading: 'Updating page...', success: 'Updated page', error: 'Updating page failed' })
     return promise
   }
 
-  return { pageUpdateName }
+  return { pageUpdateMeta }
 }

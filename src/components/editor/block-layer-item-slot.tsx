@@ -81,6 +81,23 @@ export function BlockLayerItemSlot(props: { block: Block; slot: string; parent: 
   )
 }
 
+export function validateDropSelf(sourceElement: Element, targetElement: Element) {
+  const sourceId = sourceElement.closest('[data-drop-id^="block"]')?.getAttribute('data-drop-id')
+
+  const targetEl = targetElement.closest('[data-drop-id^="block"]')
+  const targetId = targetEl?.getAttribute('data-drop-id')
+
+  const commonParent = targetEl?.closest(`[data-drop-id="${sourceId}"]`)
+  const dropSourceId = commonParent?.getAttribute('data-drop-id')
+
+  const commonChild = commonParent?.querySelector(`[data-drop-id="${targetId}"]`)
+  const childOrSelf = dropSourceId === targetId ? commonParent : commonChild
+
+  if (childOrSelf) {
+    if (commonParent?.contains(childOrSelf)) throw new Error('Component cant be moved into itself, or any of its own child components')
+  }
+}
+
 export function validateSlotMax<S extends { data: any }>(args: {
   source?: S
   target: {

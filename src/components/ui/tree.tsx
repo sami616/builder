@@ -163,7 +163,9 @@ export function TreeItemContent(props: { children: JSX.Element[] }) {
   if (props.children.length === 0) return null
   return (
     <CollapsibleContent asChild>
-      <ul className="pl-2 ml-2 border-l border-dashed">{props.children}</ul>
+      <ul data-collapsible className="pl-2 ml-2 border-l border-dashed">
+        {props.children}
+      </ul>
     </CollapsibleContent>
   )
 }

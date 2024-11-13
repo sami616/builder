@@ -1,5 +1,5 @@
 import { type Page, type Block } from '@/db'
-import { useRef, useState } from 'react'
+import { useDeferredValue, useRef, useState } from 'react'
 import { useDrag, isDragData } from '@/hooks/use-drag'
 import { useDrop } from '@/hooks/use-drop'
 import { useBlockUpdateName } from '@/hooks/use-block-update-name'
@@ -26,25 +26,26 @@ export function BlockLayerItem(props: { id: Block['id']; index: number; parent: 
   const dragRef = useRef<HTMLDivElement>(null)
   const dropRef = useRef<HTMLLIElement>(null)
   const { blockGet } = useBlockGet({ id: props.id })
+  const deferredBlock = useDeferredValue(blockGet.data)
   const { blockUpdateName } = useBlockUpdateName()
   const { blockMove } = useBlockMove()
   const { blockAdd } = useBlockAdd()
   const { templateApply } = useTemplateApply()
   const [actionsOpen, setActionsOpen] = useState(false)
-  const isActiveBlock = isActive({ store: 'blocks', item: { ...blockGet.data, index: props.index, parent: props.parent } })
-  const isLeaf = Object.keys(blockGet.data.slots).length === 0
+  const isActiveBlock = isActive({ store: 'blocks', item: { ...deferredBlock, index: props.index, parent: props.parent } })
+  const isLeaf = Object.keys(deferredBlock.slots).length === 0
   const context = useRouteContext({ from: '/pages/$id' })
   const [open, setOpen] = useState(false)
   const { setHover, removeHover } = useBlockHover(props.id, dropRef)
 
   const { isDraggingSource, dragPreviewContainer } = useDrag({
     dragRef,
-    data: { id: 'block', parent: props.parent, node: blockGet.data, index: props.index },
+    data: { id: 'block', parent: props.parent, node: deferredBlock, index: props.index },
   })
 
   const { closestEdge } = useDrop({
     dropRef,
-    data: { parent: props.parent, node: blockGet.data, index: props.index },
+    data: { parent: props.parent, node: deferredBlock, index: props.index },
     onLongDrag: (element) => {
       if (open || isLeaf) return
       flash(element)
@@ -71,7 +72,7 @@ export function BlockLayerItem(props: { id: Block['id']; index: number; parent: 
     },
   })
 
-  const isMissing = context.config[blockGet.data.type] ? false : true
+  const isMissing = context.config[deferredBlock.type] ? false : true
 
   return (
     <TreeItem
@@ -79,7 +80,7 @@ export function BlockLayerItem(props: { id: Block['id']; index: number; parent: 
       setOpen={setOpen}
       customRef={dropRef}
       htmlProps={{
-        'data-drop-id': `block-${blockGet.data.id}`,
+        'data-drop-id': `block-${deferredBlock.id}`,
         className: clsx([
           'outline',
           'outline-2',
@@ -90,7 +91,7 @@ export function BlockLayerItem(props: { id: Block['id']; index: number; parent: 
         ]),
         onClick: (e) => {
           e.stopPropagation()
-          handleActiveClick({ metaKey: e.metaKey, store: 'blocks', item: { ...blockGet.data, index: props.index, parent: props.parent } })
+          handleActiveClick({ metaKey: e.metaKey, store: 'blocks', item: { ...deferredBlock, index: props.index, parent: props.parent } })
         },
         onMouseOver: (e) => {
           e.stopPropagation()
@@ -108,9 +109,9 @@ export function BlockLayerItem(props: { id: Block['id']; index: number; parent: 
         <TreeItemTrigger hide={isLeaf} />
         {/* <TreeItemIcon icon={Layers2} /> */}
         <TreeItemLabel
-          label={blockGet.data.name}
+          label={deferredBlock.name}
           onRename={(updatedName) => {
-            blockUpdateName({ block: blockGet.data, name: updatedName })
+            blockUpdateName({ block: deferredBlock, name: updatedName })
           }}
         />
         {isMissing && (
@@ -120,7 +121,7 @@ export function BlockLayerItem(props: { id: Block['id']; index: number; parent: 
                 <AlertCircle size={16} className="text-red-500" />
               </TooltipTrigger>
               <TooltipContent>
-                <p>{blockGet.data.type} not found</p>
+                <p>{deferredBlock.type} not found</p>
               </TooltipContent>
             </Tooltip>
           </TooltipProvider>
@@ -128,18 +129,18 @@ export function BlockLayerItem(props: { id: Block['id']; index: number; parent: 
         <BlockLayerItemActions
           actionsOpen={actionsOpen}
           setActionsOpen={setActionsOpen}
-          block={blockGet.data}
+          block={deferredBlock}
           index={props.index}
           parent={props.parent}
         />
       </TreeItemHead>
       <TreeItemContent>
-        {Object.keys(blockGet.data.slots).map((slot) => (
-          <BlockLayerItemSlot key={slot} slot={slot} block={blockGet.data} parent={props.parent} />
+        {Object.keys(deferredBlock.slots).map((slot) => (
+          <BlockLayerItemSlot key={slot} slot={slot} block={deferredBlock} parent={props.parent} />
         ))}
       </TreeItemContent>
       <DropIndicator closestEdge={closestEdge} variant="horizontal" />
-      <DragPreview dragPreviewContainer={dragPreviewContainer}>{blockGet.data.name}</DragPreview>
+      <DragPreview dragPreviewContainer={dragPreviewContainer}>{deferredBlock.name}</DragPreview>
     </TreeItem>
   )
 }

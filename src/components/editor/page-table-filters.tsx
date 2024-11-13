@@ -1,9 +1,9 @@
-import { Filter, FilterX } from 'lucide-react'
+'use no memo'
+import { Filter } from 'lucide-react'
 import { Button } from '@/components/ui/button'
 import {
   DropdownMenu,
   DropdownMenuContent,
-  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
@@ -21,13 +21,13 @@ export function PageTableFilters(props: { table: Table<Page> }) {
     <div className="gap-2 flex items-center">
       <Input
         placeholder={`Search pages`}
-        value={(props.table.getColumn('name')?.getFilterValue() as string) ?? ''}
-        onChange={(event) => props.table.getColumn('name')?.setFilterValue(event.target.value)}
+        value={(props.table.getColumn('title')?.getFilterValue() as string) ?? ''}
+        onChange={(event) => props.table.getColumn('title')?.setFilterValue(event.target.value)}
       />
       <DropdownMenu>
         <DropdownMenuTrigger asChild>
           <Button variant="outline" className="relative ">
-            {columnFilters.filter((col) => col.id !== 'name').length > 0 ? (
+            {columnFilters.filter((col) => col.id !== 'title').length > 0 ? (
               <Badge className="absolute px-0 -top-1 -right-1 size-3 rounded-xl"></Badge>
             ) : null}
             <Filter className="size-4 mr-2" />
@@ -38,21 +38,18 @@ export function PageTableFilters(props: { table: Table<Page> }) {
           <DropdownMenuLabel>Status</DropdownMenuLabel>
           <DropdownMenuSeparator />
           <DropdownMenuRadioGroup
-            onValueChange={(status) => props.table.getColumn('status')?.setFilterValue(status)}
+            onValueChange={(status) => {
+              if (status === props.table.getColumn('status')?.getFilterValue()) {
+                props.table.getColumn('status')?.setFilterValue(undefined)
+              } else {
+                props.table.getColumn('status')?.setFilterValue(status)
+              }
+            }}
             value={props.table.getColumn('status')?.getFilterValue() as string}
           >
             <DropdownMenuRadioItem value="draft">Draft</DropdownMenuRadioItem>
             <DropdownMenuRadioItem value="published">Published</DropdownMenuRadioItem>
           </DropdownMenuRadioGroup>
-          {columnFilters.length > 0 && (
-            <>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem onClick={() => props.table.resetColumnFilters()}>
-                <FilterX className="size-4 mr-2 opacity-40" />
-                Clear all
-              </DropdownMenuItem>
-            </>
-          )}
         </DropdownMenuContent>
       </DropdownMenu>
     </div>

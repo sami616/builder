@@ -19,7 +19,7 @@ export function PropCollapsible(props: { block: Block; field: CollapsibleField }
           <PropInputLabel variant="head" field={props.field} />
           <ChevronDown size={16} />
         </CollapsibleTrigger>
-        <CollapsibleContent>
+        <CollapsibleContent data-collapsible>
           <div className="grid gap-4 p-4">
             {props.field.props.map((field) => {
               switch (field.type) {

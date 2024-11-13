@@ -44,7 +44,7 @@ function Page() {
   const blocks = Object.values(pageGet.data.slots)[0]
   const deferredBlocks = useDeferredValue(blocks)
   const [activeTab, setActiveTab] = useState('components')
-  const [canvasSize, setCanvasSize] = useState<string | undefined>('none')
+  const [canvasSize, setCanvasSize] = useState<string | undefined>('100%')
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
 
   return (
@@ -103,7 +103,7 @@ function Page() {
                   >
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <ToggleGroupItem className="group" value="none">
+                        <ToggleGroupItem className="group" value="100%">
                           <Monitor size={16} className="stroke-gray-400 group-aria-checked:stroke-rose-500" />
                         </ToggleGroupItem>
                       </TooltipTrigger>
@@ -137,8 +137,9 @@ function Page() {
               <Separator />
               <ScrollArea className="h-full w-full">
                 <div
+                  id="canvas"
                   className={clsx(['mx-auto', 'h-full', 'transition-opacity', isCanvasMutating ? 'opacity-50' : 'opacity-100'])}
-                  style={{ maxWidth: canvasSize }}
+                  style={{ transition: 'max-width 0.3s', maxWidth: canvasSize }}
                 >
                   {blocks.length === 0 && (
                     <DropZone
