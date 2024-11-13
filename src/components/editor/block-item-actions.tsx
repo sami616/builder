@@ -15,7 +15,7 @@ export function BlockItemActions(props: { block: Block; index: number; parent: {
   const { blockCopy } = useBlockCopy()
   const { blockDelete } = useBlockDelete()
   const [blockAddOpen, setBlockAddOpen] = useState(false)
-  const [blockMoveOpen, setBlockMoveOpen] = useState(false)
+  // const [blockMoveOpen, setBlockMoveOpen] = useState(false)
   const [templateAddOpen, setTemplateAddOpen] = useState(false)
 
   const isMissing = context.config[props.block.type] ? false : true
@@ -46,15 +46,6 @@ export function BlockItemActions(props: { block: Block; index: number; parent: {
         >
           <Plus size={14} className="mr-2 stroke-gray-400" /> Add
           <ContextMenuShortcut>A</ContextMenuShortcut>
-        </ContextMenuItem>
-
-        <ContextMenuItem
-          onClick={() => {
-            setBlockMoveOpen(true)
-          }}
-        >
-          <ArrowDownUp size={14} className="mr-2 stroke-gray-400" /> Move
-          <ContextMenuShortcut>M</ContextMenuShortcut>
         </ContextMenuItem>
 
         {!isMissing && (
@@ -92,7 +83,7 @@ export function BlockItemActions(props: { block: Block; index: number; parent: {
       </ContextMenuContent>
       <BlockDialogAdd open={blockAddOpen} setOpen={setBlockAddOpen} parent={props.parent} index={props.index} />
       <BlockDialogAddTemplate open={templateAddOpen} setOpen={setTemplateAddOpen} block={props.block} parent={props.parent} index={props.index} />
-      <BlockDialogMove setOpen={setBlockMoveOpen} open={blockMoveOpen} block={props.block} index={props.index} parent={props.parent} />
+      {/* <BlockDialogMove setOpen={setBlockMoveOpen} open={blockMoveOpen} block={props.block} index={props.index} parent={props.parent} /> */}
     </>
   )
 }

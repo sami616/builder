@@ -12,7 +12,7 @@ import { AlertCircle, CircleDashed } from 'lucide-react'
 import { TreeItem, TreeItemContent, TreeItemHead, TreeItemIcon, TreeItemLabel, TreeItemTrigger } from '@/components/ui/tree'
 import clsx from 'clsx'
 import { toast } from 'sonner'
-import { isPage } from '@/api'
+import { isBlock, isPage } from '@/api'
 import { flash } from '@/lib/utils'
 
 export function BlockLayerItemSlot(props: { block: Block; slot: string; parent: ComponentProps<typeof BlockLayerItem>['parent'] }) {
@@ -143,6 +143,11 @@ export function validateSlotBlock<S extends { data: any }>(args: {
     if (isDragData['block'](args.source.data)) {
       if (disabledComponents.includes(args.source.data.node.type)) {
         throw new Error(`${args.source.data.node.type} cannot be dropped here`)
+      }
+    }
+    if (isBlock(args.source.data)) {
+      if (disabledComponents.includes(args.source.data.type)) {
+        throw new Error(`${args.source.data.type} cannot be dropped here`)
       }
     }
     if (isDragData['template'](args.source.data)) {

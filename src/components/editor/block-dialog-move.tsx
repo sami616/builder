@@ -6,7 +6,7 @@ import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, Command
 import clsx from 'clsx'
 import { Input } from '../ui/input'
 import { validateSlotBlock, validateSlotMax, validateDropSelf } from './block-layer-item-slot'
-import { Dispatch, SetStateAction, useEffect, useState } from 'react'
+import { Dispatch, SetStateAction, useMemo, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
@@ -55,18 +55,39 @@ export function BlockDialogMove(props: {
     .map(([_key, block]) => block)
     .filter((block) => {
       if (!block?.slots) return false
-      // if (props.block.id === block.id) return false
       return Object.keys(block.slots).length
     })
 
   const allNodes = [page, ...allBlocks]
-  const selectedParentId = useWatch({ control: blockMoveForm.control, name: 'parentId' })
+    const selectedParentId = useWatch({ control: blockMoveForm.control, name: 'parentId' })
   const selectedNode = allNodes.find((node) => node?.id === Number(selectedParentId))
   const selectedSlot = useWatch({ control: blockMoveForm.control, name: 'slot' })
   const selectedIndex = useWatch({ control: blockMoveForm.control, name: 'index' })
-  const selectedSlotArray = selectedNode?.slots[selectedSlot]
+
+  const filteredSlots = useMemo(() => {
+    if (!selectedNode) return {}
+    return Object.keys(selectedNode.slots).reduce(
+      (acc, curr) => {
+        try {
+          if (isBlock(props.block) && isBlock(selectedNode)) {
+            validateSlotBlock({
+              source: { data: props.block },
+              target: { parent: { node: selectedNode, slot: curr } },
+            })
+          }
+          acc[curr] = selectedNode.slots[curr]
+          return acc
+        } catch (e) {
+          return acc
+        }
+      },
+      {} as { [key: string]: number[] },
+    )
+  }, [selectedNode, props.block])
 
   if (!selectedNode) return null
+
+  const selectedSlotArray = filteredSlots[selectedSlot]
 
   return (
     <Dialog
@@ -136,6 +157,8 @@ export function BlockDialogMove(props: {
                                     validateDropSelf(sourceEl, targetEl)
                                   }
 
+
+
                                   return (
                                     <CommandItem
                                       key={node.id}
@@ -147,8 +170,8 @@ export function BlockDialogMove(props: {
                                           blockMoveForm.setValue('slot', props.parent.slot)
                                           blockMoveForm.setValue('index', String(Number(props.index + 1)))
                                         } else {
-                                          blockMoveForm.setValue('slot', Object.keys(node.slots)[0])
-                                          if (node.slots[Object.keys(node.slots)[0]].length) {
+                                          blockMoveForm.setValue('slot', '')
+                                          if (filteredSlots[Object.keys(filteredSlots)[0]].length) {
                                             blockMoveForm.setValue('index', '1')
                                           } else {
                                             blockMoveForm.setValue('index', '')
@@ -190,35 +213,31 @@ export function BlockDialogMove(props: {
                     >
                       <DropdownMenuTrigger asChild className="shrink-0 stroke-gray-400 hover:enabled:stroke-gray-900">
                         <Button className="justify-between" variant="outline">
-                          {isBlock(selectedNode) ? context.config[selectedNode.type].slots?.[field.value]?.name : field.value}
+                          {field.value
+                            ? isBlock(selectedNode)
+                              ? context.config[selectedNode.type].slots?.[field.value]?.name
+                              : field.value
+                            : 'Select a slot'}
                           <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
                         </Button>
                       </DropdownMenuTrigger>
                       <DropdownMenuContent className="w-56" align="start">
-                        {Object.keys(selectedNode.slots).map((slot) => {
-                          try {
-                            if (isBlock(props.block)) {
-                              validateSlotBlock({
-                                source: { data: { id: props.block.type, type: props.block.type } },
-                                target: { parent: { node: selectedNode, slot } },
-                              })
-                            }
-                            return (
-                              <DropdownMenuItem
-                                onSelect={() => {
-                                  field.onChange(slot)
-                                  if (selectedNode.slots[slot].length) {
-                                    blockMoveForm.setValue('index', '1')
-                                  } else {
-                                    blockMoveForm.setValue('index', '')
-                                  }
-                                }}
-                              >
-                                <Check className={clsx('mr-2 size-4', field.value === slot ? 'opacity-100' : 'opacity-0')} />
-                                {isBlock(selectedNode) ? context.config[selectedNode.type].slots?.[slot].name : slot}
-                              </DropdownMenuItem>
-                            )
-                          } catch (e) {}
+                        {Object.keys(filteredSlots).map((slot) => {
+                          return (
+                            <DropdownMenuItem
+                              onSelect={() => {
+                                field.onChange(slot)
+                                if (filteredSlots[slot].length) {
+                                  blockMoveForm.setValue('index', '1')
+                                } else {
+                                  blockMoveForm.setValue('index', '')
+                                }
+                              }}
+                            >
+                              <Check className={clsx('mr-2 size-4', field.value === slot ? 'opacity-100' : 'opacity-0')} />
+                              {isBlock(selectedNode) ? context.config[selectedNode.type].slots?.[slot].name : slot}
+                            </DropdownMenuItem>
+                          )
                         })}
                       </DropdownMenuContent>
                     </DropdownMenu>

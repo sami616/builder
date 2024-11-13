@@ -167,14 +167,14 @@ export async function removeMany(args: { entries: Array<Page | Block | Template>
   await Promise.all([...promises, expTx.done, bloTx.done, tempTx.done])
 }
 
-export function isBlock(args: Omit<Block | Page | Template, 'id'>): args is Block {
+export function isBlock(args: any): args is Block {
   return args.store === 'blocks'
 }
 
-export function isTemplate(args: Omit<Block | Template | Page, 'id'>): args is Template {
+export function isTemplate(args: any): args is Template {
   return args.store === 'templates'
 }
 
-export function isPage(args: Omit<Block | Page | Template, 'id'>): args is Page {
+export function isPage(args: any): args is Page {
   return args.store === 'pages'
 }
