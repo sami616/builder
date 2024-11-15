@@ -2,13 +2,12 @@ import { type Block, type Page } from '@/db'
 import { useBlockCopy } from '@/hooks/use-block-copy'
 import { useBlockDelete } from '@/hooks/use-block-delete'
 import { validateSlotMax } from './block-layer-item-slot'
-import { ArrowDownUp, Copy, Layout, Plus, Trash } from 'lucide-react'
+import { Copy, Layout, Plus, Trash } from 'lucide-react'
 import { ContextMenuLabel, ContextMenuSeparator, ContextMenuContent, ContextMenuItem, ContextMenuShortcut } from '@/components/ui/context-menu'
 import { useState } from 'react'
 import { useRouteContext } from '@tanstack/react-router'
 import { BlockDialogAdd } from './block-dialog-add'
 import { BlockDialogAddTemplate } from './block-dialog-add-template'
-import { BlockDialogMove } from './block-dialog-move'
 
 export function BlockItemActions(props: { block: Block; index: number; parent: { slot: string; node: Block | Page } }) {
   const context = useRouteContext({ from: '/pages/$id' })

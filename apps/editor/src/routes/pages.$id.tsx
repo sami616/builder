@@ -22,6 +22,8 @@ import { Separator } from '@/components/ui/separator'
 import clsx from 'clsx'
 import { useIsMutating } from '@tanstack/react-query'
 import { HotKeys } from '@/components/editor/hotkeys'
+import { Badge } from '@/components/ui/badge'
+import { Button } from '@/components/ui/button'
 
 export const Route = createFileRoute('/pages/$id')({
   component: Page,
@@ -57,6 +59,16 @@ function Page() {
             </div>
           }
         >
+          <div className="w-full p-2 items-center justify-between flex gap-2">
+            <div className="flex gap-2">
+              <span>{pageGet.data.title}:</span>
+              <Badge variant="default">{pageGet.data.status}</Badge>
+            </div>
+            <div className="flex gap-2">
+              <Button variant="secondary">Preview</Button>
+              <Button>Publish</Button>
+            </div>
+          </div>
           <ResizablePanelGroup direction="horizontal">
             <ResizablePanel minSize={20} defaultSize={20}>
               <ResizablePanelGroup direction="vertical">

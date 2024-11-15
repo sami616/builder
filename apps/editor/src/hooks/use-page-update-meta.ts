@@ -17,7 +17,7 @@ export function usePageUpdateMeta() {
       clonedEntry.slug = args.slug
       clonedEntry.url = args.url
       clonedEntry.updatedAt = new Date()
-      clonedEntry.status = 'changed'
+      clonedEntry.status = args.page.publishedAt ? 'Changed' : 'Draft'
       return context.update({ entry: clonedEntry })
     },
     onSuccess: () => {

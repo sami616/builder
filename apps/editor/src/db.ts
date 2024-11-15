@@ -68,7 +68,7 @@ export type Page = {
   slug: string
   url: string
   description: string
-  status: 'published' | 'draft' | 'changed'
+  status: 'Published' | 'Draft' | 'Changed'
   publishedAt?: Date
   slots: { [index: string]: Array<Block['id']> }
 } & Sys

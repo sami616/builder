@@ -1,5 +1,5 @@
-import { type ReactNode } from '@tanstack/react-router'
-import { type Config } from '@/main'
+import { type ReactNode } from 'react'
+import { type Config } from '@repo/editor'
 
 export function Container(props: { padding?: string; left?: ReactNode; right?: ReactNode; background: string; title?: string }) {
   return (

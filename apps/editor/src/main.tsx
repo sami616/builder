@@ -1,4 +1,3 @@
-import { buttonConfig, headingConfig, containerConfig } from '@/components/blocks'
 import { HTMLInputAutoCompleteAttribute, StrictMode } from 'react'
 import { get, getMany, add, update, updateMany, addMany, remove, removeMany, getTree, isPage, isBlock, duplicateTree } from '@/api'
 import ReactDOM from 'react-dom/client'
@@ -10,15 +9,17 @@ import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
 import { Block } from '@/db'
 import '@/index.css'
 import { Toaster } from 'sonner'
+import { buttonConfig, headingConfig, containerConfig } from '@repo/blocks'
 
 const queryClient = new QueryClient()
+
+export const foo = 'FOO'
 
 export function evaluateRule(rule: HiddenSchema['rules'][number], props: Block['props']) {
   const [propertyID, operator, propertyValue] = rule
 
   const actualValue = props[propertyID]
 
-  // const actualValue = sdk.entry.fields?.[propertyID]?.getValue()
   switch (operator) {
     case '===': {
       switch (propertyValue) {

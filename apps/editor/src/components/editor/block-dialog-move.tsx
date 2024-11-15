@@ -5,7 +5,7 @@ import { Button } from '../ui/button'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../ui/command'
 import clsx from 'clsx'
 import { Input } from '../ui/input'
-import { validateSlotBlock, validateSlotMax, validateDropSelf } from './block-layer-item-slot'
+import { validateSlotBlock, validateDropSelf } from './block-layer-item-slot'
 import { Dispatch, SetStateAction, useMemo, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
@@ -59,7 +59,7 @@ export function BlockDialogMove(props: {
     })
 
   const allNodes = [page, ...allBlocks]
-    const selectedParentId = useWatch({ control: blockMoveForm.control, name: 'parentId' })
+  const selectedParentId = useWatch({ control: blockMoveForm.control, name: 'parentId' })
   const selectedNode = allNodes.find((node) => node?.id === Number(selectedParentId))
   const selectedSlot = useWatch({ control: blockMoveForm.control, name: 'slot' })
   const selectedIndex = useWatch({ control: blockMoveForm.control, name: 'index' })
@@ -156,8 +156,6 @@ export function BlockDialogMove(props: {
                                     const targetEl = document.querySelector(`#canvas [data-drop-id="block-${node.id}"]`)
                                     validateDropSelf(sourceEl, targetEl)
                                   }
-
-
 
                                   return (
                                     <CommandItem

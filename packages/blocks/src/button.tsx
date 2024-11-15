@@ -1,15 +1,13 @@
-'use client'
-
-import { type ReactNode } from '@tanstack/react-router'
-import { type Config } from '@/main'
-import { Button as ShadButton } from '@/components/ui/button'
+import { type Config } from '@repo/editor'
+import { ReactNode } from 'react'
+import './button.css'
 
 export function Button({ children = 'Button', icon }: { children?: ReactNode; icon: string }) {
   return (
-    <ShadButton>
+    <button data-component="Button">
       {icon}
       {children}
-    </ShadButton>
+    </button>
   )
 }
 
