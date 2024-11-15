@@ -82,6 +82,9 @@ export async function duplicateTree(args: { tree: Awaited<ReturnType<typeof getT
     const { id, ...clonedEntryWithoutId } = clonedEntry
     if (isPage(clonedEntryWithoutId)) {
       clonedEntryWithoutId.slug = generateSlug()
+      clonedEntryWithoutId.publishedAt = undefined
+      clonedEntryWithoutId.status = 'Unpublished'
+      clonedEntryWithoutId.url = ''
     }
     const rootId = await add({ entry: clonedEntryWithoutId })
     rootEntry = { ...clonedEntry, id: rootId }

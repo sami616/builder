@@ -15,6 +15,7 @@ import { Route as ProfileImport } from './routes/profile'
 import { Route as IndexImport } from './routes/index'
 import { Route as PagesIndexImport } from './routes/pages.index'
 import { Route as PagesIdImport } from './routes/pages.$id'
+import { Route as PagesIdPreviewImport } from './routes/pages_.$id.preview'
 
 // Create/Update Routes
 
@@ -39,6 +40,12 @@ const PagesIndexRoute = PagesIndexImport.update({
 const PagesIdRoute = PagesIdImport.update({
   id: '/pages/$id',
   path: '/pages/$id',
+  getParentRoute: () => rootRoute,
+} as any)
+
+const PagesIdPreviewRoute = PagesIdPreviewImport.update({
+  id: '/pages_/$id/preview',
+  path: '/pages/$id/preview',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -74,6 +81,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PagesIndexImport
       parentRoute: typeof rootRoute
     }
+    '/pages_/$id/preview': {
+      id: '/pages_/$id/preview'
+      path: '/pages/$id/preview'
+      fullPath: '/pages/$id/preview'
+      preLoaderRoute: typeof PagesIdPreviewImport
+      parentRoute: typeof rootRoute
+    }
   }
 }
 
@@ -84,6 +98,7 @@ export interface FileRoutesByFullPath {
   '/profile': typeof ProfileRoute
   '/pages/$id': typeof PagesIdRoute
   '/pages': typeof PagesIndexRoute
+  '/pages/$id/preview': typeof PagesIdPreviewRoute
 }
 
 export interface FileRoutesByTo {
@@ -91,6 +106,7 @@ export interface FileRoutesByTo {
   '/profile': typeof ProfileRoute
   '/pages/$id': typeof PagesIdRoute
   '/pages': typeof PagesIndexRoute
+  '/pages/$id/preview': typeof PagesIdPreviewRoute
 }
 
 export interface FileRoutesById {
@@ -99,14 +115,21 @@ export interface FileRoutesById {
   '/profile': typeof ProfileRoute
   '/pages/$id': typeof PagesIdRoute
   '/pages/': typeof PagesIndexRoute
+  '/pages_/$id/preview': typeof PagesIdPreviewRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/profile' | '/pages/$id' | '/pages'
+  fullPaths: '/' | '/profile' | '/pages/$id' | '/pages' | '/pages/$id/preview'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/profile' | '/pages/$id' | '/pages'
-  id: '__root__' | '/' | '/profile' | '/pages/$id' | '/pages/'
+  to: '/' | '/profile' | '/pages/$id' | '/pages' | '/pages/$id/preview'
+  id:
+    | '__root__'
+    | '/'
+    | '/profile'
+    | '/pages/$id'
+    | '/pages/'
+    | '/pages_/$id/preview'
   fileRoutesById: FileRoutesById
 }
 
@@ -115,6 +138,7 @@ export interface RootRouteChildren {
   ProfileRoute: typeof ProfileRoute
   PagesIdRoute: typeof PagesIdRoute
   PagesIndexRoute: typeof PagesIndexRoute
+  PagesIdPreviewRoute: typeof PagesIdPreviewRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
@@ -122,6 +146,7 @@ const rootRouteChildren: RootRouteChildren = {
   ProfileRoute: ProfileRoute,
   PagesIdRoute: PagesIdRoute,
   PagesIndexRoute: PagesIndexRoute,
+  PagesIdPreviewRoute: PagesIdPreviewRoute,
 }
 
 export const routeTree = rootRoute
@@ -137,7 +162,8 @@ export const routeTree = rootRoute
         "/",
         "/profile",
         "/pages/$id",
-        "/pages/"
+        "/pages/",
+        "/pages_/$id/preview"
       ]
     },
     "/": {
@@ -151,6 +177,9 @@ export const routeTree = rootRoute
     },
     "/pages/": {
       "filePath": "pages.index.tsx"
+    },
+    "/pages_/$id/preview": {
+      "filePath": "pages_.$id.preview.tsx"
     }
   }
 }

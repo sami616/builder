@@ -1,4 +1,4 @@
-import { createFileRoute, useRouteContext } from '@tanstack/react-router'
+import { createFileRoute } from '@tanstack/react-router'
 import { Link } from '@tanstack/react-router'
 import { type Page } from '@/db'
 import { Suspense, useDeferredValue, useState } from 'react'
@@ -16,7 +16,7 @@ import { useTemplateApply } from '@/hooks/use-template-apply'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
-import { ChevronLeft, Layers2, List, Loader, Monitor, Smartphone, Tablet } from 'lucide-react'
+import { ChevronLeft, Layers2, Loader, Monitor, Smartphone, Tablet } from 'lucide-react'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Separator } from '@/components/ui/separator'
@@ -67,7 +67,6 @@ export const Route = createFileRoute('/pages/$id')({
 
 function Page() {
   const { id } = Route.useParams()
-  const context = useRouteContext({ from: '/pages/$id' })
   const publishMutation = usePagePublish()
   const unpublishMutation = usePageUnPublish()
   const { pageGet } = usePageGet({ id: Number(id) })
@@ -82,7 +81,7 @@ function Page() {
 
   return (
     <HotKeys>
-      <main className="h-[calc(100vh-62px)]">
+      <main className="h-[calc(100vh-55px)]">
         <Suspense
           fallback={
             <div className="flex h-full w-full items-center justify-center">
@@ -108,8 +107,10 @@ function Page() {
               </Badge>
             </div>
             <div className="flex gap-2">
-              <Button disabled={isCanvasMutating} variant="secondary">
-                Preview
+              <Button asChild disabled={isCanvasMutating} variant="secondary">
+                <Link to="/pages/$id/preview" params={{ id: String(pageGet.data.id) }}>
+                  Preview
+                </Link>
               </Button>
               {pageGet.data.status === 'Published' && (
                 <Button disabled={isCanvasMutating} variant="destructive" onClick={() => unpublishMutation.mutate(pageGet.data)}>
