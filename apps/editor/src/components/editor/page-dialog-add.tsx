@@ -65,7 +65,7 @@ export function PageAdd() {
                     updatedAt: new Date(),
                     publishedAt: undefined,
                     slots: { root: [] },
-                    status: 'draft',
+                    status: 'Unpublished',
                   },
                 })
                 setAddNewPageDialogOpen(false)

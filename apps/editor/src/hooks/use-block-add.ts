@@ -1,10 +1,11 @@
 import { useMutation } from '@tanstack/react-query'
 import { type Edge } from '@/hooks/use-drop'
-import { useRouteContext } from '@tanstack/react-router'
+import { /* useParams */ useParams, useRouteContext } from '@tanstack/react-router'
 import { type Block, type Page } from '@/db'
 import { DragData } from '@/hooks/use-drag'
 import { toast } from 'sonner'
 import { Props } from '@/main'
+import { isPage } from '@/api'
 
 type Args = {
   name?: string
@@ -18,6 +19,7 @@ type Args = {
 
 export function useBlockAdd() {
   const context = useRouteContext({ from: '/pages/$id' })
+  const params = useParams({ from: '/pages/$id' })
   const mutation = useMutation({
     mutationKey: ['canvas', 'block', 'add'],
     mutationFn: async (args: Args) => {
@@ -70,10 +72,20 @@ export function useBlockAdd() {
         clonedParentNode.slots[slot].push(id)
       }
 
+      clonedParentNode.updatedAt = date
+
+      if (!isPage(clonedParentNode)) {
+        const page = context.queryClient.getQueryData<Page>(['pages', Number(params.id)])
+        if (page) await context.update({ entry: { ...page, updatedAt: date } })
+      }
+
       return context.update({ entry: clonedParentNode })
     },
     onSuccess: (data, vars) => {
       context.queryClient.invalidateQueries({ queryKey: [vars.target.parent.node.store, data] })
+      if (!isPage(vars.target.parent.node)) {
+        context.queryClient.invalidateQueries({ queryKey: ['pages'] })
+      }
     },
   })
 

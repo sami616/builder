@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query'
-import { duplicateTree, getTree } from '@/api'
-import { useRouteContext } from '@tanstack/react-router'
+import { duplicateTree, getTree, isPage } from '@/api'
+import { useParams, useRouteContext } from '@tanstack/react-router'
 import { DragData } from '@/hooks/use-drag'
 import { Edge } from '@/hooks/use-drop'
 import { Block, Page } from '@/db'
@@ -17,9 +17,11 @@ type Args = {
 
 export function useTemplateApply() {
   const context = useRouteContext({ from: '/pages/$id' })
+  const params = useParams({ from: '/pages/$id' })
   const mutation = useMutation({
     mutationKey: ['canvas', 'template', 'apply'],
     mutationFn: async (args: Args) => {
+      const date = new Date()
       const clonedParentNode = structuredClone(args.target.parent.node)
       const tree = await getTree({ root: { id: args.source.node.slots.root[0], store: 'blocks' } })
       const rootEntry = await duplicateTree({ tree })
@@ -32,10 +34,21 @@ export function useTemplateApply() {
       } else {
         clonedParentNode.slots[addSlot].push(rootEntry.id)
       }
+
+      clonedParentNode.updatedAt = date
+
+      if (!isPage(clonedParentNode)) {
+        const page = context.queryClient.getQueryData<Page>(['pages', Number(params.id)])
+        if (page) await context.update({ entry: { ...page, updatedAt: date } })
+      }
+
       return context.update({ entry: clonedParentNode })
     },
     onSuccess: (data, vars) => {
       context.queryClient.invalidateQueries({ queryKey: [vars.target.parent.node.store, data] })
+      if (!isPage(vars.target.parent.node)) {
+        context.queryClient.invalidateQueries({ queryKey: ['pages'] })
+      }
     },
   })
 

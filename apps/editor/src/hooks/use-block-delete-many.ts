@@ -1,19 +1,22 @@
 import { type ComponentProps } from 'react'
 import { useMutation } from '@tanstack/react-query'
-import { useRouteContext } from '@tanstack/react-router'
-import { type Block } from '@/db'
+import { useParams, useRouteContext } from '@tanstack/react-router'
+import { Page, type Block } from '@/db'
 import { BlockItem } from '@/components/editor/block-item'
 import { toast } from 'sonner'
 import { useActive } from './use-active'
+import { isPage } from '@/api'
 
 type Args = { entries: Array<{ id: Block['id']; index: number; parent: ComponentProps<typeof BlockItem>['parent'] }> }
 
 export function useBlockDeleteMany() {
   const context = useRouteContext({ from: '/pages/$id' })
+  const params = useParams({ from: '/pages/$id' })
   const { setActive } = useActive()
   const mutation = useMutation({
     mutationKey: ['canvas', 'block', 'delete'],
     mutationFn: async (args: Args) => {
+      const date = new Date()
       const removeList = []
       const updateList = new Map<number, Args['entries'][number]['parent']['node']>() // Map to store each unique cloned parent node
       // sort to process deletions from the highest index to the lowest,
@@ -28,17 +31,27 @@ export function useBlockDeleteMany() {
 
         const clonedParentNode = updateList.get(entry.parent.node.id) ?? structuredClone(entry.parent.node)
         clonedParentNode?.slots[entry.parent.slot].splice(entry.index, 1)
+        clonedParentNode.updatedAt = date
         updateList.set(entry.parent.node.id, clonedParentNode)
+      }
+
+      const hasPage = Array.from(updateList.values()).some((item) => isPage(item))
+      if (!hasPage) {
+        const page = context.queryClient.getQueryData<Page>(['pages', Number(params.id)])
+        if (page) await context.update({ entry: { ...page, updatedAt: date } })
       }
 
       await Promise.all([context.removeMany({ entries: removeList }), context.updateMany({ entries: Array.from(updateList.values()) })])
 
-      return { updateList: Array.from(updateList.values()) }
+      return { updateList: Array.from(updateList.values()), hasPage }
     },
-    onSuccess: async ({ updateList }) => {
+    onSuccess: async ({ updateList, hasPage }) => {
       updateList.forEach((item) => {
         context.queryClient.invalidateQueries({ queryKey: [item.store, item.id] })
       })
+      if (!hasPage) {
+        context.queryClient.invalidateQueries({ queryKey: ['pages'] })
+      }
       setActive({ store: 'none', items: [] })
     },
   })

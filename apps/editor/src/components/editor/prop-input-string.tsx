@@ -57,7 +57,7 @@ export function PropInputString(props: { block: Block; field: StringField }) {
             blockUpdateProps({ block: props.block, props: { [props.field.id]: val } })
           }}
         >
-          <SelectTrigger className="bg-white">
+          <SelectTrigger disabled={isCanvasMutating} className="bg-white">
             <SelectValue placeholder="Select" />
           </SelectTrigger>
 

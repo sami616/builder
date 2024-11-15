@@ -1,4 +1,5 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useRouteContext } from '@tanstack/react-router'
+import { Link } from '@tanstack/react-router'
 import { type Page } from '@/db'
 import { Suspense, useDeferredValue, useState } from 'react'
 import { ComponentPanel } from '@/components/editor/component-panel'
@@ -15,15 +16,42 @@ import { useTemplateApply } from '@/hooks/use-template-apply'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
-import { Layers2, Loader, Monitor, Smartphone, Tablet } from 'lucide-react'
+import { ChevronLeft, Layers2, List, Loader, Monitor, Smartphone, Tablet } from 'lucide-react'
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Separator } from '@/components/ui/separator'
 import clsx from 'clsx'
-import { useIsMutating } from '@tanstack/react-query'
+import { useIsMutating, useMutation } from '@tanstack/react-query'
 import { HotKeys } from '@/components/editor/hotkeys'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
+
+function usePageUnPublish() {
+  const context = Route.useRouteContext()
+  return useMutation({
+    mutationKey: ['page', 'publish'],
+    mutationFn: (page: Page) => {
+      return context.update({ entry: { ...page, status: 'Unpublished' } })
+    },
+    onSuccess: () => {
+      // const context = Route.useRouteContext()
+      context.queryClient.invalidateQueries({ queryKey: ['pages'] })
+    },
+  })
+}
+function usePagePublish() {
+  const context = Route.useRouteContext()
+  return useMutation({
+    mutationKey: ['page', 'publish'],
+    mutationFn: (page: Page) => {
+      return context.update({ entry: { ...page, status: 'Published', publishedAt: new Date() } })
+    },
+    onSuccess: () => {
+      // const context = Route.useRouteContext()
+      context.queryClient.invalidateQueries({ queryKey: ['pages'] })
+    },
+  })
+}
 
 export const Route = createFileRoute('/pages/$id')({
   component: Page,
@@ -39,6 +67,9 @@ export const Route = createFileRoute('/pages/$id')({
 
 function Page() {
   const { id } = Route.useParams()
+  const context = useRouteContext({ from: '/pages/$id' })
+  const publishMutation = usePagePublish()
+  const unpublishMutation = usePageUnPublish()
   const { pageGet } = usePageGet({ id: Number(id) })
   const { templateGetMany } = useTemplateGetMany()
   const { blockAdd } = useBlockAdd()
@@ -60,15 +91,40 @@ function Page() {
           }
         >
           <div className="w-full p-2 items-center justify-between flex gap-2">
-            <div className="flex gap-2">
-              <span>{pageGet.data.title}:</span>
-              <Badge variant="default">{pageGet.data.status}</Badge>
+            <div className="flex gap-2 items-center">
+              <Button asChild variant="ghost" size="icon">
+                <Link to="/pages">
+                  <ChevronLeft size={16} />
+                </Link>
+              </Button>
+              <h1 className="text-xl font-semibold">{pageGet.data.title}</h1>
+              <Badge
+                variant="outline"
+                className={clsx({
+                  'text-emerald-500 border-emerald-500': pageGet.data.status === 'Published',
+                })}
+              >
+                {pageGet.data.status}
+              </Badge>
             </div>
             <div className="flex gap-2">
-              <Button variant="secondary">Preview</Button>
-              <Button>Publish</Button>
+              <Button disabled={isCanvasMutating} variant="secondary">
+                Preview
+              </Button>
+              {pageGet.data.status === 'Published' && (
+                <Button disabled={isCanvasMutating} variant="destructive" onClick={() => unpublishMutation.mutate(pageGet.data)}>
+                  Unpublish
+                </Button>
+              )}
+              <Button disabled={isCanvasMutating} className="relative" onClick={() => publishMutation.mutate(pageGet.data)}>
+                {pageGet.data.publishedAt && pageGet.data.publishedAt < pageGet.data.updatedAt && (
+                  <div className="bg-emerald-500 absolute px-0 -top-1 -right-1 size-3 rounded-xl"></div>
+                )}
+                Publish
+              </Button>
             </div>
           </div>
+          <Separator />
           <ResizablePanelGroup direction="horizontal">
             <ResizablePanel minSize={20} defaultSize={20}>
               <ResizablePanelGroup direction="vertical">

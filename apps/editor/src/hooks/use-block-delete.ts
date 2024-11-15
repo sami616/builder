@@ -1,28 +1,41 @@
 import { type ComponentProps } from 'react'
 import { useMutation } from '@tanstack/react-query'
-import { useRouteContext } from '@tanstack/react-router'
-import { type Block } from '@/db'
+import { useParams, useRouteContext } from '@tanstack/react-router'
+import { Page, type Block } from '@/db'
 import { BlockItem } from '@/components/editor/block-item'
 import { toast } from 'sonner'
 import { useActive } from './use-active'
+import { isPage } from '@/api'
 
 type Args = { id: Block['id']; index: number; parent: ComponentProps<typeof BlockItem>['parent'] }
 
 export function useBlockDelete() {
   const context = useRouteContext({ from: '/pages/$id' })
+  const params = useParams({ from: '/pages/$id' })
   const { setActive } = useActive()
+
   const mutation = useMutation({
     mutationKey: ['canvas', 'block', 'delete'],
     mutationFn: async (args: Args) => {
+      const date = new Date()
       const entries = await context.getTree({ root: { id: args.id, store: 'blocks' } })
       await context.removeMany({ entries })
       const clonedParentNode = structuredClone(args.parent.node)
       clonedParentNode.slots[args.parent.slot].splice(args.index, 1)
-      await context.update({ entry: clonedParentNode })
-      return { store: clonedParentNode.store, id: args.parent.node.id }
+      clonedParentNode.updatedAt = date
+
+      if (!isPage(clonedParentNode)) {
+        const page = context.queryClient.getQueryData<Page>(['pages', Number(params.id)])
+        if (page) await context.update({ entry: { ...page, updatedAt: date } })
+      }
+
+      return context.update({ entry: clonedParentNode })
     },
-    onSuccess: async ({ store, id }) => {
-      context.queryClient.invalidateQueries({ queryKey: [store, id] })
+    onSuccess: async (_data, vars) => {
+      context.queryClient.invalidateQueries({ queryKey: [vars.parent.node.store, vars.parent.node.id] })
+      if (!isPage(vars.parent.node)) {
+        context.queryClient.invalidateQueries({ queryKey: ['pages'] })
+      }
       setActive({ store: 'none', items: [] })
     },
   })

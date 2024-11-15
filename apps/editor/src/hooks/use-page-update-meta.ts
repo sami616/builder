@@ -3,7 +3,7 @@ import { useRouteContext } from '@tanstack/react-router'
 import { Page } from '@/db'
 import { toast } from 'sonner'
 
-type Args = { page: Page } & Pick<Page, 'title' | 'description' | 'url' | 'slug'>
+type Args = { page: Page } & Partial<Pick<Page, 'title' | 'description' | 'url' | 'slug' | 'status' | 'publishedAt'>>
 
 export function usePageUpdateMeta() {
   const context = useRouteContext({ from: '/pages/' })
@@ -12,12 +12,13 @@ export function usePageUpdateMeta() {
     mutationKey: ['page', 'update', 'meta'],
     mutationFn: (args: Args) => {
       const clonedEntry = structuredClone(args.page)
-      clonedEntry.title = args.title
-      clonedEntry.description = args.description
-      clonedEntry.slug = args.slug
-      clonedEntry.url = args.url
+      if (args.title) clonedEntry.title = args.title
+      if (args.description) clonedEntry.description = args.description
+      if (args.slug) clonedEntry.slug = args.slug
+      if (args.url) clonedEntry.url = args.url
+      if (args.publishedAt) clonedEntry.publishedAt = args.publishedAt
+      if (args.status) clonedEntry.status = args.status
       clonedEntry.updatedAt = new Date()
-      clonedEntry.status = args.page.publishedAt ? 'Changed' : 'Draft'
       return context.update({ entry: clonedEntry })
     },
     onSuccess: () => {

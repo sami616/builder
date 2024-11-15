@@ -7,7 +7,7 @@ import { cn } from '@/lib/utils'
 import { ColourField } from '@/main'
 import { Copy, Paintbrush } from 'lucide-react'
 import { PropInputLabel } from './prop-input-label'
-import { useId } from 'react'
+import { useId, useState } from 'react'
 import { useBlockUpdateProps } from '@/hooks/use-block-update-props'
 import { useIsMutating } from '@tanstack/react-query'
 import { TooltipProvider, TooltipTrigger } from '@radix-ui/react-tooltip'
@@ -19,6 +19,7 @@ export function PropInputColour(props: { block: Block; field: ColourField }) {
   const defaultTab = value?.includes?.('gradient') ? 'gradient' : 'solid'
   const { blockUpdateProps } = useBlockUpdateProps()
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
+  const [pickerOpen, setPickerOpen] = useState(false)
   const { options } = props.field
   const id = useId()
 
@@ -30,7 +31,7 @@ export function PropInputColour(props: { block: Block; field: ColourField }) {
   return (
     <div className="gap-2 grid">
       <PropInputLabel field={props.field} for={id} />
-      <Popover>
+      <Popover open={pickerOpen} onOpenChange={setPickerOpen}>
         <PopoverTrigger disabled={isCanvasMutating} asChild>
           <Button variant={'outline'} className={cn('w-full justify-start text-left font-normal', !value && 'text-muted-foreground')}>
             <div className="w-full flex items-center gap-2">
@@ -66,11 +67,15 @@ export function PropInputColour(props: { block: Block; field: ColourField }) {
                   <TooltipProvider key={solid.value}>
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <div
+                        <button
+                          disabled={isCanvasMutating}
                           key={solid.value}
                           style={{ background: solid.value }}
-                          className="rounded-md h-6 w-6 cursor-pointer active:scale-105"
-                          onClick={() => blockUpdateProps({ block: props.block, props: { [props.field.id]: solid.value } })}
+                          className="disabled:opacity-50 rounded-md size-6 cursor-pointer active:scale-105"
+                          onClick={() => {
+                            setPickerOpen(false)
+                            blockUpdateProps({ block: props.block, props: { [props.field.id]: solid.value } })
+                          }}
                         />
                       </TooltipTrigger>
                       {solid.name && <TooltipContent>{solid.name}</TooltipContent>}
@@ -87,11 +92,15 @@ export function PropInputColour(props: { block: Block; field: ColourField }) {
                     <TooltipProvider key={gradeint.value}>
                       <Tooltip>
                         <TooltipTrigger asChild>
-                          <div
+                          <button
+                            disabled={isCanvasMutating}
                             key={gradeint.value}
                             style={{ background: gradeint.value }}
-                            className="rounded-md h-6 w-6 cursor-pointer active:scale-105"
-                            onClick={() => blockUpdateProps({ block: props.block, props: { [props.field.id]: gradeint.value } })}
+                            className="disabled:opacity-50 rounded-md size-6 cursor-pointer active:scale-105"
+                            onClick={() => {
+                              setPickerOpen(false)
+                              blockUpdateProps({ block: props.block, props: { [props.field.id]: gradeint.value } })
+                            }}
                           />
                         </TooltipTrigger>
                         {gradeint.name && <TooltipContent>{gradeint.name}</TooltipContent>}

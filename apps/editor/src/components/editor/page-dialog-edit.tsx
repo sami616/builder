@@ -58,6 +58,7 @@ export function PageDialogEdit(props: { selectedPage: Page; open: boolean; setOp
                   description: values.description ?? '',
                   slug: values.slug,
                   url: values.url ?? '',
+                  status: 'Published',
                 })
                 props.setOpen(false)
               })}

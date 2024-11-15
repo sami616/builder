@@ -17,6 +17,7 @@ import { validateSlotBlock, validateSlotMax } from './block-layer-item-slot'
 import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu'
 import { useBlockAdd } from '@/hooks/use-block-add'
 import { BlockItemActions } from './block-item-actions'
+import { useIsMutating } from '@tanstack/react-query'
 
 export function BlockItem(props: { index: number; page: Page; parent: { slot: string; node: Block | Page }; id: Block['id'] }) {
   const { blockGet } = useBlockGet({ id: props.id })
@@ -31,6 +32,7 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
   const isActiveBlock = isActive({ store: 'blocks', item: { ...deferredBlock, index: props.index, parent: props.parent } })
   const [actionsOpen, setActionsOpen] = useState(false)
   const { setHover, removeHover } = useBlockHover(deferredBlock.id, dropRef)
+  const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
 
   const { closestEdge } = useDrop({
     dropRef: dropRef,
@@ -61,17 +63,15 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
     data: { id: 'block', index: props.index, parent: props.parent, node: deferredBlock },
   })
 
-  const deferredComponentBlocks = useDeferredValue(
-    Object.keys(deferredBlock.slots).reduce<{
-      [key: string]: JSX.Element[] | JSX.Element
-    }>((acc, slot) => {
-      acc[slot] = deferredBlock.slots[slot].map((id, index) => {
-        return <BlockItem index={index} parent={{ slot, node: deferredBlock }} page={props.page} key={id} id={id} />
-      })
+  const nestedBlocks = Object.keys(deferredBlock.slots).reduce<{
+    [key: string]: JSX.Element[] | JSX.Element
+  }>((acc, slot) => {
+    acc[slot] = deferredBlock.slots[slot].map((id, index) => {
+      return <BlockItem index={index} parent={{ slot, node: deferredBlock }} page={props.page} key={id} id={id} />
+    })
 
-      return acc
-    }, {}),
-  )
+    return acc
+  }, {})
 
   const Component = context.config[deferredBlock.type]?.component ?? (() => <Missing node={{ type: 'component', name: deferredBlock.type }} />)
 
@@ -87,7 +87,7 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
           }
         }}
       >
-        <ContextMenuTrigger asChild>
+        <ContextMenuTrigger disabled={isCanvasMutating} asChild>
           <div
             data-component="BlockItem"
             className={clsx([
@@ -118,7 +118,7 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
             ref={dropRef}
           >
             <div ref={dragRef}>
-              <Component {...deferredBlock.props} {...deferredComponentBlocks} />
+              <Component {...deferredBlock.props} {...nestedBlocks} />
               <DropIndicator closestEdge={closestEdge} variant="horizontal" />
               <DragPreview dragPreviewContainer={dragPreviewContainer}>{deferredBlock.name}</DragPreview>
             </div>
