@@ -7,7 +7,7 @@ import { useActive } from './use-active'
 type Args = { entries: Array<Template> }
 
 export function useTemplateDeleteMany() {
-  const context = useRouteContext({ from: '/pages/$id' })
+  const context = useRouteContext({ from: '/_layout/pages/$id/' })
   const { setActive } = useActive()
   const mutation = useMutation({
     mutationKey: ['canvas', 'template', 'deleteMany'],

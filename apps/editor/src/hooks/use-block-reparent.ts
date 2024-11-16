@@ -6,8 +6,8 @@ import { Edge } from '@/hooks/use-drop'
 import { isPage } from '@/api'
 
 export function useBlockReparent() {
-  const context = useRouteContext({ from: '/pages/$id' })
-  const params = useParams({ from: '/pages/$id' })
+  const context = useRouteContext({ from: '/_layout/pages/$id/' })
+  const params = useParams({ from: '/_layout/pages/$id/' })
 
   return {
     blockReparent: useMutation({

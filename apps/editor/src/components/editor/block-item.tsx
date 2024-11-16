@@ -28,7 +28,7 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
   const { setActive, isActive, handleActiveClick } = useActive()
   const dropRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<HTMLDivElement>(null)
-  const context = useRouteContext({ from: '/pages/$id' })
+  const context = useRouteContext({ from: '/_layout/pages/$id/' })
   const isActiveBlock = isActive({ store: 'blocks', item: { ...deferredBlock, index: props.index, parent: props.parent } })
   const [actionsOpen, setActionsOpen] = useState(false)
   const { setHover, removeHover } = useBlockHover(deferredBlock.id, dropRef)

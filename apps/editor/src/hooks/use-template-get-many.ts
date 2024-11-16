@@ -10,6 +10,6 @@ export function templateGetManyOpts(args: { context: Context }) {
 }
 
 export function useTemplateGetMany() {
-  const context = useRouteContext({ from: '/pages/$id' })
+  const context = useRouteContext({ from: '/_layout/pages/$id/' })
   return { templateGetMany: useSuspenseQuery(templateGetManyOpts({ context })) }
 }

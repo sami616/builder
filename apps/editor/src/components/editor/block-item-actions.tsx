@@ -10,7 +10,7 @@ import { BlockDialogAdd } from './block-dialog-add'
 import { BlockDialogAddTemplate } from './block-dialog-add-template'
 
 export function BlockItemActions(props: { block: Block; index: number; parent: { slot: string; node: Block | Page } }) {
-  const context = useRouteContext({ from: '/pages/$id' })
+  const context = useRouteContext({ from: '/_layout/pages/$id/' })
   const { blockCopy } = useBlockCopy()
   const { blockDelete } = useBlockDelete()
   const [blockAddOpen, setBlockAddOpen] = useState(false)

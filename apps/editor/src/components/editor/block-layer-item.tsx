@@ -34,7 +34,7 @@ export function BlockLayerItem(props: { id: Block['id']; index: number; parent: 
   const [actionsOpen, setActionsOpen] = useState(false)
   const isActiveBlock = isActive({ store: 'blocks', item: { ...deferredBlock, index: props.index, parent: props.parent } })
   const isLeaf = Object.keys(deferredBlock.slots).length === 0
-  const context = useRouteContext({ from: '/pages/$id' })
+  const context = useRouteContext({ from: '/_layout/pages/$id/' })
   const [open, setOpen] = useState(false)
   const { setHover, removeHover } = useBlockHover(props.id, dropRef)
 

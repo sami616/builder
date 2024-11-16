@@ -1,6 +1,6 @@
 import { useMutation } from '@tanstack/react-query'
 import { type Edge } from '@/hooks/use-drop'
-import { /* useParams */ useParams, useRouteContext } from '@tanstack/react-router'
+import { useParams, useRouteContext } from '@tanstack/react-router'
 import { type Block, type Page } from '@/db'
 import { DragData } from '@/hooks/use-drag'
 import { toast } from 'sonner'
@@ -18,8 +18,8 @@ type Args = {
 }
 
 export function useBlockAdd() {
-  const context = useRouteContext({ from: '/pages/$id' })
-  const params = useParams({ from: '/pages/$id' })
+  const context = useRouteContext({ from: '/_layout/pages/$id/' })
+  const params = useParams({ from: '/_layout/pages/$id/' })
   const mutation = useMutation({
     mutationKey: ['canvas', 'block', 'add'],
     mutationFn: async (args: Args) => {

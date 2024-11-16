@@ -11,7 +11,7 @@ type Args = {
 }
 
 export function useTemplateReorder() {
-  const context = useRouteContext({ from: '/pages/$id' })
+  const context = useRouteContext({ from: '/_layout/pages/$id/' })
   const mutation = useMutation({
     mutationKey: ['canvas', 'template', 'reorder'],
     mutationFn: async (args: Args) => {

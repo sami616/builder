@@ -16,8 +16,8 @@ type Args = {
 }
 
 export function useTemplateApply() {
-  const context = useRouteContext({ from: '/pages/$id' })
-  const params = useParams({ from: '/pages/$id' })
+  const context = useRouteContext({ from: '/_layout/pages/$id/' })
+  const params = useParams({ from: '/_layout/pages/$id/' })
   const mutation = useMutation({
     mutationKey: ['canvas', 'template', 'apply'],
     mutationFn: async (args: Args) => {

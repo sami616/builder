@@ -6,7 +6,7 @@ import { toast } from 'sonner'
 type Args = { template: Template; name: string }
 
 export function useTemplateUpdateName() {
-  const context = useRouteContext({ from: '/pages/$id' })
+  const context = useRouteContext({ from: '/_layout/pages/$id/' })
 
   const mutation = useMutation({
     mutationKey: ['canvas', 'template', 'update', 'name'],

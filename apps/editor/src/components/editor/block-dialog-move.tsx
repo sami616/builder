@@ -30,7 +30,7 @@ export function BlockDialogMove(props: {
   block: Block
   parent: { slot: string; node: Block | Page }
 }) {
-  const context = useRouteContext({ from: '/pages/$id' })
+  const context = useRouteContext({ from: '/_layout/pages/$id/' })
   const [parentPickerOpen, setParentPickerOpen] = useState(false)
   const [slotPickerOpen, setSlotPickerOpen] = useState(false)
   const { blockMove } = useBlockMove()

@@ -10,8 +10,8 @@ import { isPage } from '@/api'
 type Args = { id: Block['id']; index: number; parent: ComponentProps<typeof BlockItem>['parent'] }
 
 export function useBlockDelete() {
-  const context = useRouteContext({ from: '/pages/$id' })
-  const params = useParams({ from: '/pages/$id' })
+  const context = useRouteContext({ from: '/_layout/pages/$id/' })
+  const params = useParams({ from: '/_layout/pages/$id/' })
   const { setActive } = useActive()
 
   const mutation = useMutation({

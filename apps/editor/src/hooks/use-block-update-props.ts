@@ -6,8 +6,8 @@ import { toast } from 'sonner'
 type Args = { block: Block; props: Block['props'] }
 
 export function useBlockUpdateProps() {
-  const context = useRouteContext({ from: '/pages/$id' })
-  const params = useParams({ from: '/pages/$id' })
+  const context = useRouteContext({ from: '/_layout/pages/$id/' })
+  const params = useParams({ from: '/_layout/pages/$id/' })
   const mutation = useMutation({
     mutationKey: ['canvas', 'block', 'update', 'props'],
     mutationFn: async (args: Args) => {

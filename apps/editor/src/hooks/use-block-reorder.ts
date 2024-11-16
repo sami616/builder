@@ -6,8 +6,8 @@ import { type Block, type Page } from '@/db'
 import { isPage } from '@/api'
 
 export function useBlockReorder() {
-  const context = useRouteContext({ from: '/pages/$id' })
-  const params = useParams({ from: '/pages/$id' })
+  const context = useRouteContext({ from: '/_layout/pages/$id/' })
+  const params = useParams({ from: '/_layout/pages/$id/' })
   return {
     blockReorder: useMutation({
       mutationKey: ['canvas', 'block', 'reorder'],

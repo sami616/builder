@@ -9,8 +9,8 @@ import { isPage } from '@/api'
 type Args = { entries: Array<{ index: number; id: Block['id']; parent: ComponentProps<typeof BlockItem>['parent'] }> }
 
 export function useBlockCopyMany() {
-  const context = useRouteContext({ from: '/pages/$id' })
-  const params = useParams({ from: '/pages/$id' })
+  const context = useRouteContext({ from: '/_layout/pages/$id/' })
+  const params = useParams({ from: '/_layout/pages/$id/' })
 
   const mutation = useMutation({
     mutationKey: ['canvas', 'block', 'copyMany'],

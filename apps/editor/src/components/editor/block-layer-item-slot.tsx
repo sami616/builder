@@ -22,7 +22,7 @@ export function BlockLayerItemSlot(props: { block: Block; slot: string; parent: 
   const { templateApply } = useTemplateApply()
   const [open, setOpen] = useState(false)
 
-  const context = useRouteContext({ from: '/pages/$id' })
+  const context = useRouteContext({ from: '/_layout/pages/$id/' })
   const slotLength = props.block.slots[props.slot].length
   const hasSlotEntries = slotLength > 0
 

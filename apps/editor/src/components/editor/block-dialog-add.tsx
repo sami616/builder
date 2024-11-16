@@ -29,7 +29,7 @@ export function BlockDialogAdd(props: {
   parent: { slot: string; node: Block | Page }
 }) {
   const [blockPickerOpen, setBlockPickerOpen] = useState(false)
-  const context = useRouteContext({ from: '/pages/$id' })
+  const context = useRouteContext({ from: '/_layout/pages/$id/' })
   const { blockAdd } = useBlockAdd()
   const blockAddForm = useForm<z.infer<typeof blockAddSchema>>({
     resolver: zodResolver(blockAddSchema),

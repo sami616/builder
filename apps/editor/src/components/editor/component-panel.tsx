@@ -7,7 +7,7 @@ import { Tree } from '../ui/tree'
 import { Component } from 'lucide-react'
 
 export function ComponentPanel(props: { page: Page }) {
-  const context = useRouteContext({ from: '/pages/$id' })
+  const context = useRouteContext({ from: '/_layout/pages/$id/' })
 
   const structure = useMemo(() => {
     return nestFolders(context.config)

@@ -13,8 +13,6 @@ import { buttonConfig, headingConfig, containerConfig } from '@repo/blocks'
 
 const queryClient = new QueryClient()
 
-export const foo = 'FOO'
-
 export function evaluateRule(rule: HiddenSchema['rules'][number], props: Block['props']) {
   const [propertyID, operator, propertyValue] = rule
 
