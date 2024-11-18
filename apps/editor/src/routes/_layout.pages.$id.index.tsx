@@ -43,7 +43,6 @@ function Page() {
   const blocks = Object.values(pageGet.data.slots)[0]
   const deferredBlocks = useDeferredValue(blocks)
   const [activeTab, setActiveTab] = useState('components')
-  const [canvasSize, setCanvasSize] = useState<string | undefined>('100%')
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
 
   return (
@@ -90,55 +89,12 @@ function Page() {
             </ResizablePanel>
             <ResizableHandle />
             <ResizablePanel>
-              <div className="py-0.5">
-                <TooltipProvider>
-                  <ToggleGroup
-                    size="sm"
-                    value={canvasSize}
-                    onValueChange={(val) => {
-                      if (val) setCanvasSize(val)
-                    }}
-                    type="single"
-                  >
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <ToggleGroupItem className="group" value="100%">
-                          <Monitor size={16} className="stroke-gray-400 group-aria-checked:stroke-rose-500" />
-                        </ToggleGroupItem>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Desktop</p>
-                      </TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <ToggleGroupItem className="group" value="768px">
-                          <Tablet size={16} className="stroke-gray-400 group-aria-checked:stroke-rose-500" />
-                        </ToggleGroupItem>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Tablet</p>
-                      </TooltipContent>
-                    </Tooltip>
-                    <Tooltip>
-                      <TooltipTrigger asChild>
-                        <ToggleGroupItem className="group" value="360px">
-                          <Smartphone size={16} className="stroke-gray-400 group-aria-checked:stroke-rose-500" />
-                        </ToggleGroupItem>
-                      </TooltipTrigger>
-                      <TooltipContent>
-                        <p>Mobile</p>
-                      </TooltipContent>
-                    </Tooltip>
-                  </ToggleGroup>
-                </TooltipProvider>
-              </div>
               <Separator />
               <ScrollArea className="h-full w-full">
                 <div
                   id="canvas"
                   className={clsx(['mx-auto', 'h-full', 'transition-opacity', isCanvasMutating ? 'opacity-50' : 'opacity-100'])}
-                  style={{ transition: 'max-width 0.3s', maxWidth: canvasSize }}
+                  style={{ maxWidth: '100%', transition: 'max-width 0.3s' }}
                 >
                   {blocks.length === 0 && (
                     <DropZone

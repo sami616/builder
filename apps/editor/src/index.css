@@ -67,7 +67,7 @@
     @apply bg-background text-foreground;
   }
   [data-collapsible] {
-    overflow: hidden;
+    overflow: clip;
     &[data-state='open'] {
       animation: slideDown 0.2s ease-out;
     }

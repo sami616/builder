@@ -9,7 +9,7 @@ export function DragPreview(props: { dragPreviewContainer: HTMLElement | null; c
     <>
       {createPortal(
         <Card className="rounded-lg py-2 px-4">
-          <CardTitle className="flex gap-2 font-normal text-sm items-center"></CardTitle>
+          <CardTitle className="flex gap-2 font-normal text-sm items-center">{props.children}</CardTitle>
         </Card>,
         props.dragPreviewContainer,
       )}

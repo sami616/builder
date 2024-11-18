@@ -1,6 +1,8 @@
 import { createFileRoute, Outlet, useLocation, useParams } from '@tanstack/react-router'
+import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
 import { Link } from '@tanstack/react-router'
-import { ChevronLeft } from 'lucide-react'
+import { ChevronLeft, Monitor, Smartphone, Tablet } from 'lucide-react'
 import clsx from 'clsx'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
@@ -69,6 +71,50 @@ function Layout() {
           </Badge>
         </div>
         <div className="flex gap-2">
+          <div className="py-0.5">
+            <TooltipProvider>
+              <ToggleGroup
+                size="sm"
+                defaultValue="100%"
+                onValueChange={(val) => {
+                  if (val) document.getElementById('canvas')?.style.setProperty('max-width', val)
+                }}
+                type="single"
+              >
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <ToggleGroupItem className="group" value="100%">
+                      <Monitor size={16} className="stroke-gray-400 group-aria-checked:stroke-rose-500" />
+                    </ToggleGroupItem>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Desktop</p>
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <ToggleGroupItem className="group" value="768px">
+                      <Tablet size={16} className="stroke-gray-400 group-aria-checked:stroke-rose-500" />
+                    </ToggleGroupItem>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Tablet</p>
+                  </TooltipContent>
+                </Tooltip>
+                <Tooltip>
+                  <TooltipTrigger asChild>
+                    <ToggleGroupItem className="group" value="360px">
+                      <Smartphone size={16} className="stroke-gray-400 group-aria-checked:stroke-rose-500" />
+                    </ToggleGroupItem>
+                  </TooltipTrigger>
+                  <TooltipContent>
+                    <p>Mobile</p>
+                  </TooltipContent>
+                </Tooltip>
+              </ToggleGroup>
+            </TooltipProvider>
+          </div>
+
           {!isPreview && (
             <Button asChild disabled={isCanvasMutating} variant="secondary">
               <Link to="/pages/$id/preview" params={{ id: String(pageGet.data.id) }}>

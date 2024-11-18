@@ -28,9 +28,9 @@ function Preview() {
           </div>
         }
       >
-        <div id="canvas">
-          {deferredBlocks.map((id, index) => {
-            return <PreviewBlockItem key={id} id={id} parent={{ node: pageGet.data, slot: 'root' }} index={index} page={pageGet.data} />
+        <div id="canvas" className="mx-auto" style={{ maxWidth: '100%', transition: 'max-width 0.3s' }}>
+          {deferredBlocks.map((id) => {
+            return <PreviewBlockItem key={id} id={id} />
           })}
         </div>
       </Suspense>
