@@ -246,6 +246,9 @@ importers:
 
   packages/lib:
     dependencies:
+      '@repo/editor':
+        specifier: workspace:^
+        version: link:../../apps/editor
       react:
         specifier: 19.0.0-rc-bf7e210c-20241017
         version: 19.0.0-rc-bf7e210c-20241017

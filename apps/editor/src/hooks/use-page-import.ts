@@ -1,9 +1,8 @@
 import { useMutation } from '@tanstack/react-query'
-import { useRouteContext } from '@tanstack/react-router'
 import { toast } from 'sonner'
+import { context } from '@/main'
 
 export function usePageImport() {
-  const context = useRouteContext({ from: '/pages/' })
   const mutation = useMutation({
     mutationKey: ['page', 'import'],
     mutationFn: async () => {

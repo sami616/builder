@@ -11,7 +11,7 @@ import '@/index.css'
 import { Toaster } from 'sonner'
 import { buttonConfig, headingConfig, containerConfig } from '@repo/blocks'
 
-const queryClient = new QueryClient()
+export const queryClient = new QueryClient()
 
 export function evaluateRule(rule: HiddenSchema['rules'][number], props: Block['props']) {
   const [propertyID, operator, propertyValue] = rule
@@ -33,6 +33,7 @@ export function evaluateRule(rule: HiddenSchema['rules'][number], props: Block['
       switch (propertyValue) {
         case 'undefined':
           return actualValue !== undefined
+
         case 'null':
           return actualValue !== null
         default:
@@ -180,7 +181,7 @@ export const config: Config = {
 
 export type Context = typeof context
 
-const context = {
+export const context = {
   get,
   getMany,
   getTree,

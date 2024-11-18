@@ -13,7 +13,7 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useForm } from 'react-hook-form'
-import { useRouteContext } from '@tanstack/react-router'
+import { context } from '@/main'
 import { Block, Page } from '@/db'
 
 const blockAddSchema = z.object({
@@ -29,7 +29,6 @@ export function BlockDialogAdd(props: {
   parent: { slot: string; node: Block | Page }
 }) {
   const [blockPickerOpen, setBlockPickerOpen] = useState(false)
-  const context = useRouteContext({ from: '/_layout/pages/$id/' })
   const { blockAdd } = useBlockAdd()
   const blockAddForm = useForm<z.infer<typeof blockAddSchema>>({
     resolver: zodResolver(blockAddSchema),

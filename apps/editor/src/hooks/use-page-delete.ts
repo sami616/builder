@@ -1,12 +1,11 @@
-import { useRouteContext } from '@tanstack/react-router'
 import { Page } from '@/db'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
+import { context } from '@/main'
 
 type Args = { entry: Page }
 
 export function usePageDelete() {
-  const context = useRouteContext({ from: '/pages/' })
   const mutation = useMutation({
     mutationKey: ['page', 'delete'],
     mutationFn: async (args: Args) => {

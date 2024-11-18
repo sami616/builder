@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { useRouteContext } from '@tanstack/react-router'
 import { Context } from '@/main'
+import { context } from '@/main'
 
 export function pageGetManyOpts(args: { context: Context }) {
   return {
@@ -10,7 +10,6 @@ export function pageGetManyOpts(args: { context: Context }) {
 }
 
 export function usePageGetMany() {
-  const context = useRouteContext({ from: '/pages/' })
   const pageGetMany = useSuspenseQuery(pageGetManyOpts({ context }))
   return { pageGetMany }
 }

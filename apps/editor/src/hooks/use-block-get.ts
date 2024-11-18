@@ -1,9 +1,8 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
 import { type Block } from '@/db'
-import { useRouteContext } from '@tanstack/react-router'
+import { context } from '@/main'
 
 export function useBlockGet(args: { id: Block['id'] }) {
-  const context = useRouteContext({ from: '/_layout/pages/$id/' })
   return {
     blockGet: useSuspenseQuery({
       queryKey: ['blocks', args.id],

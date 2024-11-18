@@ -1,14 +1,12 @@
-import { useRouteContext } from '@tanstack/react-router'
 import { type Page, type Block } from '@/db'
 import { ComponentItem } from '@/components/editor/component-item'
 import { Config } from '@/main'
 import { useMemo } from 'react'
 import { Tree } from '../ui/tree'
 import { Component } from 'lucide-react'
+import { context } from '@/main'
 
 export function ComponentPanel(props: { page: Page }) {
-  const context = useRouteContext({ from: '/_layout/pages/$id/' })
-
   const structure = useMemo(() => {
     return nestFolders(context.config)
   }, [])

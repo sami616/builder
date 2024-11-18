@@ -1,12 +1,11 @@
 import { Page } from '@/db'
 import { toast } from 'sonner'
 import { useMutation } from '@tanstack/react-query'
-import { useRouteContext } from '@tanstack/react-router'
+import { context } from '@/main'
 
 type Args = { id: Page['id'] }
 
 export function usePageCopy() {
-  const context = useRouteContext({ from: '/pages/' })
   const mutation = useMutation({
     mutationKey: ['page', 'copy'],
     mutationFn: async (args: Args) => {

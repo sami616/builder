@@ -16,10 +16,10 @@ import clsx from 'clsx'
 import { BlockLayerItemActions } from '@/components/editor/block-layer-item-actions'
 import { useActive } from '@/hooks/use-active'
 import { toast } from 'sonner'
-import { useRouteContext } from '@tanstack/react-router'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
 import { flash } from '@/lib/utils'
 import { useBlockHover } from '@/hooks/use-block-hover'
+import { context } from '@/main'
 
 export function BlockLayerItem(props: { id: Block['id']; index: number; parent: { slot: string; node: Block | Page } }) {
   const { isActive, handleActiveClick } = useActive()
@@ -34,7 +34,6 @@ export function BlockLayerItem(props: { id: Block['id']; index: number; parent: 
   const [actionsOpen, setActionsOpen] = useState(false)
   const isActiveBlock = isActive({ store: 'blocks', item: { ...deferredBlock, index: props.index, parent: props.parent } })
   const isLeaf = Object.keys(deferredBlock.slots).length === 0
-  const context = useRouteContext({ from: '/_layout/pages/$id/' })
   const [open, setOpen] = useState(false)
   const { setHover, removeHover } = useBlockHover(props.id, dropRef)
 

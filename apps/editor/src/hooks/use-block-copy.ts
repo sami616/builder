@@ -1,16 +1,16 @@
 import { useMutation } from '@tanstack/react-query'
 import { type ComponentProps } from 'react'
 import { BlockItem } from '@/components/editor/block-item'
-import { useParams, useRouteContext } from '@tanstack/react-router'
+import { useParams } from '@tanstack/react-router'
 import { Block, Page } from '@/db'
 import { toast } from 'sonner'
 import { isPage } from '@/api'
+import { context } from '@/main'
 
 type Args = { index: number; id: Block['id']; parent: ComponentProps<typeof BlockItem>['parent'] }
 
 export function useBlockCopy() {
-  const context = useRouteContext({ from: '/_layout/pages/$id/' })
-  const params = useParams({ from: '/_layout/pages/$id/' })
+  const params = useParams({ strict: false })
 
   const mutation = useMutation({
     mutationKey: ['canvas', 'block', 'copy'],
@@ -22,7 +22,7 @@ export function useBlockCopy() {
       clonedParentNode.slots[args.parent.slot].splice(args.index + 1, 0, rootEntry.id)
       clonedParentNode.updatedAt = date
 
-      if (!isPage(clonedParentNode)) {
+      if (!isPage(clonedParentNode) && params.id) {
         const page = context.queryClient.getQueryData<Page>(['pages', Number(params.id)])
         if (page) await context.update({ entry: { ...page, updatedAt: date } })
       }

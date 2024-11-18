@@ -26,7 +26,7 @@ export const Route = createFileRoute('/_layout/pages/$id/')({
   component: Page,
   loader: async ({ context, params }) => {
     const pages = context.queryClient.ensureQueryData(pageGetOpts({ id: Number(params.id) }))
-    const templates = context.queryClient.ensureQueryData(templateGetManyOpts({ context }))
+    const templates = context.queryClient.ensureQueryData(templateGetManyOpts())
     const data = await Promise.all([pages, templates])
     return { pages: data.at(0), templates: data.at(1) }
   },
@@ -56,7 +56,6 @@ function Page() {
             </div>
           }
         >
-          <Separator />
           <ResizablePanelGroup direction="horizontal">
             <ResizablePanel minSize={20} defaultSize={20}>
               <ResizablePanelGroup direction="vertical">

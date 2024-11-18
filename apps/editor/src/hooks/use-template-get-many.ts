@@ -1,15 +1,13 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { useRouteContext } from '@tanstack/react-router'
-import { Context } from '@/main'
+import { context } from '@/main'
 
-export function templateGetManyOpts(args: { context: Context }) {
+export function templateGetManyOpts() {
   return {
     queryKey: ['templates'],
-    queryFn: () => args.context.getMany({ store: 'templates', sortBy: ['order', 'descending'] }),
+    queryFn: () => context.getMany({ store: 'templates', sortBy: ['order', 'descending'] }),
   }
 }
 
 export function useTemplateGetMany() {
-  const context = useRouteContext({ from: '/_layout/pages/$id/' })
-  return { templateGetMany: useSuspenseQuery(templateGetManyOpts({ context })) }
+  return { templateGetMany: useSuspenseQuery(templateGetManyOpts()) }
 }

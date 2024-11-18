@@ -79,6 +79,7 @@ export function PageTable() {
       {
         accessorKey: 'status',
         header: 'Status',
+        filterFn: 'equals',
         cell: ({ row }) => {
           const status = String(row.getValue('status'))
           return (

@@ -5,12 +5,11 @@ import { validateSlotMax } from './block-layer-item-slot'
 import { Copy, Layout, Plus, Trash } from 'lucide-react'
 import { ContextMenuLabel, ContextMenuSeparator, ContextMenuContent, ContextMenuItem, ContextMenuShortcut } from '@/components/ui/context-menu'
 import { useState } from 'react'
-import { useRouteContext } from '@tanstack/react-router'
 import { BlockDialogAdd } from './block-dialog-add'
 import { BlockDialogAddTemplate } from './block-dialog-add-template'
+import { context } from '@/main'
 
 export function BlockItemActions(props: { block: Block; index: number; parent: { slot: string; node: Block | Page } }) {
-  const context = useRouteContext({ from: '/_layout/pages/$id/' })
   const { blockCopy } = useBlockCopy()
   const { blockDelete } = useBlockDelete()
   const [blockAddOpen, setBlockAddOpen] = useState(false)

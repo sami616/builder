@@ -1,4 +1,4 @@
-import { createFileRoute, Outlet, useParams, useParentMatches, useRouteContext } from '@tanstack/react-router'
+import { createFileRoute, Outlet, useLocation, useParams } from '@tanstack/react-router'
 import { Link } from '@tanstack/react-router'
 import { ChevronLeft } from 'lucide-react'
 import clsx from 'clsx'
@@ -7,6 +7,7 @@ import { Button } from '@/components/ui/button'
 import { useIsMutating, useMutation } from '@tanstack/react-query'
 import { Page } from '@/db'
 import { usePageGet } from '@/hooks/use-page-get'
+import { Separator } from '@/components/ui/separator'
 
 export const Route = createFileRoute('/_layout')({ component: Layout })
 
@@ -44,13 +45,16 @@ function Layout() {
   const unpublishMutation = usePageUnPublish()
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
   const { pageGet } = usePageGet({ id: Number(params.id) })
+  const locaton = useLocation()
+
+  const isPreview = locaton.pathname.endsWith('/preview')
 
   return (
     <>
       <div className="w-full p-2 items-center justify-between flex gap-2">
         <div className="flex gap-2 items-center">
           <Button asChild variant="ghost" size="icon">
-            <Link from={Route.fullPath} to="../">
+            <Link to={isPreview ? '/pages/$id' : '/pages'} params={{ id: params.id }}>
               <ChevronLeft size={16} />
             </Link>
           </Button>
@@ -65,11 +69,13 @@ function Layout() {
           </Badge>
         </div>
         <div className="flex gap-2">
-          <Button asChild disabled={isCanvasMutating} variant="secondary">
-            <Link to="/pages/$id/preview" params={{ id: String(pageGet.data.id) }}>
-              Preview
-            </Link>
-          </Button>
+          {!isPreview && (
+            <Button asChild disabled={isCanvasMutating} variant="secondary">
+              <Link to="/pages/$id/preview" params={{ id: String(pageGet.data.id) }}>
+                Preview
+              </Link>
+            </Button>
+          )}
           {pageGet.data.status === 'Published' && (
             <Button disabled={isCanvasMutating} variant="destructive" onClick={() => unpublishMutation.mutate(pageGet.data)}>
               Unpublish
@@ -83,6 +89,7 @@ function Layout() {
           </Button>
         </div>
       </div>
+      <Separator />
       <Outlet />
     </>
   )

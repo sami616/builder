@@ -1,10 +1,11 @@
 import { useMutation } from '@tanstack/react-query'
 import { duplicateTree, getTree, isPage } from '@/api'
-import { useParams, useRouteContext } from '@tanstack/react-router'
+import { useParams } from '@tanstack/react-router'
 import { DragData } from '@/hooks/use-drag'
 import { Edge } from '@/hooks/use-drop'
 import { Block, Page } from '@/db'
 import { toast } from 'sonner'
+import { context } from '@/main'
 
 type Args = {
   source: DragData['template']
@@ -16,8 +17,7 @@ type Args = {
 }
 
 export function useTemplateApply() {
-  const context = useRouteContext({ from: '/_layout/pages/$id/' })
-  const params = useParams({ from: '/_layout/pages/$id/' })
+  const params = useParams({ strict: false })
   const mutation = useMutation({
     mutationKey: ['canvas', 'template', 'apply'],
     mutationFn: async (args: Args) => {
@@ -37,7 +37,7 @@ export function useTemplateApply() {
 
       clonedParentNode.updatedAt = date
 
-      if (!isPage(clonedParentNode)) {
+      if (!isPage(clonedParentNode) && params.id) {
         const page = context.queryClient.getQueryData<Page>(['pages', Number(params.id)])
         if (page) await context.update({ entry: { ...page, updatedAt: date } })
       }

@@ -1,6 +1,6 @@
 import { type Block } from '@/db'
 import { config } from '@/main'
-import { useRouteContext } from '@tanstack/react-router'
+import { context } from '@/main'
 import { type ComponentProps, useRef, useState } from 'react'
 import { isDragData } from '@/hooks/use-drag'
 import { useDrop } from '@/hooks/use-drop'
@@ -22,7 +22,6 @@ export function BlockLayerItemSlot(props: { block: Block; slot: string; parent: 
   const { templateApply } = useTemplateApply()
   const [open, setOpen] = useState(false)
 
-  const context = useRouteContext({ from: '/_layout/pages/$id/' })
   const slotLength = props.block.slots[props.slot].length
   const hasSlotEntries = slotLength > 0
 

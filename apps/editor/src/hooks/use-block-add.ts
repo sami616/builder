@@ -1,11 +1,12 @@
 import { useMutation } from '@tanstack/react-query'
 import { type Edge } from '@/hooks/use-drop'
-import { useParams, useRouteContext } from '@tanstack/react-router'
+import { useParams } from '@tanstack/react-router'
 import { type Block, type Page } from '@/db'
 import { DragData } from '@/hooks/use-drag'
 import { toast } from 'sonner'
 import { Props } from '@/main'
 import { isPage } from '@/api'
+import { context } from '@/main'
 
 type Args = {
   name?: string
@@ -18,8 +19,8 @@ type Args = {
 }
 
 export function useBlockAdd() {
-  const context = useRouteContext({ from: '/_layout/pages/$id/' })
-  const params = useParams({ from: '/_layout/pages/$id/' })
+  const params = useParams({ strict: false })
+
   const mutation = useMutation({
     mutationKey: ['canvas', 'block', 'add'],
     mutationFn: async (args: Args) => {
@@ -74,7 +75,7 @@ export function useBlockAdd() {
 
       clonedParentNode.updatedAt = date
 
-      if (!isPage(clonedParentNode)) {
+      if (!isPage(clonedParentNode) && params.id) {
         const page = context.queryClient.getQueryData<Page>(['pages', Number(params.id)])
         if (page) await context.update({ entry: { ...page, updatedAt: date } })
       }

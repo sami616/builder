@@ -20,7 +20,7 @@ export const containerConfig: Config = {
     // folder: ['UI', 'Elements', 'Layout'],
     slots: {
       left: { default: [], name: 'Left', validation: { maxItems: 2, disabledComponents: ['Button'] } },
-      right: { default: [], name: 'Left', validation: { maxItems: 2, disabledComponents: ['Button'] } },
+      right: { default: [], name: 'Right' },
     },
     props: [
       {

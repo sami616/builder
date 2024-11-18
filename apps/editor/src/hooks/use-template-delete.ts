@@ -1,13 +1,12 @@
 import { useMutation } from '@tanstack/react-query'
 import { db, type Template } from '@/db'
-import { useRouteContext } from '@tanstack/react-router'
 import { toast } from 'sonner'
 import { useActive } from './use-active'
+import { context } from '@/main'
 
 type Args = { template: Template }
 
 export function useTemplateDelete() {
-  const context = useRouteContext({ from: '/_layout/pages/$id/' })
   const { setActive } = useActive()
   const mutation = useMutation({
     mutationKey: ['canvas', 'template', 'delete'],

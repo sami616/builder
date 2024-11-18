@@ -1,13 +1,11 @@
 import { useMutation } from '@tanstack/react-query'
-import { useRouteContext } from '@tanstack/react-router'
 import { Page } from '@/db'
 import { toast } from 'sonner'
+import { context } from '@/main'
 
 type Args = { page: Page } & Partial<Pick<Page, 'title' | 'description' | 'url' | 'slug' | 'status' | 'publishedAt'>>
 
 export function usePageUpdateMeta() {
-  const context = useRouteContext({ from: '/pages/' })
-
   const mutation = useMutation({
     mutationKey: ['page', 'update', 'meta'],
     mutationFn: (args: Args) => {

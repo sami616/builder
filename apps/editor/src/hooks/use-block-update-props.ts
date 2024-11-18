@@ -1,13 +1,13 @@
 import { useMutation } from '@tanstack/react-query'
 import { Block, Page } from '@/db'
-import { useParams, useRouteContext } from '@tanstack/react-router'
+import { useParams } from '@tanstack/react-router'
 import { toast } from 'sonner'
+import { context } from '@/main'
 
 type Args = { block: Block; props: Block['props'] }
 
 export function useBlockUpdateProps() {
-  const context = useRouteContext({ from: '/_layout/pages/$id/' })
-  const params = useParams({ from: '/_layout/pages/$id/' })
+  const params = useParams({ strict: false })
   const mutation = useMutation({
     mutationKey: ['canvas', 'block', 'update', 'props'],
     mutationFn: async (args: Args) => {
@@ -16,8 +16,10 @@ export function useBlockUpdateProps() {
       clonedEntry.props = { ...clonedEntry.props, ...args.props }
       clonedEntry.updatedAt = date
 
-      const page = context.queryClient.getQueryData<Page>(['pages', Number(params.id)])
-      if (page) await context.update({ entry: { ...page, updatedAt: date } })
+      if (params.id) {
+        const page = context.queryClient.getQueryData<Page>(['pages', Number(params.id)])
+        if (page) await context.update({ entry: { ...page, updatedAt: date } })
+      }
 
       return context.update({ entry: clonedEntry })
     },

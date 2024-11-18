@@ -18,6 +18,7 @@ import { ContextMenu, ContextMenuTrigger } from '@/components/ui/context-menu'
 import { useBlockAdd } from '@/hooks/use-block-add'
 import { BlockItemActions } from './block-item-actions'
 import { useIsMutating } from '@tanstack/react-query'
+import { context } from '@/main'
 
 export function BlockItem(props: { index: number; page: Page; parent: { slot: string; node: Block | Page }; id: Block['id'] }) {
   const { blockGet } = useBlockGet({ id: props.id })
@@ -28,7 +29,6 @@ export function BlockItem(props: { index: number; page: Page; parent: { slot: st
   const { setActive, isActive, handleActiveClick } = useActive()
   const dropRef = useRef<HTMLDivElement>(null)
   const dragRef = useRef<HTMLDivElement>(null)
-  const context = useRouteContext({ from: '/_layout/pages/$id/' })
   const isActiveBlock = isActive({ store: 'blocks', item: { ...deferredBlock, index: props.index, parent: props.parent } })
   const [actionsOpen, setActionsOpen] = useState(false)
   const { setHover, removeHover } = useBlockHover(deferredBlock.id, dropRef)

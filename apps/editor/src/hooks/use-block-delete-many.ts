@@ -1,17 +1,17 @@
 import { type ComponentProps } from 'react'
 import { useMutation } from '@tanstack/react-query'
-import { useParams, useRouteContext } from '@tanstack/react-router'
+import { useParams } from '@tanstack/react-router'
 import { Page, type Block } from '@/db'
 import { BlockItem } from '@/components/editor/block-item'
 import { toast } from 'sonner'
 import { useActive } from './use-active'
 import { isPage } from '@/api'
+import { context } from '@/main'
 
 type Args = { entries: Array<{ id: Block['id']; index: number; parent: ComponentProps<typeof BlockItem>['parent'] }> }
 
 export function useBlockDeleteMany() {
-  const context = useRouteContext({ from: '/_layout/pages/$id/' })
-  const params = useParams({ from: '/_layout/pages/$id/' })
+  const params = useParams({ strict: false })
   const { setActive } = useActive()
   const mutation = useMutation({
     mutationKey: ['canvas', 'block', 'delete'],
@@ -36,7 +36,7 @@ export function useBlockDeleteMany() {
       }
 
       const hasPage = Array.from(updateList.values()).some((item) => isPage(item))
-      if (!hasPage) {
+      if (!hasPage && params.id) {
         const page = context.queryClient.getQueryData<Page>(['pages', Number(params.id)])
         if (page) await context.update({ entry: { ...page, updatedAt: date } })
       }

@@ -17,6 +17,7 @@ import { Page } from '@/db'
 
 export function PageTableFilters(props: { table: Table<Page> }) {
   const columnFilters = props.table.getState().columnFilters
+  console.log(props.table.getColumn('status')?.getFilterValue())
   return (
     <div className="gap-2 flex items-center">
       <Input
@@ -47,8 +48,8 @@ export function PageTableFilters(props: { table: Table<Page> }) {
             }}
             value={props.table.getColumn('status')?.getFilterValue() as string}
           >
-            <DropdownMenuRadioItem value="draft">Draft</DropdownMenuRadioItem>
-            <DropdownMenuRadioItem value="published">Published</DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="Unpublished">Unpublished</DropdownMenuRadioItem>
+            <DropdownMenuRadioItem value="Published">Published</DropdownMenuRadioItem>
           </DropdownMenuRadioGroup>
         </DropdownMenuContent>
       </DropdownMenu>

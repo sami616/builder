@@ -1,13 +1,13 @@
 import { useMutation } from '@tanstack/react-query'
-import { useParams, useRouteContext } from '@tanstack/react-router'
+import { useParams } from '@tanstack/react-router'
 import { type DragData } from '@/hooks/use-drag'
 import { type Edge } from '@/hooks/use-drop'
 import { type Block, type Page } from '@/db'
 import { isPage } from '@/api'
+import { context } from '@/main'
 
 export function useBlockReorder() {
-  const context = useRouteContext({ from: '/_layout/pages/$id/' })
-  const params = useParams({ from: '/_layout/pages/$id/' })
+  const params = useParams({ strict: false })
   return {
     blockReorder: useMutation({
       mutationKey: ['canvas', 'block', 'reorder'],
@@ -35,7 +35,7 @@ export function useBlockReorder() {
         clonedParentNode.updatedAt = date
         clonedParentNode.slots[removeSlot].splice(removeIndex, 1)
 
-        if (!isPage(clonedParentNode)) {
+        if (!isPage(clonedParentNode) && params.id) {
           const page = context.queryClient.getQueryData<Page>(['pages', Number(params.id)])
           if (page) await context.update({ entry: { ...page, updatedAt: date } })
         }

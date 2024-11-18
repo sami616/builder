@@ -1,4 +1,4 @@
-import { useRouteContext } from '@tanstack/react-router'
+import { context } from '@/main'
 import { Page } from '@/db'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
@@ -6,7 +6,6 @@ import { toast } from 'sonner'
 type Args = { entries: Array<Page> }
 
 export function usePageDeleteMany() {
-  const context = useRouteContext({ from: '/pages/' })
   const mutation = useMutation({
     mutationKey: ['page', 'delete'],
     mutationFn: async (args: Args) => {

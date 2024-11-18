@@ -8,6 +8,7 @@
     }
   },
   "dependencies": {
+    "@repo/editor": "workspace:^",
     "react": "19.0.0-rc-bf7e210c-20241017",
     "react-dom": "19.0.0-rc-bf7e210c-20241017",
     "typescript": "^5.5.4"

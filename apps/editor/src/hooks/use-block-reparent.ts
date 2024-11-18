@@ -1,13 +1,13 @@
 import { useMutation } from '@tanstack/react-query'
-import { useParams, useRouteContext } from '@tanstack/react-router'
+import { useParams } from '@tanstack/react-router'
 import { DragData } from '@/hooks/use-drag'
 import { Block, Page } from '@/db'
 import { Edge } from '@/hooks/use-drop'
 import { isPage } from '@/api'
+import { context } from '@/main'
 
 export function useBlockReparent() {
-  const context = useRouteContext({ from: '/_layout/pages/$id/' })
-  const params = useParams({ from: '/_layout/pages/$id/' })
+  const params = useParams({ strict: false })
 
   return {
     blockReparent: useMutation({
@@ -36,7 +36,7 @@ export function useBlockReparent() {
         clonedSourceParentNode.updatedAt = date
         clonedTargetParentNode.updatedAt = date
 
-        if (!isPage(clonedSourceParentNode) && !isPage(clonedTargetParentNode)) {
+        if (!isPage(clonedSourceParentNode) && !isPage(clonedTargetParentNode) && params.id) {
           const page = context.queryClient.getQueryData<Page>(['pages', Number(params.id)])
           if (page) await context.update({ entry: { ...page, updatedAt: date } })
         }

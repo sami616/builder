@@ -1,9 +1,9 @@
 import { useMutation } from '@tanstack/react-query'
 import { db, Template } from '@/db'
-import { useRouteContext } from '@tanstack/react-router'
 import { DragData } from '@/hooks/use-drag'
 import { Edge } from '@/hooks/use-drop'
 import { toast } from 'sonner'
+import { context } from '@/main'
 
 type Args = {
   source: DragData['template']
@@ -11,7 +11,6 @@ type Args = {
 }
 
 export function useTemplateReorder() {
-  const context = useRouteContext({ from: '/_layout/pages/$id/' })
   const mutation = useMutation({
     mutationKey: ['canvas', 'template', 'reorder'],
     mutationFn: async (args: Args) => {

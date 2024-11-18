@@ -1,10 +1,10 @@
 import { useMutation } from '@tanstack/react-query'
-import { useRouteContext } from '@tanstack/react-router'
 import { Block, db } from '@/db'
 import { DragData } from '@/hooks/use-drag'
 import { Edge } from '@/hooks/use-drop'
 import { getMany } from '@/api'
 import { toast } from 'sonner'
+import { context } from '@/main'
 
 type Args = {
   name?: string
@@ -16,7 +16,6 @@ type Args = {
 }
 
 export function useTemplateAdd() {
-  const context = useRouteContext({ from: '/_layout/pages/$id/' })
   const mutation = useMutation({
     mutationKey: ['canvas', 'template', 'add'],
     mutationFn: async (args: Args) => {

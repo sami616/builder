@@ -11,11 +11,11 @@ import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
 import { useForm, useWatch } from 'react-hook-form'
-import { useRouteContext } from '@tanstack/react-router'
 import { Block, Page } from '@/db'
 import { useBlockMove } from '@/hooks/use-block-move'
 import { isBlock } from '@/api'
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu'
+import { context } from '@/main'
 
 const blockMoveSchema = z.object({
   parentId: z.string(),
@@ -30,7 +30,6 @@ export function BlockDialogMove(props: {
   block: Block
   parent: { slot: string; node: Block | Page }
 }) {
-  const context = useRouteContext({ from: '/_layout/pages/$id/' })
   const [parentPickerOpen, setParentPickerOpen] = useState(false)
   const [slotPickerOpen, setSlotPickerOpen] = useState(false)
   const { blockMove } = useBlockMove()
