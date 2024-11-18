@@ -10,8 +10,21 @@ import { useIsMutating, useMutation } from '@tanstack/react-query'
 import { Page } from '@/db'
 import { usePageGet } from '@/hooks/use-page-get'
 import { Separator } from '@/components/ui/separator'
+import { router } from '@/main'
+import { z } from 'zod'
 
-export const Route = createFileRoute('/_layout')({ component: Layout })
+const viewSchema = z.object({ view: z.string().default('desktop') })
+
+export const views: Record<string, string> = {
+  desktop: '100%',
+  tablet: '768px',
+  mobile: '362px',
+}
+
+export const Route = createFileRoute('/_layout')({
+  component: Layout,
+  validateSearch: viewSchema,
+})
 
 function usePageUnPublish() {
   const context = Route.useRouteContext()
@@ -48,6 +61,7 @@ function Layout() {
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
   const { pageGet } = usePageGet({ id: Number(params.id) })
   const locaton = useLocation()
+  const searchParams = Route.useSearch()
 
   const isPreview = locaton.pathname.endsWith('/preview')
 
@@ -56,7 +70,7 @@ function Layout() {
       <div className="w-full p-2 items-center justify-between flex gap-2">
         <div className="flex gap-2 items-center">
           <Button asChild variant="ghost" size="icon">
-            <Link to={isPreview ? '/pages/$id' : '/pages'} params={{ id: params.id }}>
+            <Link to={isPreview ? '/pages/$id' : '/pages'} search={isPreview ? searchParams : undefined} params={{ id: params.id }}>
               <ChevronLeft size={16} />
             </Link>
           </Button>
@@ -75,15 +89,16 @@ function Layout() {
             <TooltipProvider>
               <ToggleGroup
                 size="sm"
-                defaultValue="100%"
+                value={searchParams.view}
                 onValueChange={(val) => {
-                  if (val) document.getElementById('canvas')?.style.setProperty('max-width', val)
+                  if (val) router.navigate({ from: Route.path, search: { view: val } })
+                  if (!val) router.navigate({ from: Route.path, search: { view: 'desktop' } })
                 }}
                 type="single"
               >
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <ToggleGroupItem className="group" value="100%">
+                    <ToggleGroupItem className="group" value="desktop">
                       <Monitor size={16} className="stroke-gray-400 group-aria-checked:stroke-rose-500" />
                     </ToggleGroupItem>
                   </TooltipTrigger>
@@ -93,7 +108,7 @@ function Layout() {
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <ToggleGroupItem className="group" value="768px">
+                    <ToggleGroupItem className="group" value="tablet">
                       <Tablet size={16} className="stroke-gray-400 group-aria-checked:stroke-rose-500" />
                     </ToggleGroupItem>
                   </TooltipTrigger>
@@ -103,7 +118,7 @@ function Layout() {
                 </Tooltip>
                 <Tooltip>
                   <TooltipTrigger asChild>
-                    <ToggleGroupItem className="group" value="360px">
+                    <ToggleGroupItem className="group" value="mobile">
                       <Smartphone size={16} className="stroke-gray-400 group-aria-checked:stroke-rose-500" />
                     </ToggleGroupItem>
                   </TooltipTrigger>
@@ -117,7 +132,7 @@ function Layout() {
 
           {!isPreview && (
             <Button asChild disabled={isCanvasMutating} variant="secondary">
-              <Link to="/pages/$id/preview" params={{ id: String(pageGet.data.id) }}>
+              <Link to="/pages/$id/preview" search={searchParams} params={{ id: String(pageGet.data.id) }}>
                 Preview
               </Link>
             </Button>

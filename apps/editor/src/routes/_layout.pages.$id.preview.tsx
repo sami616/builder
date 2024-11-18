@@ -1,8 +1,9 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useSearch } from '@tanstack/react-router'
 import { Suspense, useDeferredValue } from 'react'
 import { usePageGet, pageGetOpts } from '@/hooks/use-page-get'
 import { Loader } from 'lucide-react'
 import { PreviewBlockItem } from '@/components/editor/preview-block-item'
+import { views } from './_layout'
 
 export const Route = createFileRoute('/_layout/pages/$id/preview')({
   component: () => Preview(),
@@ -18,6 +19,7 @@ function Preview() {
   const { pageGet } = usePageGet({ id: Number(id) })
   const blocks = Object.values(pageGet.data.slots)[0]
   const deferredBlocks = useDeferredValue(blocks)
+  const searchParams = useSearch({ from: '/_layout' })
 
   return (
     <main>
@@ -28,7 +30,7 @@ function Preview() {
           </div>
         }
       >
-        <div id="canvas" className="mx-auto" style={{ maxWidth: '100%', transition: 'max-width 0.3s' }}>
+        <div id="canvas" className="mx-auto" style={{ maxWidth: views[searchParams.view], transition: 'max-width 0.3s' }}>
           {deferredBlocks.map((id) => {
             return <PreviewBlockItem key={id} id={id} />
           })}

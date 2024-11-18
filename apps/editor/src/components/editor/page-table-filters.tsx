@@ -17,7 +17,6 @@ import { Page } from '@/db'
 
 export function PageTableFilters(props: { table: Table<Page> }) {
   const columnFilters = props.table.getState().columnFilters
-  console.log(props.table.getColumn('status')?.getFilterValue())
   return (
     <div className="gap-2 flex items-center">
       <Input

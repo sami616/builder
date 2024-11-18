@@ -1,4 +1,4 @@
-import { createFileRoute } from '@tanstack/react-router'
+import { createFileRoute, useSearch } from '@tanstack/react-router'
 import { Suspense, useDeferredValue, useState } from 'react'
 import { ComponentPanel } from '@/components/editor/component-panel'
 import { PropPanel } from '@/components/editor/prop-panel'
@@ -14,13 +14,12 @@ import { useTemplateApply } from '@/hooks/use-template-apply'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs'
 import { ResizableHandle, ResizablePanel, ResizablePanelGroup } from '@/components/ui/resizable'
 import { ScrollArea, ScrollBar } from '@/components/ui/scroll-area'
-import { Layers2, Loader, Monitor, Smartphone, Tablet } from 'lucide-react'
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { Layers2, Loader } from 'lucide-react'
 import { Separator } from '@/components/ui/separator'
 import clsx from 'clsx'
 import { useIsMutating } from '@tanstack/react-query'
 import { HotKeys } from '@/components/editor/hotkeys'
+import { views } from './_layout'
 
 export const Route = createFileRoute('/_layout/pages/$id/')({
   component: Page,
@@ -44,6 +43,7 @@ function Page() {
   const deferredBlocks = useDeferredValue(blocks)
   const [activeTab, setActiveTab] = useState('components')
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
+  const searchParams = useSearch({ from: '/_layout' })
 
   return (
     <HotKeys>
@@ -94,7 +94,7 @@ function Page() {
                 <div
                   id="canvas"
                   className={clsx(['mx-auto', 'h-full', 'transition-opacity', isCanvasMutating ? 'opacity-50' : 'opacity-100'])}
-                  style={{ maxWidth: '100%', transition: 'max-width 0.3s' }}
+                  style={{ maxWidth: views[searchParams.view], transition: 'max-width 0.3s' }}
                 >
                   {blocks.length === 0 && (
                     <DropZone
