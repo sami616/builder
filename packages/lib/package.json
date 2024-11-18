@@ -2,6 +2,9 @@
   "name": "@repo/lib",
   "private": true,
   "version": "0.0.0",
+  "imports": {
+    "#*": "./src/*"
+  },
   "exports": {
     ".": {
       "import": "./src/index.ts"

@@ -2,11 +2,16 @@
   "name": "@repo/editor",
   "private": true,
   "version": "0.0.0",
-  "types": "./src/main.tsx",
   "type": "module",
   "exports": {
     ".": {
       "import": "./src/main.tsx"
+    },
+    "./api": {
+      "import": "./src/api.ts"
+    },
+    "./db": {
+      "import": "./src/db.ts"
     }
   },
   "scripts": {

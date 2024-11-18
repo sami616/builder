@@ -28,5 +28,6 @@
     "noUnusedParameters": true,
     "noFallthroughCasesInSwitch": true
   },
-  "include": ["src"]
+  "include": ["src"],
+  "references": [{"path": "../../packages/lib/"}, {"path": "../../packages/blocks/"} ]
 }

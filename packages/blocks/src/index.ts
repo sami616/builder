@@ -1,3 +1,3 @@
-export { Button, buttonConfig } from './button'
-export { Heading, headingConfig } from './heading'
-export { Container, containerConfig } from './container'
+export { Button, buttonConfig } from '#button.tsx'
+export { Heading, headingConfig } from '#heading.tsx'
+export { Container, containerConfig } from '#container.tsx'
