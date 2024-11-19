@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query'
-import { Page } from '@/db'
+import { Page } from '#db.ts'
 import { toast } from 'sonner'
-import { context } from '@/main'
+import { context } from '#main.tsx'
 
 type Args = { page: Page } & Partial<Pick<Page, 'title' | 'description' | 'url' | 'slug' | 'status' | 'publishedAt'>>
 

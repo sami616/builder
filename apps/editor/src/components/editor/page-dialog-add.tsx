@@ -1,16 +1,16 @@
 import { useNavigate } from '@tanstack/react-router'
-import { usePageAdd } from '@/hooks/use-page-add'
-import { Button } from '@/components/ui/button'
-import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form'
+import { usePageAdd } from '#hooks/use-page-add.ts'
+import { Button } from '#components/ui/button.tsx'
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '#components/ui/form.tsx'
 import { useForm, useWatch } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Input } from '@/components/ui/input'
-import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Input } from '#components/ui/input.tsx'
+import { Dialog, DialogClose, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '#components/ui/dialog.tsx'
 import { useIsMutating } from '@tanstack/react-query'
 import { useState } from 'react'
-import { Switch } from '@/components/ui/switch'
-import { Separator } from '@/components/ui/separator'
+import { Switch } from '#components/ui/switch.tsx'
+import { Separator } from '#components/ui/separator.tsx'
 
 const formSchema = z.object({
   title: z.string().trim().min(1, { message: 'Title required' }),

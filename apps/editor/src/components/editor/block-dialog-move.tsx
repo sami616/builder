@@ -1,21 +1,21 @@
 import { Check, ChevronsUpDown } from 'lucide-react'
-import { Popover, PopoverContent, PopoverTrigger } from '../ui/popover'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form'
-import { Button } from '../ui/button'
-import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '../ui/command'
+import { Popover, PopoverContent, PopoverTrigger } from '#components/ui/popover.tsx'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '#components/ui/form.tsx'
+import { Button } from '#components/ui/button.tsx'
+import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '#components/ui/command.tsx'
 import clsx from 'clsx'
-import { Input } from '../ui/input'
-import { validateSlotBlock, validateDropSelf } from './block-layer-item-slot'
+import { Input } from '#components/ui/input.tsx'
+import { validateSlotBlock, validateDropSelf } from '#components/editor/block-layer-item-slot.tsx'
 import { Dispatch, SetStateAction, useMemo, useState } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '#components/ui/dialog.tsx'
 import { useForm, useWatch } from 'react-hook-form'
-import { Block, Page } from '@/db'
-import { useBlockMove } from '@/hooks/use-block-move'
-import { isBlock } from '@/api'
-import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '../ui/dropdown-menu'
-import { context } from '@/main'
+import { Block, Page } from '#db.ts'
+import { useBlockMove } from '#hooks/use-block-move.ts'
+import { isBlock } from '#api.ts'
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from '#components/ui/dropdown-menu.tsx'
+import { context } from '#main.tsx'
 
 const blockMoveSchema = z.object({
   parentId: z.string(),
@@ -153,7 +153,9 @@ export function BlockDialogMove(props: {
                                   if (isBlock(node)) {
                                     const sourceEl = document.querySelector(`#canvas [data-drop-id="block-${props.block.id}"]`)
                                     const targetEl = document.querySelector(`#canvas [data-drop-id="block-${node.id}"]`)
-                                    validateDropSelf(sourceEl, targetEl)
+                                    if (sourceEl && targetEl) {
+                                      validateDropSelf(sourceEl, targetEl)
+                                    }
                                   }
 
                                   return (

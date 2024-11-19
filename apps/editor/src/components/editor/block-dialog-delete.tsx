@@ -1,5 +1,5 @@
-import { useBlockDeleteMany } from '@/hooks/use-block-delete-many'
-import { Button } from '@/components/ui/button'
+import { useBlockDeleteMany } from '#hooks/use-block-delete-many.ts'
+import { Button } from '#components/ui/button.tsx'
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -8,10 +8,10 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
-import { useBlockDelete } from '@/hooks/use-block-delete'
+} from '#components/ui/alert-dialog.tsx'
+import { useBlockDelete } from '#hooks/use-block-delete.ts'
 import { Dispatch, SetStateAction } from 'react'
-import { Block, Page } from '@/db'
+import { Block, Page } from '#db.ts'
 
 export function BlockDialogDelete(props: {
   blocks: Array<{

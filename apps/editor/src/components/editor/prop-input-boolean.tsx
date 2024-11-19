@@ -1,9 +1,9 @@
-import { useBlockUpdateProps } from '@/hooks/use-block-update-props'
-import { BooleanField } from '@/main'
+import { useBlockUpdateProps } from '#hooks/use-block-update-props.ts'
+import { BooleanField } from '#main.tsx'
 import { useIsMutating } from '@tanstack/react-query'
-import { Block } from '@/db'
-import { PropInputLabel } from './prop-input-label'
-import { Switch } from '../ui/switch'
+import { Block } from '#db.ts'
+import { PropInputLabel } from '#components/editor/prop-input-label.tsx'
+import { Switch } from '#components/ui/switch.tsx'
 import { useId } from 'react'
 
 export function PropInputBoolean(props: { block: Block; field: BooleanField }) {

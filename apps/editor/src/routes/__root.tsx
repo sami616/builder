@@ -1,6 +1,8 @@
-import { type Context } from '@/main'
+import { type Context } from '#main.tsx'
 import { createRootRouteWithContext, Outlet } from '@tanstack/react-router'
-import { ActiveProvider } from '@/hooks/use-active'
+import { ActiveProvider } from '#hooks/use-active.tsx'
+import { resolveTree } from '@repo/lib'
+
 // import { Block, Page } from '@/db'
 // import { context } from '@/main'
 
@@ -38,7 +40,7 @@ export const Route = createRootRouteWithContext<Context>()({
   ),
   loader: async () => {
     // Usage example
-    // const fullTree = await resolveTree('pages', 7)
-    // console.log(fullTree)
+    const fullTree = await resolveTree('pages', 6)
+    console.log(fullTree)
   },
 })

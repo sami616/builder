@@ -1,4 +1,4 @@
-import { usePageExport } from '@/hooks/use-page-export'
+import { usePageExport } from '#hooks/use-page-export.ts'
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -6,11 +6,11 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { usePageCopy } from '@/hooks/use-page-copy'
-import { Button } from '@/components/ui/button'
+} from '#components/ui/dropdown-menu.tsx'
+import { usePageCopy } from '#hooks/use-page-copy.ts'
+import { Button } from '#components/ui/button.tsx'
 import { Clipboard, Trash, FileDown, CopyIcon, MoreHorizontal, Pen } from 'lucide-react'
-import { Page } from '@/db'
+import { Page } from '#db.ts'
 import { type Table } from '@tanstack/react-table'
 import { useIsMutating } from '@tanstack/react-query'
 import { Link } from '@tanstack/react-router'
@@ -35,7 +35,7 @@ export function PageTableActionsRow(props: {
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end" className="w-56">
         <DropdownMenuItem disabled={pageCRUDPending} asChild>
-          <Link disabled={pageCRUDPending} params={{ id: String(props.page.id) }} to="/pages/$id">
+          <Link search={{ view: 'desktop' }} disabled={pageCRUDPending} params={{ id: String(props.page.id) }} to="/pages/$id">
             Open
           </Link>
         </DropdownMenuItem>

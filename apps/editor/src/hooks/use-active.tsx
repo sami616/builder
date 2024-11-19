@@ -1,5 +1,5 @@
-import { isBlock } from '@/api'
-import { Block, Page, Template } from '@/db'
+import { isBlock } from '#api.ts'
+import { Block, Page, Template } from '#db.ts'
 import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useState } from 'react'
 
 type ActiveBlock = Block & { index: number; parent: { slot: string; node: Block | Page } }

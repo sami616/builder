@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { type Block } from '@/db'
-import { context } from '@/main'
+import { type Block } from '#db.ts'
+import { context } from '#main.tsx'
 
 export function useBlockGet(args: { id: Block['id'] }) {
   return {

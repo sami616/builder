@@ -1,5 +1,6 @@
 {
   "name": "@repo/blocks",
+  "type": "module",
   "private": true,
   "version": "0.0.0",
   "imports": {
@@ -7,14 +8,14 @@
   },
   "exports": {
     ".": {
-      "import": "./src/index.ts"
+      "default": "./src/index.ts"
     }
   },
   "dependencies": {
     "@repo/editor": "workspace:^",
     "react": "19.0.0-rc-bf7e210c-20241017",
     "react-dom": "19.0.0-rc-bf7e210c-20241017",
-    "typescript": "^5.5.4"
+    "typescript": "^5.6.3"
   },
   "devDependencies": {
     "@types/react": "npm:types-react@rc",

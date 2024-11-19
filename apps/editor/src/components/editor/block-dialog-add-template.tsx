@@ -1,13 +1,13 @@
-import { useTemplateAdd } from '@/hooks/use-template-add'
-import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '../ui/form'
-import { Button } from '../ui/button'
-import { Input } from '../ui/input'
+import { useTemplateAdd } from '#hooks/use-template-add.ts'
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '#components/ui/form.tsx'
+import { Button } from '#components/ui/button.tsx'
+import { Input } from '#components/ui/input.tsx'
 import { Dispatch, SetStateAction } from 'react'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog'
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '#components/ui/dialog.tsx'
 import { useForm } from 'react-hook-form'
-import { Block, Page } from '@/db'
+import { Block, Page } from '#db.ts'
 
 const templateAddSchema = z.object({
   name: z.string(),

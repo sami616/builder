@@ -1,5 +1,5 @@
 import { generateSlug } from 'random-word-slugs'
-import { type Block, type Page, type Template, db, type DB } from './db'
+import { type Block, type Page, type Template, db, type DB } from '#db.ts'
 
 export async function slow(delay: number = 0) {
   return new Promise((resolve) => setTimeout(resolve, delay))

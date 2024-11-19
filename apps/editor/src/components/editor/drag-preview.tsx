@@ -1,6 +1,6 @@
 import { createPortal } from 'react-dom'
 import { type ReactNode } from 'react'
-import { Card, CardTitle } from '@/components/ui/card'
+import { Card, CardTitle } from '#components/ui/card.tsx'
 
 export function DragPreview(props: { dragPreviewContainer: HTMLElement | null; children: ReactNode }) {
   if (!props.dragPreviewContainer) return null

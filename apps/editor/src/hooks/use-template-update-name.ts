@@ -1,7 +1,7 @@
 import { useMutation } from '@tanstack/react-query'
-import { Template } from '@/db'
+import { Template } from '#db.ts'
 import { toast } from 'sonner'
-import { context } from '@/main'
+import { context } from '#main.tsx'
 
 type Args = { template: Template; name: string }
 

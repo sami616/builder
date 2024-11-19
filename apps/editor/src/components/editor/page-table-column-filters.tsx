@@ -1,4 +1,4 @@
-import { Button } from '@/components/ui/button'
+import { Button } from '#components/ui/button.tsx'
 import { Settings } from 'lucide-react'
 import {
   DropdownMenu,
@@ -7,10 +7,10 @@ import {
   DropdownMenuLabel,
   DropdownMenuSeparator,
   DropdownMenuTrigger,
-} from '@/components/ui/dropdown-menu'
-import { Page } from '@/db'
+} from '#components/ui/dropdown-menu.tsx'
+import { Page } from '#db.ts'
 import { type Table } from '@tanstack/react-table'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '#components/ui/tooltip.tsx'
 
 export function PageTableColumnFilters(props: { table: Table<Page> }) {
   return (

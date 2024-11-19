@@ -1,11 +1,11 @@
-import { Input } from '../ui/input'
-import { Button } from '../ui/button'
+import { Input } from '#components/ui/input.tsx'
+import { Button } from '#components/ui/button.tsx'
 import { Check } from 'lucide-react'
-import { useBlockUpdateProps } from '@/hooks/use-block-update-props'
-import { NumberField } from '@/main'
+import { useBlockUpdateProps } from '#hooks/use-block-update-props.ts'
+import { NumberField } from '#main.tsx'
 import { useIsMutating } from '@tanstack/react-query'
-import { Block } from '@/db'
-import { PropInputLabel } from './prop-input-label'
+import { Block } from '#db.ts'
+import { PropInputLabel } from '#components/editor/prop-input-label.tsx'
 import { useId } from 'react'
 
 export function PropInputNumber(props: { block: Block; field: NumberField }) {

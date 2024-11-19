@@ -7,17 +7,17 @@ import {
   DropdownMenuSeparator,
   DropdownMenuItem,
   DropdownMenuShortcut,
-} from '../ui/dropdown-menu'
-import { useBlockDelete } from '@/hooks/use-block-delete'
-import { useBlockCopy } from '@/hooks/use-block-copy'
+} from '#components/ui/dropdown-menu.tsx'
+import { useBlockDelete } from '#hooks/use-block-delete.ts'
+import { useBlockCopy } from '#hooks/use-block-copy.ts'
 import { useIsMutating } from '@tanstack/react-query'
-import { Block } from '@/db'
+import { Block } from '#db.ts'
 import { ComponentProps, Dispatch, ReactNode, SetStateAction, useRef, useState } from 'react'
-import { BlockLayerItem } from './block-layer-item'
-import { useActive } from '@/hooks/use-active'
-import { validateSlotMax } from './block-layer-item-slot'
-import { BlockDialogAdd } from './block-dialog-add'
-import { BlockDialogAddTemplate } from './block-dialog-add-template'
+import { BlockLayerItem } from '#components/editor/block-layer-item.tsx'
+import { useActive } from '#hooks/use-active.tsx'
+import { validateSlotMax } from '#components/editor/block-layer-item-slot.tsx'
+import { BlockDialogAdd } from '#components/editor/block-dialog-add.tsx'
+import { BlockDialogAddTemplate } from '#components/editor/block-dialog-add-template.tsx'
 
 type BlockLayerItemProps = ComponentProps<typeof BlockLayerItem>
 

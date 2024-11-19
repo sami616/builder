@@ -1,8 +1,8 @@
 import { useMutation } from '@tanstack/react-query'
-import { db, type Template } from '@/db'
-import { context } from '@/main'
+import { db, type Template } from '#db.ts'
+import { context } from '#main.tsx'
 import { toast } from 'sonner'
-import { useActive } from './use-active'
+import { useActive } from '#hooks/use-active.tsx'
 
 type Args = { entries: Array<Template> }
 

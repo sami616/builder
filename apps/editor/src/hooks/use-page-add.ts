@@ -1,7 +1,7 @@
-import { Page } from '@/db'
+import { Page } from '#db.ts'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
-import { context } from '@/main'
+import { context } from '#main.tsx'
 
 type Args = { entry: Omit<Page, 'id'> }
 

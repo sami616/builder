@@ -1,6 +1,6 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { Page } from '@/db'
-import { get } from '@/api'
+import { Page } from '#db.ts'
+import { get } from '#api.ts'
 
 export function pageGetOpts(args: { id: Page['id'] }) {
   return {

@@ -1,6 +1,6 @@
-import { useTemplateDelete } from '@/hooks/use-template-delete'
-import { useTemplateDeleteMany } from '@/hooks/use-template-delete-many'
-import { Button } from '@/components/ui/button'
+import { useTemplateDelete } from '#hooks/use-template-delete.ts'
+import { useTemplateDeleteMany } from '#hooks/use-template-delete-many.ts'
+import { Button } from '#components/ui/button.tsx'
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -9,9 +9,9 @@ import {
   AlertDialogFooter,
   AlertDialogHeader,
   AlertDialogTitle,
-} from '@/components/ui/alert-dialog'
+} from '#components/ui/alert-dialog.tsx'
 import { Dispatch, SetStateAction } from 'react'
-import { Template } from '@/db'
+import { Template } from '#db.ts'
 
 export function TemplateDialogDelete(props: { templates: Array<Template>; open: boolean; setOpen: Dispatch<SetStateAction<boolean>> }) {
   const { templateDeleteMany } = useTemplateDeleteMany()

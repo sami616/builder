@@ -1,4 +1,4 @@
-import { context } from '@repo/editor/'
+import { context } from '@repo/editor'
 import { type Block, type Page } from '@repo/editor/db'
 
 export type Resolved = {
@@ -26,3 +26,7 @@ export async function resolveTree<T extends ResolvedNode['store']>(store: T, id:
 
   return resolvedData as T extends 'pages' ? Resolved['Page'] : Resolved['Block']
 }
+
+// Usage example
+// const fullTree = await resolveTree('pages', 6)
+// console.log(fullTree)

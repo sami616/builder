@@ -1,12 +1,12 @@
-import { evaluateCondition, CollapsibleField } from '@/main'
-import { Block } from '@/db'
-import { PropInputString } from './prop-input-string'
-import { PropInputNumber } from './prop-input-number'
-import { PropInputBoolean } from './prop-input-boolean'
-import { PropInputLabel } from './prop-input-label'
+import { evaluateCondition, CollapsibleField } from '#main.tsx'
+import { Block } from '#db.ts'
+import { PropInputString } from '#components/editor/prop-input-string.tsx'
+import { PropInputNumber } from '#components/editor/prop-input-number.tsx'
+import { PropInputBoolean } from '#components/editor/prop-input-boolean.tsx'
+import { PropInputLabel } from '#components/editor/prop-input-label.tsx'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@radix-ui/react-collapsible'
 import { ChevronDown } from 'lucide-react'
-import { PropGrid } from './prop-grid'
+import { PropGrid } from '#components/editor/prop-grid.tsx'
 
 export function PropCollapsible(props: { block: Block; field: CollapsibleField }) {
   const hidden = evaluateCondition(props.block.props, props.field.hidden)

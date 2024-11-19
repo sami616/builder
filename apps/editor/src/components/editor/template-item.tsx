@@ -1,16 +1,16 @@
-import { type Template } from '@/db'
+import { type Template } from '#db.ts'
 import { useRef, useState } from 'react'
-import { useTemplateUpdateName } from '@/hooks/use-template-update-name'
-import { useTemplateAdd } from '@/hooks/use-template-add'
-import { useTemplateReorder } from '@/hooks/use-template-reorder'
-import { useDrag, isDragData } from '@/hooks/use-drag'
-import { useDrop } from '@/hooks/use-drop'
-import { TreeItem, TreeItemHead, TreeItemLabel } from '@/components/ui/tree'
-import { DropIndicator } from './drop-indicator'
-import { DragPreview } from './drag-preview'
+import { useTemplateUpdateName } from '#hooks/use-template-update-name.ts'
+import { useTemplateAdd } from '#hooks/use-template-add.ts'
+import { useTemplateReorder } from '#hooks/use-template-reorder.ts'
+import { useDrag, isDragData } from '#hooks/use-drag.ts'
+import { useDrop } from '#hooks/use-drop.ts'
+import { TreeItem, TreeItemHead, TreeItemLabel } from '#components/ui/tree.tsx'
+import { DropIndicator } from '#components/editor/drop-indicator.tsx'
+import { DragPreview } from '#components/editor/drag-preview.tsx'
 import clsx from 'clsx'
-import { TemplateItemActions } from './template-item-actions'
-import { useActive } from '@/hooks/use-active'
+import { TemplateItemActions } from '#components/editor/template-item-actions.tsx'
+import { useActive } from '#hooks/use-active.tsx'
 
 export function TemplateItem(props: { template: Template; index: number }) {
   const dragRef = useRef<HTMLDivElement>(null)
@@ -58,7 +58,7 @@ export function TemplateItem(props: { template: Template; index: number }) {
       <TreeItemHead customRef={dragRef}>
         <TreeItemLabel
           onRename={async (updatedName) => {
-            await templateUpdateName({ template: props.template, name: updatedName })
+            return templateUpdateName({ template: props.template, name: updatedName })
           }}
           label={props.template.name}
         />

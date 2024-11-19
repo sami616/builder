@@ -1,5 +1,5 @@
-import { context } from '@/main'
-import { Page } from '@/db'
+import { context } from '#main.tsx'
+import { Page } from '#db.ts'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 

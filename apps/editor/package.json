@@ -3,15 +3,18 @@
   "private": true,
   "version": "0.0.0",
   "type": "module",
+  "imports": {
+    "#*": "./src/*"
+  },
   "exports": {
     ".": {
-      "import": "./src/main.tsx"
+      "default": "./src/main.tsx"
     },
     "./api": {
-      "import": "./src/api.ts"
+      "default": "./src/api.ts"
     },
     "./db": {
-      "import": "./src/db.ts"
+      "default": "./src/db.ts"
     }
   },
   "scripts": {
@@ -91,7 +94,7 @@
     "eslint-plugin-react-refresh": "^0.4.7",
     "postcss": "^8.4.47",
     "tailwindcss": "^3.4.12",
-    "typescript": "^5.5.4",
+    "typescript": "^5.6.3",
     "vite": "^5.3.4"
   },
   "overrides": {

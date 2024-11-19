@@ -1,9 +1,9 @@
 import { createFileRoute, useSearch } from '@tanstack/react-router'
 import { Suspense, useDeferredValue } from 'react'
-import { usePageGet, pageGetOpts } from '@/hooks/use-page-get'
+import { usePageGet, pageGetOpts } from '#hooks/use-page-get.ts'
 import { Loader } from 'lucide-react'
-import { PreviewBlockItem } from '@/components/editor/preview-block-item'
-import { views } from './_layout'
+import { PreviewBlockItem } from '#components/editor/preview-block-item.tsx'
+import { views } from '#routes/_layout.tsx'
 
 export const Route = createFileRoute('/_layout/pages/$id/preview')({
   component: () => Preview(),

@@ -1,6 +1,5 @@
 import { useSuspenseQuery } from '@tanstack/react-query'
-import { Context } from '@/main'
-import { context } from '@/main'
+import { Context, context } from '#main.tsx'
 
 export function pageGetManyOpts(args: { context: Context }) {
   return {

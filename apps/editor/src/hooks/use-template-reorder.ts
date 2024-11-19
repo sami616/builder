@@ -1,9 +1,9 @@
 import { useMutation } from '@tanstack/react-query'
-import { db, Template } from '@/db'
-import { DragData } from '@/hooks/use-drag'
-import { Edge } from '@/hooks/use-drop'
+import { db, Template } from '#db.ts'
+import { DragData } from '#hooks/use-drag.ts'
+import { Edge } from '#hooks/use-drop.ts'
 import { toast } from 'sonner'
-import { context } from '@/main'
+import { context } from '#main.tsx'
 
 type Args = {
   source: DragData['template']

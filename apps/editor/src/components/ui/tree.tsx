@@ -1,10 +1,10 @@
 import { Dispatch, HTMLProps, RefObject, SetStateAction, ComponentType, useEffect, useRef, useContext, createContext, useState } from 'react'
-import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible'
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '#components/ui/collapsible.tsx'
 import { ChevronDown, ChevronRight } from 'lucide-react'
 import { ReactNode } from '@tanstack/react-router'
 import clsx from 'clsx'
 import { useIsMutating } from '@tanstack/react-query'
-import { cn } from '@/lib/utils'
+import { cn } from '#lib/utils.ts'
 
 const Context = createContext<{
   open: boolean
@@ -83,7 +83,7 @@ export function TreeItemIcon(props: { className?: string; hide?: boolean; icon: 
   return <Icon size={16} className={cn('shrink-0 stroke-gray-400', props.className)} />
 }
 
-export function TreeItemLabel(props: { onRename?: (updatedName: string) => void; label?: string }) {
+export function TreeItemLabel(props: { onRename?: (updatedName: string) => Promise<number>; label?: string }) {
   const { renaming, setRenaming } = useTreeItem()
   const inputRef = useRef<HTMLInputElement>(null)
 
@@ -126,7 +126,7 @@ export function TreeItemLabel(props: { onRename?: (updatedName: string) => void;
   return (
     <form
       className="grow"
-      onSubmit={(e) => {
+      onSubmit={async (e) => {
         e.preventDefault()
         const formData = new FormData(e.currentTarget)
         const updatedName = formData.get('name') as string

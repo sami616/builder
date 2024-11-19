@@ -1,25 +1,25 @@
-import { type Page, type Block } from '@/db'
+import { type Page, type Block } from '#db.ts'
 import { useDeferredValue, useRef, useState } from 'react'
-import { useDrag, isDragData } from '@/hooks/use-drag'
-import { useDrop } from '@/hooks/use-drop'
-import { useBlockUpdateName } from '@/hooks/use-block-update-name'
-import { useBlockGet } from '@/hooks/use-block-get'
-import { useTemplateApply } from '@/hooks/use-template-apply'
-import { BlockLayerItemSlot, validateSlotBlock, validateSlotMax } from '@/components/editor/block-layer-item-slot'
-import { useBlockAdd } from '@/hooks/use-block-add'
-import { useBlockMove } from '@/hooks/use-block-move'
+import { useDrag, isDragData } from '#hooks/use-drag.ts'
+import { useDrop } from '#hooks/use-drop.ts'
+import { useBlockUpdateName } from '#hooks/use-block-update-name.ts'
+import { useBlockGet } from '#hooks/use-block-get.ts'
+import { useTemplateApply } from '#hooks/use-template-apply.ts'
+import { BlockLayerItemSlot, validateSlotBlock, validateSlotMax } from '#components/editor/block-layer-item-slot.tsx'
+import { useBlockAdd } from '#hooks/use-block-add.ts'
+import { useBlockMove } from '#hooks/use-block-move.ts'
 import { AlertCircle } from 'lucide-react'
-import { TreeItem, TreeItemContent, TreeItemHead, TreeItemLabel, TreeItemTrigger } from '@/components/ui/tree'
-import { DropIndicator } from './drop-indicator'
-import { DragPreview } from './drag-preview'
+import { TreeItem, TreeItemContent, TreeItemHead, TreeItemLabel, TreeItemTrigger } from '#components/ui/tree.tsx'
+import { DropIndicator } from '#components/editor/drop-indicator.tsx'
+import { DragPreview } from '#components/editor/drag-preview.tsx'
 import clsx from 'clsx'
-import { BlockLayerItemActions } from '@/components/editor/block-layer-item-actions'
-import { useActive } from '@/hooks/use-active'
+import { BlockLayerItemActions } from '#components/editor/block-layer-item-actions.tsx'
+import { useActive } from '#hooks/use-active.tsx'
 import { toast } from 'sonner'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '../ui/tooltip'
-import { flash } from '@/lib/utils'
-import { useBlockHover } from '@/hooks/use-block-hover'
-import { context } from '@/main'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '#components/ui/tooltip.tsx'
+import { flash } from '#lib/utils.ts'
+import { useBlockHover } from '#hooks/use-block-hover.tsx'
+import { context } from '#main.tsx'
 
 export function BlockLayerItem(props: { id: Block['id']; index: number; parent: { slot: string; node: Block | Page } }) {
   const { isActive, handleActiveClick } = useActive()
@@ -107,12 +107,7 @@ export function BlockLayerItem(props: { id: Block['id']; index: number; parent: 
       <TreeItemHead customRef={dragRef}>
         <TreeItemTrigger hide={isLeaf} />
         {/* <TreeItemIcon icon={Layers2} /> */}
-        <TreeItemLabel
-          label={deferredBlock.name}
-          onRename={(updatedName) => {
-            blockUpdateName({ block: deferredBlock, name: updatedName })
-          }}
-        />
+        <TreeItemLabel label={deferredBlock.name} onRename={(updatedName) => blockUpdateName({ block: deferredBlock, name: updatedName })} />
         {isMissing && (
           <TooltipProvider>
             <Tooltip>

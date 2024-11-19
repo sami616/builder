@@ -1,8 +1,8 @@
 import { useDeferredValue } from 'react'
-import { type Block } from '@/db'
-import { useBlockGet } from '@/hooks/use-block-get'
-import { Missing } from '@/components/editor/missing'
-import { context } from '@/main'
+import { type Block } from '#db.ts'
+import { useBlockGet } from '#hooks/use-block-get.ts'
+import { Missing } from '#components/editor/missing.tsx'
+import { context } from '#main.tsx'
 
 export function PreviewBlockItem(props: { id: Block['id'] }) {
   const { blockGet } = useBlockGet({ id: props.id })

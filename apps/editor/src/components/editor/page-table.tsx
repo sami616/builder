@@ -1,10 +1,10 @@
 import { useNavigate } from '@tanstack/react-router'
-import { usePageImport } from '@/hooks/use-page-import'
-import { usePageGetMany } from '@/hooks/use-page-get-many'
-import { Button } from '@/components/ui/button'
-import { Checkbox } from '@/components/ui/checkbox'
+import { usePageImport } from '#hooks/use-page-import.ts'
+import { usePageGetMany } from '#hooks/use-page-get-many.ts'
+import { Button } from '#components/ui/button.tsx'
+import { Checkbox } from '#components/ui/checkbox.tsx'
 import { ArrowUp, ArrowDown, Import } from 'lucide-react'
-import { Page } from '@/db'
+import { Page } from '#db.ts'
 import {
   type ColumnDef,
   flexRender,
@@ -14,18 +14,18 @@ import {
   getSortedRowModel,
   getFilteredRowModel,
 } from '@tanstack/react-table'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '#components/ui/table.tsx'
 import { useMemo, useState } from 'react'
-import { Badge } from '@/components/ui/badge'
-import { PageTableFilters } from '@/components/editor/page-table-filters'
+import { Badge } from '#components/ui/badge.tsx'
+import { PageTableFilters } from '#components/editor/page-table-filters.tsx'
 import { useIsMutating } from '@tanstack/react-query'
-import { PageTableActions } from '@/components/editor/page-table-actions'
-import { PageTableActionsRow } from '@/components/editor/page-table-actions-row'
-import { PageTableColumnFilters } from '@/components/editor/page-table-column-filters'
-import { PageDialogDelete } from '@/components/editor/page-dialog-delete'
-import { PageAdd } from '@/components/editor/page-dialog-add'
+import { PageTableActions } from '#components/editor/page-table-actions.tsx'
+import { PageTableActionsRow } from '#components/editor/page-table-actions-row.tsx'
+import { PageTableColumnFilters } from '#components/editor/page-table-column-filters.tsx'
+import { PageDialogDelete } from '#components/editor/page-dialog-delete.tsx'
+import { PageAdd } from '#components/editor/page-dialog-add.tsx'
 import clsx from 'clsx'
-import { PageDialogEdit } from './page-dialog-edit'
+import { PageDialogEdit } from '#components/editor/page-dialog-edit.tsx'
 
 export function PageTable() {
   const navigate = useNavigate({ from: '/pages' })

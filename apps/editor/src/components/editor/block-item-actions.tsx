@@ -1,13 +1,13 @@
-import { type Block, type Page } from '@/db'
-import { useBlockCopy } from '@/hooks/use-block-copy'
-import { useBlockDelete } from '@/hooks/use-block-delete'
-import { validateSlotMax } from './block-layer-item-slot'
+import { type Block, type Page } from '#db.ts'
+import { useBlockCopy } from '#hooks/use-block-copy.ts'
+import { useBlockDelete } from '#hooks/use-block-delete.ts'
+import { validateSlotMax } from '#components/editor/block-layer-item-slot.tsx'
 import { Copy, Layout, Plus, Trash } from 'lucide-react'
-import { ContextMenuLabel, ContextMenuSeparator, ContextMenuContent, ContextMenuItem, ContextMenuShortcut } from '@/components/ui/context-menu'
+import { ContextMenuLabel, ContextMenuSeparator, ContextMenuContent, ContextMenuItem, ContextMenuShortcut } from '#components/ui/context-menu.tsx'
 import { useState } from 'react'
-import { BlockDialogAdd } from './block-dialog-add'
-import { BlockDialogAddTemplate } from './block-dialog-add-template'
-import { context } from '@/main'
+import { BlockDialogAdd } from '#components/editor/block-dialog-add.tsx'
+import { BlockDialogAddTemplate } from '#components/editor/block-dialog-add-template.tsx'
+import { context } from '#main.tsx'
 
 export function BlockItemActions(props: { block: Block; index: number; parent: { slot: string; node: Block | Page } }) {
   const { blockCopy } = useBlockCopy()

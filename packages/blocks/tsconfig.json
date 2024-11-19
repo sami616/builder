@@ -4,6 +4,5 @@
     "lib": ["ES2020", "DOM", "DOM.Iterable", "ESNext"],
     "jsx": "preserve"
   },
-  "include": ["src"],
-  "references": [{ "path": "../../apps/editor/" }]
+  "include": ["src"]
 }

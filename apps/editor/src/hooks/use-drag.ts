@@ -1,9 +1,9 @@
 import { type RefObject, useEffect, useState } from 'react'
 import { draggable } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
 import { setCustomNativeDragPreview } from '@atlaskit/pragmatic-drag-and-drop/element/set-custom-native-drag-preview'
-import { Template, type Block, type Page } from '@/db'
-import { isBlock, isPage, isTemplate } from '@/api'
-import { config } from '@/main'
+import { Template, type Block, type Page } from '#db.ts'
+import { isBlock, isPage, isTemplate } from '#api.ts'
+import { config } from '#main.tsx'
 import { Input } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types'
 import { useIsMutating } from '@tanstack/react-query'
 

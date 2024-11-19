@@ -1,11 +1,11 @@
 import { useMutation } from '@tanstack/react-query'
 import { type ComponentProps } from 'react'
-import { BlockItem } from '@/components/editor/block-item'
+import { BlockItem } from '#components/editor/block-item.tsx'
 import { useParams } from '@tanstack/react-router'
-import { Block, Page } from '@/db'
+import { Block, Page } from '#db.ts'
 import { toast } from 'sonner'
-import { context } from '@/main'
-import { isPage } from '@/api'
+import { context } from '#main.tsx'
+import { isPage } from '#api.ts'
 
 type Args = { entries: Array<{ index: number; id: Block['id']; parent: ComponentProps<typeof BlockItem>['parent'] }> }
 

@@ -1,12 +1,11 @@
 import { useMutation } from '@tanstack/react-query'
-import { type Edge } from '@/hooks/use-drop'
+import { type Edge } from '#hooks/use-drop.ts'
 import { useParams } from '@tanstack/react-router'
-import { type Block, type Page } from '@/db'
-import { DragData } from '@/hooks/use-drag'
+import { type Block, type Page } from '#db.ts'
+import { DragData } from '#hooks/use-drag.ts'
 import { toast } from 'sonner'
-import { Props } from '@/main'
-import { isPage } from '@/api'
-import { context } from '@/main'
+import { Props, context } from '#main.tsx'
+import { isPage } from '#api.ts'
 
 type Args = {
   name?: string

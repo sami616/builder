@@ -1,5 +1,5 @@
 import { ComponentType, useRef } from 'react'
-import { useDrop } from '@/hooks/use-drop'
+import { useDrop } from '#hooks/use-drop.ts'
 import { clsx } from 'clsx'
 
 export function DropZone<D extends Record<string, any>>(

@@ -1,10 +1,10 @@
 import { useMutation } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
-import { DragData } from '@/hooks/use-drag'
-import { Block, Page } from '@/db'
-import { Edge } from '@/hooks/use-drop'
-import { isPage } from '@/api'
-import { context } from '@/main'
+import { DragData } from '#hooks/use-drag.ts'
+import { Block, Page } from '#db.ts'
+import { Edge } from '#hooks/use-drop.ts'
+import { isPage } from '#api.ts'
+import { context } from '#main.tsx'
 
 export function useBlockReparent() {
   const params = useParams({ strict: false })

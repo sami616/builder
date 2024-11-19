@@ -1,4 +1,4 @@
-import { Block } from '@/db'
+import { Block } from '#db.ts'
 import { RefObject, useEffect } from 'react'
 
 export function useBlockHover(id: Block['id'], element: RefObject<HTMLElement | null>) {

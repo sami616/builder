@@ -1,9 +1,9 @@
-import { config } from '@/main'
+import { config } from '#main.tsx'
 import { SquareDashedMousePointer, X } from 'lucide-react'
-import { useActive } from '@/hooks/use-active'
-import { PropInput } from './prop-input'
-import { Button } from '../ui/button'
-import { Separator } from '../ui/separator'
+import { useActive } from '#hooks/use-active.tsx'
+import { PropInput } from '#components/editor/prop-input.tsx'
+import { Button } from '#components/ui/button.tsx'
+import { Separator } from '#components/ui/separator.tsx'
 
 export function PropPanel() {
   const { active, setActive } = useActive()
