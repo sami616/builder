@@ -1,31 +1,31 @@
-import { useNavigate } from '@tanstack/react-router'
-import { usePageImport } from '#hooks/use-page-import.ts'
-import { usePageGetMany } from '#hooks/use-page-get-many.ts'
+import { PageAdd } from '#components/editor/page-dialog-add.tsx'
+import { PageDialogDelete } from '#components/editor/page-dialog-delete.tsx'
+import { PageDialogEdit } from '#components/editor/page-dialog-edit.tsx'
+import { PageTableActionsRow } from '#components/editor/page-table-actions-row.tsx'
+import { PageTableActions } from '#components/editor/page-table-actions.tsx'
+import { PageTableColumnFilters } from '#components/editor/page-table-column-filters.tsx'
+import { PageTableFilters } from '#components/editor/page-table-filters.tsx'
+import { Badge } from '#components/ui/badge.tsx'
 import { Button } from '#components/ui/button.tsx'
 import { Checkbox } from '#components/ui/checkbox.tsx'
-import { ArrowUp, ArrowDown, Import } from 'lucide-react'
-import { Page } from '#db.ts'
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '#components/ui/table.tsx'
+import { type Page } from '#db.ts'
+import { usePageGetMany } from '#hooks/use-page-get-many.ts'
+import { usePageImport } from '#hooks/use-page-import.ts'
+import { useIsMutating } from '@tanstack/react-query'
+import { useNavigate } from '@tanstack/react-router'
 import {
   type ColumnDef,
   flexRender,
   getCoreRowModel,
-  useReactTable,
+  getFilteredRowModel,
   getPaginationRowModel,
   getSortedRowModel,
-  getFilteredRowModel,
+  useReactTable,
 } from '@tanstack/react-table'
-import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '#components/ui/table.tsx'
-import { useMemo, useState } from 'react'
-import { Badge } from '#components/ui/badge.tsx'
-import { PageTableFilters } from '#components/editor/page-table-filters.tsx'
-import { useIsMutating } from '@tanstack/react-query'
-import { PageTableActions } from '#components/editor/page-table-actions.tsx'
-import { PageTableActionsRow } from '#components/editor/page-table-actions-row.tsx'
-import { PageTableColumnFilters } from '#components/editor/page-table-column-filters.tsx'
-import { PageDialogDelete } from '#components/editor/page-dialog-delete.tsx'
-import { PageAdd } from '#components/editor/page-dialog-add.tsx'
 import clsx from 'clsx'
-import { PageDialogEdit } from '#components/editor/page-dialog-edit.tsx'
+import { ArrowDown, ArrowUp, Import } from 'lucide-react'
+import { useMemo, useState } from 'react'
 
 export function PageTable() {
   const navigate = useNavigate({ from: '/pages' })
@@ -81,7 +81,7 @@ export function PageTable() {
         header: 'Status',
         filterFn: 'equals',
         cell: ({ row }) => {
-          const status = String(row.getValue('status'))
+          const status = row.getValue<Page['status']>('status')
           return (
             <Badge className="capitalize" variant="secondary">
               {status}
@@ -94,7 +94,7 @@ export function PageTable() {
         header: 'Created at',
         enableColumnFilter: false,
         cell: ({ row }) => {
-          const createdAt = row.getValue('createdAt') as Date
+          const createdAt = row.getValue<Page['createdAt']>('createdAt')
           return createdAt.toLocaleString()
         },
       },
@@ -103,8 +103,17 @@ export function PageTable() {
         header: 'Updated at',
         enableColumnFilter: false,
         cell: ({ row }) => {
-          const updatedAt = row.getValue('updatedAt') as Date
+          const updatedAt = row.getValue<Page['updatedAt']>('updatedAt')
           return updatedAt.toLocaleString()
+        },
+      },
+      {
+        accessorKey: 'publishedAt',
+        header: 'Published at',
+        enableColumnFilter: false,
+        cell: ({ row }) => {
+          const publishedAt = row.getValue<Page['publishedAt']>('publishedAt')
+          return publishedAt?.toLocaleString() ?? '-'
         },
       },
       {

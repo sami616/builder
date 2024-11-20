@@ -1,10 +1,9 @@
-import { type Page, type Block } from '#db.ts'
 import { ComponentItem } from '#components/editor/component-item.tsx'
-import { Config } from '#main.tsx'
-import { useMemo } from 'react'
 import { Tree } from '#components/ui/tree.tsx'
+import { type Block, type Page } from '#db.ts'
+import { type Config, context } from '#main.tsx'
 import { Component } from 'lucide-react'
-import { context } from '#main.tsx'
+import { useMemo } from 'react'
 
 export function ComponentPanel(props: { page: Page }) {
   const structure = useMemo(() => {

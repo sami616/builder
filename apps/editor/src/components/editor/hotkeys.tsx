@@ -1,15 +1,15 @@
-import { useHotkeys } from 'react-hotkeys-hook'
-import { useActive } from '#hooks/use-active.tsx'
-import { useBlockDelete } from '#hooks/use-block-delete.ts'
-import { useBlockCopy } from '#hooks/use-block-copy.ts'
-import { useBlockCopyMany } from '#hooks/use-block-copy-many.ts'
-import { BlockDialogAdd } from '#components/editor/block-dialog-add.tsx'
 import { BlockDialogAddTemplate } from '#components/editor/block-dialog-add-template.tsx'
-import { useState } from 'react'
-import { ReactNode } from '@tanstack/react-router'
+import { BlockDialogAdd } from '#components/editor/block-dialog-add.tsx'
 import { BlockDialogDelete } from '#components/editor/block-dialog-delete.tsx'
 import { TemplateDialogDelete } from '#components/editor/template-dialog-delete.tsx'
+import { useActive } from '#hooks/use-active.tsx'
+import { useBlockCopyMany } from '#hooks/use-block-copy-many.ts'
+import { useBlockCopy } from '#hooks/use-block-copy.ts'
+import { useBlockDelete } from '#hooks/use-block-delete.ts'
 import { useTemplateDelete } from '#hooks/use-template-delete.ts'
+import { type ReactNode } from '@tanstack/react-router'
+import { useState } from 'react'
+import { useHotkeys } from 'react-hotkeys-hook'
 
 export function HotKeys(props: { children: ReactNode }) {
   const { active } = useActive()

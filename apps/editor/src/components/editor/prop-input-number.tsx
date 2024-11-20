@@ -1,14 +1,20 @@
-import { Input } from '#components/ui/input.tsx'
-import { Button } from '#components/ui/button.tsx'
-import { Check } from 'lucide-react'
-import { useBlockUpdateProps } from '#hooks/use-block-update-props.ts'
-import { NumberField } from '#main.tsx'
-import { useIsMutating } from '@tanstack/react-query'
-import { Block } from '#db.ts'
 import { PropInputLabel } from '#components/editor/prop-input-label.tsx'
-import { useId } from 'react'
+import { type CommonFieldProps } from '#components/editor/prop-input.tsx'
+import { Button } from '#components/ui/button.tsx'
+import { Input } from '#components/ui/input.tsx'
+import { type Block } from '#db.ts'
+import { useBlockUpdateProps } from '#hooks/use-block-update-props.ts'
+import { useIsMutating } from '@tanstack/react-query'
+import { Check } from 'lucide-react'
+import { type HTMLInputAutoCompleteAttribute, useId } from 'react'
 
-export function PropInputNumber(props: { block: Block; field: NumberField }) {
+export type NumberFieldProps = CommonFieldProps & {
+  type: 'number'
+  config?: { autoComplete?: HTMLInputAutoCompleteAttribute; required?: boolean; min?: number; max?: number; step?: number }
+  default?: number
+}
+
+export function PropInputNumber(props: { block: Block; field: NumberFieldProps }) {
   const { blockUpdateProps } = useBlockUpdateProps()
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
   const id = useId()

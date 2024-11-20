@@ -1,6 +1,6 @@
-import { ComponentType, useRef } from 'react'
 import { useDrop } from '#hooks/use-drop.ts'
 import { clsx } from 'clsx'
+import { type ComponentType, useRef } from 'react'
 
 export function DropZone<D extends Record<string, any>>(
   props: { id?: string; label: string; icon: ComponentType<{ size?: number; className?: string }> } & Pick<

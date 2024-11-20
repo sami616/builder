@@ -1,13 +1,13 @@
-import { type Page, type Block } from '#db.ts'
-import { Config } from '#main.tsx'
-import { useRef, useState } from 'react'
-import { NestedStructure, isComponentLeaf } from '#components/editor/component-panel.tsx'
-import { useDrag } from '#hooks/use-drag.ts'
-import { CircleAlert } from 'lucide-react'
+import { type NestedStructure, isComponentLeaf } from '#components/editor/component-panel.tsx'
+import { DragPreview } from '#components/editor/drag-preview.tsx'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '#components/ui/hover-card.tsx'
 import { TreeItem, TreeItemContent, TreeItemHead, TreeItemLabel, TreeItemTrigger } from '#components/ui/tree.tsx'
-import { DragPreview } from '#components/editor/drag-preview.tsx'
+import { type Block, type Page } from '#db.ts'
+import { useDrag } from '#hooks/use-drag.ts'
+import { type Config } from '#main.tsx'
 import clsx from 'clsx'
+import { CircleAlert } from 'lucide-react'
+import { useRef, useState } from 'react'
 
 export function ComponentItem(props: { page: Page; type: Block['type']; value: NestedStructure | Config[keyof Config] }) {
   const dragRef = useRef<HTMLDivElement>(null)

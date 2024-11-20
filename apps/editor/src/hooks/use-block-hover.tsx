@@ -1,5 +1,5 @@
-import { Block } from '#db.ts'
-import { RefObject, useEffect } from 'react'
+import { type Block } from '#db.ts'
+import { type RefObject, useEffect } from 'react'
 
 export function useBlockHover(id: Block['id'], element: RefObject<HTMLElement | null>) {
   useEffect(() => {

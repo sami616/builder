@@ -1,10 +1,10 @@
-import { useMutation } from '@tanstack/react-query'
-import { useParams } from '@tanstack/react-router'
+import { isPage } from '#api.ts'
+import { type Block, type Page } from '#db.ts'
 import { type DragData } from '#hooks/use-drag.ts'
 import { type Edge } from '#hooks/use-drop.ts'
-import { type Block, type Page } from '#db.ts'
-import { isPage } from '#api.ts'
 import { context } from '#main.tsx'
+import { useMutation } from '@tanstack/react-query'
+import { useParams } from '@tanstack/react-router'
 
 export function useBlockReorder() {
   const params = useParams({ strict: false })

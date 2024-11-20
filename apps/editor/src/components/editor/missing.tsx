@@ -1,5 +1,5 @@
-import { AlertCircle } from 'lucide-react'
 import { Card, CardTitle } from '#components/ui/card.tsx'
+import { AlertCircle } from 'lucide-react'
 
 export function Missing(props: { node: { type: 'component'; name: string } | { type: 'slot'; name: string } }) {
   return (

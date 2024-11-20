@@ -1,19 +1,19 @@
 'use no memo'
-import { Filter } from 'lucide-react'
+import { Badge } from '#components/ui/badge.tsx'
 import { Button } from '#components/ui/button.tsx'
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuLabel,
-  DropdownMenuSeparator,
-  DropdownMenuTrigger,
   DropdownMenuRadioGroup,
   DropdownMenuRadioItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
 } from '#components/ui/dropdown-menu.tsx'
 import { Input } from '#components/ui/input.tsx'
-import { Badge } from '#components/ui/badge.tsx'
+import { type Page } from '#db.ts'
 import { Table } from '@tanstack/react-table'
-import { Page } from '#db.ts'
+import { Filter } from 'lucide-react'
 
 export function PageTableFilters(props: { table: Table<Page> }) {
   const columnFilters = props.table.getState().columnFilters

@@ -1,5 +1,6 @@
+'use no memo'
+
 import { Button } from '#components/ui/button.tsx'
-import { Settings } from 'lucide-react'
 import {
   DropdownMenu,
   DropdownMenuCheckboxItem,
@@ -8,9 +9,10 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '#components/ui/dropdown-menu.tsx'
-import { Page } from '#db.ts'
-import { type Table } from '@tanstack/react-table'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '#components/ui/tooltip.tsx'
+import { type Page } from '#db.ts'
+import { type Table } from '@tanstack/react-table'
+import { Settings } from 'lucide-react'
 
 export function PageTableColumnFilters(props: { table: Table<Page> }) {
   return (

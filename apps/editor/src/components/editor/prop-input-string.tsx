@@ -1,15 +1,22 @@
-import { Input } from '#components/ui/input.tsx'
-import { Button } from '#components/ui/button.tsx'
-import { Check } from 'lucide-react'
-import { Select, SelectContent, SelectGroup, SelectItem, SelectValue, SelectTrigger } from '#components/ui/select.tsx'
-import { useBlockUpdateProps } from '#hooks/use-block-update-props.ts'
-import { evaluateCondition, StringField } from '#main.tsx'
-import { useIsMutating } from '@tanstack/react-query'
-import { Block } from '#db.ts'
 import { PropInputLabel } from '#components/editor/prop-input-label.tsx'
-import { useId } from 'react'
+import { type CommonFieldProps, evaluateCondition } from '#components/editor/prop-input.tsx'
+import { Button } from '#components/ui/button.tsx'
+import { Input } from '#components/ui/input.tsx'
+import { Select, SelectContent, SelectGroup, SelectItem, SelectTrigger, SelectValue } from '#components/ui/select.tsx'
+import { type Block } from '#db.ts'
+import { useBlockUpdateProps } from '#hooks/use-block-update-props.ts'
+import { useIsMutating } from '@tanstack/react-query'
+import { Check } from 'lucide-react'
+import { type HTMLInputAutoCompleteAttribute, useId } from 'react'
 
-export function PropInputString(props: { block: Block; field: StringField }) {
+export type StringFieldProps = CommonFieldProps & {
+  type: 'string'
+  config?: { autoComplete?: HTMLInputAutoCompleteAttribute; required?: boolean; minLength?: number; maxLength?: number }
+  options?: Array<{ name: string; value: string }>
+  default?: string
+}
+
+export function PropInputString(props: { block: Block; field: StringFieldProps }) {
   const { blockUpdateProps } = useBlockUpdateProps()
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
   const { options } = props.field

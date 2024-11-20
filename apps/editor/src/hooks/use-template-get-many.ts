@@ -1,5 +1,5 @@
-import { useSuspenseQuery } from '@tanstack/react-query'
 import { context } from '#main.tsx'
+import { useSuspenseQuery } from '@tanstack/react-query'
 
 export function templateGetManyOpts() {
   return {

@@ -1,8 +1,8 @@
-import { Info } from 'lucide-react'
-import { Label } from '#components/ui/label.tsx'
+import { Field } from '#components/editor/prop-input.tsx'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '#components/ui/hover-card.tsx'
-import { Field } from '#main.tsx'
+import { Label } from '#components/ui/label.tsx'
 import clsx from 'clsx'
+import { Info } from 'lucide-react'
 
 export function PropInputLabel(props: { field: Field; for?: string; variant?: 'head' | 'subhead' }) {
   if (!props.field.name) return null

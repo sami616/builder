@@ -13,7 +13,6 @@
 import { Route as rootRoute } from './routes/__root'
 import { Route as LayoutImport } from './routes/_layout'
 import { Route as IndexImport } from './routes/index'
-import { Route as ProfileIndexImport } from './routes/profile.index'
 import { Route as PagesIndexImport } from './routes/pages.index'
 import { Route as LayoutPagesIdIndexImport } from './routes/_layout.pages.$id.index'
 import { Route as LayoutPagesIdPreviewImport } from './routes/_layout.pages.$id.preview'
@@ -28,12 +27,6 @@ const LayoutRoute = LayoutImport.update({
 const IndexRoute = IndexImport.update({
   id: '/',
   path: '/',
-  getParentRoute: () => rootRoute,
-} as any)
-
-const ProfileIndexRoute = ProfileIndexImport.update({
-  id: '/profile/',
-  path: '/profile/',
   getParentRoute: () => rootRoute,
 } as any)
 
@@ -80,13 +73,6 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PagesIndexImport
       parentRoute: typeof rootRoute
     }
-    '/profile/': {
-      id: '/profile/'
-      path: '/profile'
-      fullPath: '/profile'
-      preLoaderRoute: typeof ProfileIndexImport
-      parentRoute: typeof rootRoute
-    }
     '/_layout/pages/$id/preview': {
       id: '/_layout/pages/$id/preview'
       path: '/pages/$id/preview'
@@ -123,7 +109,6 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '': typeof LayoutRouteWithChildren
   '/pages': typeof PagesIndexRoute
-  '/profile': typeof ProfileIndexRoute
   '/pages/$id/preview': typeof LayoutPagesIdPreviewRoute
   '/pages/$id': typeof LayoutPagesIdIndexRoute
 }
@@ -132,7 +117,6 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '': typeof LayoutRouteWithChildren
   '/pages': typeof PagesIndexRoute
-  '/profile': typeof ProfileIndexRoute
   '/pages/$id/preview': typeof LayoutPagesIdPreviewRoute
   '/pages/$id': typeof LayoutPagesIdIndexRoute
 }
@@ -142,28 +126,20 @@ export interface FileRoutesById {
   '/': typeof IndexRoute
   '/_layout': typeof LayoutRouteWithChildren
   '/pages/': typeof PagesIndexRoute
-  '/profile/': typeof ProfileIndexRoute
   '/_layout/pages/$id/preview': typeof LayoutPagesIdPreviewRoute
   '/_layout/pages/$id/': typeof LayoutPagesIdIndexRoute
 }
 
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths:
-    | '/'
-    | ''
-    | '/pages'
-    | '/profile'
-    | '/pages/$id/preview'
-    | '/pages/$id'
+  fullPaths: '/' | '' | '/pages' | '/pages/$id/preview' | '/pages/$id'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '' | '/pages' | '/profile' | '/pages/$id/preview' | '/pages/$id'
+  to: '/' | '' | '/pages' | '/pages/$id/preview' | '/pages/$id'
   id:
     | '__root__'
     | '/'
     | '/_layout'
     | '/pages/'
-    | '/profile/'
     | '/_layout/pages/$id/preview'
     | '/_layout/pages/$id/'
   fileRoutesById: FileRoutesById
@@ -173,14 +149,12 @@ export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   LayoutRoute: typeof LayoutRouteWithChildren
   PagesIndexRoute: typeof PagesIndexRoute
-  ProfileIndexRoute: typeof ProfileIndexRoute
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   LayoutRoute: LayoutRouteWithChildren,
   PagesIndexRoute: PagesIndexRoute,
-  ProfileIndexRoute: ProfileIndexRoute,
 }
 
 export const routeTree = rootRoute
@@ -195,8 +169,7 @@ export const routeTree = rootRoute
       "children": [
         "/",
         "/_layout",
-        "/pages/",
-        "/profile/"
+        "/pages/"
       ]
     },
     "/": {
@@ -211,9 +184,6 @@ export const routeTree = rootRoute
     },
     "/pages/": {
       "filePath": "pages.index.tsx"
-    },
-    "/profile/": {
-      "filePath": "profile.index.tsx"
     },
     "/_layout/pages/$id/preview": {
       "filePath": "_layout.pages.$id.preview.tsx",

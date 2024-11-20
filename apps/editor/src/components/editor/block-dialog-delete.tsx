@@ -1,5 +1,3 @@
-import { useBlockDeleteMany } from '#hooks/use-block-delete-many.ts'
-import { Button } from '#components/ui/button.tsx'
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -9,9 +7,11 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '#components/ui/alert-dialog.tsx'
+import { Button } from '#components/ui/button.tsx'
+import { type Block, type Page } from '#db.ts'
+import { useBlockDeleteMany } from '#hooks/use-block-delete-many.ts'
 import { useBlockDelete } from '#hooks/use-block-delete.ts'
-import { Dispatch, SetStateAction } from 'react'
-import { Block, Page } from '#db.ts'
+import { type Dispatch, type SetStateAction } from 'react'
 
 export function BlockDialogDelete(props: {
   blocks: Array<{

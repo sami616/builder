@@ -1,4 +1,4 @@
-import { Edge } from '#hooks/use-drop.ts'
+import { type Edge } from '#hooks/use-drop.ts'
 import clsx from 'clsx'
 import { Circle } from 'lucide-react'
 

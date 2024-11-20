@@ -1,20 +1,30 @@
+import { PropInputLabel } from '#components/editor/prop-input-label.tsx'
+import { CommonFieldProps } from '#components/editor/prop-input.tsx'
 import { Button } from '#components/ui/button.tsx'
 import { Input } from '#components/ui/input.tsx'
 import { Popover, PopoverContent, PopoverTrigger } from '#components/ui/popover.tsx'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '#components/ui/tabs.tsx'
-import { Block } from '#db.ts'
-import { cn } from '#lib/utils.ts'
-import { ColourField } from '#main.tsx'
-import { Copy, Paintbrush } from 'lucide-react'
-import { PropInputLabel } from '#components/editor/prop-input-label.tsx'
-import { useId, useState } from 'react'
-import { useBlockUpdateProps } from '#hooks/use-block-update-props.ts'
-import { useIsMutating } from '@tanstack/react-query'
-import { TooltipProvider, TooltipTrigger } from '@radix-ui/react-tooltip'
 import { Tooltip, TooltipContent } from '#components/ui/tooltip.tsx'
+import { type Block } from '#db.ts'
+import { useBlockUpdateProps } from '#hooks/use-block-update-props.ts'
+import { cn } from '#lib/utils.ts'
+import { TooltipProvider, TooltipTrigger } from '@radix-ui/react-tooltip'
+import { useIsMutating } from '@tanstack/react-query'
+import { Copy, Paintbrush } from 'lucide-react'
+import { useId, useState } from 'react'
 import { toast } from 'sonner'
 
-export function PropInputColour(props: { block: Block; field: ColourField }) {
+export type ColourFieldProps = CommonFieldProps & {
+  type: 'colour'
+  config?: { readOnly?: boolean }
+  options: {
+    solid?: Array<{ name?: string; value: string }>
+    gradient?: Array<{ name?: string; value: string }>
+  }
+  default?: string
+}
+
+export function PropInputColour(props: { block: Block; field: ColourFieldProps }) {
   const value = props.block.props[props.field.id]
   const defaultTab = value?.includes?.('gradient') ? 'gradient' : 'solid'
   const { blockUpdateProps } = useBlockUpdateProps()

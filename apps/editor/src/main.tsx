@@ -1,155 +1,18 @@
-import { HTMLInputAutoCompleteAttribute, StrictMode } from 'react'
-import { get, getMany, add, update, updateMany, addMany, remove, removeMany, getTree, isPage, isBlock, duplicateTree } from '#api.ts'
-import ReactDOM from 'react-dom/client'
-import { RouterProvider, createRouter } from '@tanstack/react-router'
-import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
-import { routeTree } from '#routeTree.gen.ts'
-import { TanStackRouterDevtools } from '@tanstack/router-devtools'
-import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { add, addMany, duplicateTree, get, getMany, getTree, isBlock, isPage, remove, removeMany, update, updateMany } from '#api.ts'
+import { Field } from '#components/editor/prop-input.tsx'
 import { Block } from '#db.ts'
 import '#index.css'
+import { routeTree } from '#routeTree.gen.ts'
+import { buttonConfig, containerConfig, headingConfig } from '@repo/blocks'
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query'
+import { ReactQueryDevtools } from '@tanstack/react-query-devtools'
+import { RouterProvider, createRouter } from '@tanstack/react-router'
+import { TanStackRouterDevtools } from '@tanstack/router-devtools'
+import { StrictMode } from 'react'
+import ReactDOM from 'react-dom/client'
 import { Toaster } from 'sonner'
-import { buttonConfig, headingConfig, containerConfig } from '@repo/blocks'
 
 export const queryClient = new QueryClient()
-
-export function evaluateRule(rule: HiddenSchema['rules'][number], props: Block['props']) {
-  const [propertyID, operator, propertyValue] = rule
-
-  const actualValue = props[propertyID]
-
-  switch (operator) {
-    case '===': {
-      switch (propertyValue) {
-        case 'undefined':
-          return actualValue === undefined
-        case 'null':
-          return actualValue === null
-        default:
-          return actualValue === propertyValue
-      }
-    }
-    case '!==':
-      switch (propertyValue) {
-        case 'undefined':
-          return actualValue !== undefined
-
-        case 'null':
-          return actualValue !== null
-        default:
-          return actualValue !== propertyValue
-      }
-    case '>':
-      switch (typeof actualValue) {
-        case 'number': {
-          if (typeof propertyValue !== 'number') return false
-          return actualValue > propertyValue
-        }
-        default: {
-          if (actualValue?.length) {
-            return actualValue.length > propertyValue
-          }
-          return false
-        }
-      }
-    case '<':
-      switch (typeof actualValue) {
-        case 'number': {
-          if (typeof propertyValue !== 'number') return false
-          return actualValue < propertyValue
-        }
-        default: {
-          if (actualValue?.length) {
-            return actualValue.length < propertyValue
-          }
-          return false
-        }
-      }
-    case '>=':
-      switch (typeof actualValue) {
-        case 'number': {
-          if (typeof propertyValue !== 'number') return false
-          return actualValue >= propertyValue
-        }
-        default: {
-          if (actualValue?.length) {
-            return actualValue.length >= propertyValue
-          }
-          return false
-        }
-      }
-    case '<=':
-      switch (typeof actualValue) {
-        case 'number': {
-          if (typeof propertyValue !== 'number') return false
-          return actualValue <= propertyValue
-        }
-        default: {
-          if (actualValue?.length) {
-            return actualValue.length <= propertyValue
-          }
-          return false
-        }
-      }
-  }
-}
-
-export function evaluateCondition(props: Block['props'], hidden?: HiddenSchema) {
-  if (!hidden) return false
-  if (hidden.operator === '&&') {
-    return hidden.rules.every((rule) => evaluateRule(rule, props))
-  } else if (hidden.operator === '||') {
-    return hidden.rules.some((rule) => evaluateRule(rule, props))
-  }
-}
-
-export type HiddenSchema = {
-  operator: '&&' | '||'
-  rules: Array<[string, '===' | '!==' | '>' | '<' | '>=' | '<=', string | number | boolean]>
-}
-
-type Common = { id: string; name?: string; description?: string; hidden?: HiddenSchema }
-
-export type StringField = Common & {
-  type: 'string'
-  config?: { autoComplete?: HTMLInputAutoCompleteAttribute; required?: boolean; minLength?: number; maxLength?: number }
-  options?: Array<{ name: string; value: string }>
-  default?: string
-}
-
-export type ColourField = Common & {
-  type: 'colour'
-  config?: { readOnly?: boolean }
-  options: {
-    solid?: Array<{ name?: string; value: string }>
-    gradient?: Array<{ name?: string; value: string }>
-  }
-  default?: string
-}
-
-export type NumberField = Common & {
-  type: 'number'
-  config?: { autoComplete?: HTMLInputAutoCompleteAttribute; required?: boolean; min?: number; max?: number; step?: number }
-  default?: number
-}
-
-export type BooleanField = Common & { type: 'boolean'; default?: boolean }
-
-export type CollapsibleField = Common & {
-  type: 'collapsible'
-  props: Array<Field | CollapsibleField>
-  config: {
-    defaultOpen?: boolean
-  }
-}
-
-export type GridField = Common & {
-  type: 'grid'
-  props: Array<Field | CollapsibleField>
-  cols?: 1 | 2 | 3
-}
-
-export type Field = StringField | ColourField | NumberField | BooleanField | CollapsibleField | GridField
 
 export type Props = Array<Field>
 

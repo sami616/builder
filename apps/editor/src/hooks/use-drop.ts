@@ -1,9 +1,9 @@
-import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
-import { useState, useEffect, type RefObject, useRef } from 'react'
-import { DropTargetRecord, ElementDragPayload, type Input } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types'
-import { useIsMutating } from '@tanstack/react-query'
-import { isDragData } from '#hooks/use-drag.ts'
 import { validateDropSelf } from '#components/editor/block-layer-item-slot.tsx'
+import { isDragData } from '#hooks/use-drag.ts'
+import { type DropTargetRecord, type ElementDragPayload, type Input } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types'
+import { dropTargetForElements } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
+import { useIsMutating } from '@tanstack/react-query'
+import { useEffect, useRef, useState, type RefObject } from 'react'
 
 export type Target<Data extends Record<string, any>> = Omit<DropTargetRecord, 'data'> & { data: WithEdge<Data> }
 

@@ -1,8 +1,8 @@
+import { type Block, type Page } from '#db.ts'
+import { context } from '#main.tsx'
 import { useMutation } from '@tanstack/react-query'
-import { Block, Page } from '#db.ts'
 import { useParams } from '@tanstack/react-router'
 import { toast } from 'sonner'
-import { context } from '#main.tsx'
 
 type Args = { block: Block; name: string }
 

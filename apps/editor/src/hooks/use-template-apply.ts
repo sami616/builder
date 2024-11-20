@@ -1,11 +1,11 @@
-import { useMutation } from '@tanstack/react-query'
 import { duplicateTree, getTree, isPage } from '#api.ts'
-import { useParams } from '@tanstack/react-router'
-import { DragData } from '#hooks/use-drag.ts'
-import { Edge } from '#hooks/use-drop.ts'
-import { Block, Page } from '#db.ts'
-import { toast } from 'sonner'
+import { type Block, type Page } from '#db.ts'
+import { type DragData } from '#hooks/use-drag.ts'
+import { type Edge } from '#hooks/use-drop.ts'
 import { context } from '#main.tsx'
+import { useMutation } from '@tanstack/react-query'
+import { useParams } from '@tanstack/react-router'
+import { toast } from 'sonner'
 
 type Args = {
   source: DragData['template']

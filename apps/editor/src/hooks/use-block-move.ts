@@ -1,8 +1,8 @@
-import { useBlockReparent } from '#hooks/use-block-reparent.ts'
+import { type Block, type Page } from '#db.ts'
 import { useBlockReorder } from '#hooks/use-block-reorder.ts'
+import { useBlockReparent } from '#hooks/use-block-reparent.ts'
 import { DragData } from '#hooks/use-drag.ts'
-import { Block, Page } from '#db.ts'
-import { Edge } from '#hooks/use-drop.ts'
+import { type Edge } from '#hooks/use-drop.ts'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 

@@ -1,12 +1,12 @@
-import { usePageExport } from '#hooks/use-page-export.ts'
-import { usePageExportMany } from '#hooks/use-page-export-many.ts'
-import { usePageCopy } from '#hooks/use-page-copy.ts'
 import { Button } from '#components/ui/button.tsx'
-import { Trash, FileDown, Copy, Loader2 } from 'lucide-react'
-import { Page } from '#db.ts'
-import { type Table } from '@tanstack/react-table'
+import { type Page } from '#db.ts'
 import { usePageCopyMany } from '#hooks/use-page-copy-many.ts'
+import { usePageCopy } from '#hooks/use-page-copy.ts'
+import { usePageExportMany } from '#hooks/use-page-export-many.ts'
+import { usePageExport } from '#hooks/use-page-export.ts'
 import { useIsMutating } from '@tanstack/react-query'
+import { type Table } from '@tanstack/react-table'
+import { Copy, FileDown, Loader2, Trash } from 'lucide-react'
 
 export function PageTableActions(props: { table: Table<Page>; selectedPages: Page[]; setIsDeleteDialogOpen: (open: boolean) => void }) {
   if (props.selectedPages.length === 0) return null

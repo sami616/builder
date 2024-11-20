@@ -1,14 +1,14 @@
-import { type Page } from '#db.ts'
-import { DropZone } from '#components/editor/drop-zone.tsx'
-import { isDragData } from '#hooks/use-drag.ts'
-import { useBlockAdd } from '#hooks/use-block-add.ts'
-import { useTemplateApply } from '#hooks/use-template-apply.ts'
 import { BlockLayerItem } from '#components/editor/block-layer-item.tsx'
-import { Layers2 } from 'lucide-react'
+import { DropZone } from '#components/editor/drop-zone.tsx'
 import { Tree } from '#components/ui/tree.tsx'
-import { useDeferredValue } from 'react'
-import clsx from 'clsx'
+import { type Page } from '#db.ts'
+import { useBlockAdd } from '#hooks/use-block-add.ts'
+import { isDragData } from '#hooks/use-drag.ts'
+import { useTemplateApply } from '#hooks/use-template-apply.ts'
 import { useIsMutating } from '@tanstack/react-query'
+import clsx from 'clsx'
+import { Layers2 } from 'lucide-react'
+import { useDeferredValue } from 'react'
 
 export function BlockLayerPanel(props: { page: Page }) {
   const { blockAdd } = useBlockAdd()

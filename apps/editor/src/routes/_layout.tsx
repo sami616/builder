@@ -1,16 +1,17 @@
-import { createFileRoute, Outlet, useLocation, useParams } from '@tanstack/react-router'
-import { ToggleGroup, ToggleGroupItem } from '#components/ui/toggle-group.tsx'
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '#components/ui/tooltip.tsx'
-import { Link } from '@tanstack/react-router'
-import { ChevronLeft, Monitor, Smartphone, Tablet } from 'lucide-react'
-import clsx from 'clsx'
 import { Badge } from '#components/ui/badge.tsx'
 import { Button } from '#components/ui/button.tsx'
-import { useIsMutating, useMutation } from '@tanstack/react-query'
+import { Separator } from '#components/ui/separator.tsx'
+import { ToggleGroup, ToggleGroupItem } from '#components/ui/toggle-group.tsx'
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '#components/ui/tooltip.tsx'
 import { Page } from '#db.ts'
 import { usePageGet } from '#hooks/use-page-get.ts'
-import { Separator } from '#components/ui/separator.tsx'
+import { usePagePublish } from '#hooks/use-page-publish.ts'
+import { usePageUnpublish } from '#hooks/use-page-unpublish.ts'
 import { router } from '#main.tsx'
+import { useIsMutating, useMutation } from '@tanstack/react-query'
+import { createFileRoute, Link, Outlet, useLocation, useParams } from '@tanstack/react-router'
+import clsx from 'clsx'
+import { ChevronLeft, Monitor, Smartphone, Tablet } from 'lucide-react'
 import { z } from 'zod'
 
 const viewSchema = z.object({ view: z.string().default('desktop') })
@@ -26,43 +27,14 @@ export const Route = createFileRoute('/_layout')({
   validateSearch: viewSchema,
 })
 
-function usePageUnPublish() {
-  const context = Route.useRouteContext()
-  return useMutation({
-    mutationKey: ['page', 'publish'],
-    mutationFn: (page: Page) => {
-      return context.update({ entry: { ...page, status: 'Unpublished' } })
-    },
-    onSuccess: () => {
-      context.queryClient.invalidateQueries({ queryKey: ['pages'] })
-    },
-  })
-}
-
-function usePagePublish() {
-  const context = Route.useRouteContext()
-  return useMutation({
-    mutationKey: ['page', 'publish'],
-    mutationFn: (page: Page) => {
-      return context.update({
-        entry: { ...page, status: 'Published', publishedAt: new Date() },
-      })
-    },
-    onSuccess: () => {
-      context.queryClient.invalidateQueries({ queryKey: ['pages'] })
-    },
-  })
-}
-
 function Layout() {
   const params = useParams({ strict: false })
-  const publishMutation = usePagePublish()
-  const unpublishMutation = usePageUnPublish()
+  const { pagePublish } = usePagePublish()
+  const { pageUnpublish } = usePageUnpublish()
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
   const { pageGet } = usePageGet({ id: Number(params.id) })
   const locaton = useLocation()
   const searchParams = Route.useSearch()
-
   const isPreview = locaton.pathname.endsWith('/preview')
 
   return (
@@ -130,19 +102,25 @@ function Layout() {
             </TooltipProvider>
           </div>
 
-          {!isPreview && (
+          {!isPreview ? (
             <Button asChild disabled={isCanvasMutating} variant="secondary">
               <Link to="/pages/$id/preview" search={searchParams} params={{ id: String(pageGet.data.id) }}>
                 Preview
               </Link>
             </Button>
+          ) : (
+            <Button asChild disabled={isCanvasMutating} variant="secondary">
+              <Link to="/pages/$id" search={searchParams} params={{ id: String(pageGet.data.id) }}>
+                Edit
+              </Link>
+            </Button>
           )}
           {pageGet.data.status === 'Published' && (
-            <Button disabled={isCanvasMutating} variant="destructive" onClick={() => unpublishMutation.mutate(pageGet.data)}>
+            <Button disabled={isCanvasMutating} variant="destructive" onClick={() => pageUnpublish({ entry: pageGet.data })}>
               Unpublish
             </Button>
           )}
-          <Button disabled={isCanvasMutating} className="relative" onClick={() => publishMutation.mutate(pageGet.data)}>
+          <Button disabled={isCanvasMutating} className="relative" onClick={() => pagePublish({ entry: pageGet.data })}>
             {pageGet.data.publishedAt && pageGet.data.publishedAt < pageGet.data.updatedAt && (
               <div className="bg-emerald-500 absolute px-0 -top-1 -right-1 size-3 rounded-xl"></div>
             )}

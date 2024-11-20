@@ -1,6 +1,3 @@
-import { usePageDeleteMany } from '#hooks/use-page-delete-many.ts'
-import { Loader2, Trash } from 'lucide-react'
-import { Button } from '#components/ui/button.tsx'
 import {
   AlertDialog,
   AlertDialogCancel,
@@ -10,10 +7,13 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from '#components/ui/alert-dialog.tsx'
+import { Button } from '#components/ui/button.tsx'
+import { type Page } from '#db.ts'
+import { usePageDeleteMany } from '#hooks/use-page-delete-many.ts'
 import { usePageDelete } from '#hooks/use-page-delete.ts'
 import { useIsMutating } from '@tanstack/react-query'
 import { type Table } from '@tanstack/react-table'
-import { type Page } from '#db.ts'
+import { Loader2, Trash } from 'lucide-react'
 
 export function PageDialogDelete(props: {
   table: Table<Page>

@@ -1,10 +1,10 @@
-import { useMutation } from '@tanstack/react-query'
-import { Block, db } from '#db.ts'
-import { DragData } from '#hooks/use-drag.ts'
-import { Edge } from '#hooks/use-drop.ts'
 import { getMany } from '#api.ts'
-import { toast } from 'sonner'
+import { type Block, db } from '#db.ts'
+import { type DragData } from '#hooks/use-drag.ts'
+import { type Edge } from '#hooks/use-drop.ts'
 import { context } from '#main.tsx'
+import { useMutation } from '@tanstack/react-query'
+import { toast } from 'sonner'
 
 type Args = {
   name?: string

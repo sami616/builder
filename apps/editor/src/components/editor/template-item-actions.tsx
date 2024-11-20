@@ -1,18 +1,18 @@
-import { Trash, MoreHorizontal } from 'lucide-react'
 import {
-  DropdownMenuTrigger,
   DropdownMenu,
   DropdownMenuContent,
+  DropdownMenuItem,
   DropdownMenuLabel,
   DropdownMenuSeparator,
-  DropdownMenuItem,
   DropdownMenuShortcut,
+  DropdownMenuTrigger,
 } from '#components/ui/dropdown-menu.tsx'
-import { useIsMutating } from '@tanstack/react-query'
-import { Template } from '#db.ts'
+import { type Template } from '#db.ts'
 import { useActive } from '#hooks/use-active.tsx'
 import { useTemplateDelete } from '#hooks/use-template-delete.ts'
-import { Dispatch, SetStateAction } from 'react'
+import { useIsMutating } from '@tanstack/react-query'
+import { MoreHorizontal, Trash } from 'lucide-react'
+import { type Dispatch, type SetStateAction } from 'react'
 
 export function TemplateItemActions(props: { template: Template; actionsOpen: boolean; setActionsOpen: Dispatch<SetStateAction<boolean>> }) {
   const { templateDelete } = useTemplateDelete()
