@@ -11,6 +11,7 @@ import { TanStackRouterDevtools } from '@tanstack/router-devtools'
 import { StrictMode } from 'react'
 import ReactDOM from 'react-dom/client'
 import { Toaster } from 'sonner'
+import { socket } from '#lib/utils.ts'
 
 export const queryClient = new QueryClient()
 

@@ -1,4 +1,5 @@
 import { PageAdd } from '#components/editor/page-dialog-add.tsx'
+import { socket } from '#lib/utils.ts'
 import { PageDialogDelete } from '#components/editor/page-dialog-delete.tsx'
 import { PageDialogEdit } from '#components/editor/page-dialog-edit.tsx'
 import { PageTableActionsRow } from '#components/editor/page-table-actions-row.tsx'
@@ -24,8 +25,8 @@ import {
   useReactTable,
 } from '@tanstack/react-table'
 import clsx from 'clsx'
-import { ArrowDown, ArrowUp, Import } from 'lucide-react'
-import { useMemo, useState } from 'react'
+import { ArrowDown, ArrowUp, Import, Loader2 } from 'lucide-react'
+import { useEffect, useMemo, useState } from 'react'
 
 export function PageTable() {
   const navigate = useNavigate({ from: '/pages' })
@@ -34,6 +35,15 @@ export function PageTable() {
   const [deleteDialogOpen, setIsDeleteDialogOpen] = useState(false)
   const [editDialogOpen, setIsEditDialogOpen] = useState(false)
   const pageCRUDPending = Boolean(useIsMutating({ mutationKey: ['page'] }))
+  const [publishing, setPublishing] = useState<Array<number>>([])
+
+  useEffect(() => {
+    socket.emit('checkPublishStatus', setPublishing)
+    // socket.on('checkPublishStatus', setPublishing)
+    // return () => {
+    //   socket.off('checkPublishStatus', setPublishing)
+    // }
+  }, [])
 
   const columns: ColumnDef<Page>[] = useMemo(
     () => [
@@ -84,7 +94,13 @@ export function PageTable() {
           const status = row.getValue<Page['status']>('status')
           return (
             <Badge className="capitalize" variant="secondary">
-              {status}
+              {publishing.includes(Number(row.id)) ? (
+                <>
+                  <Loader2 size={16} className="mr-2 animate-spin" /> Publishing
+                </>
+              ) : (
+                status
+              )}
             </Badge>
           )
         },
@@ -127,6 +143,7 @@ export function PageTable() {
         cell: ({ row }) => {
           return (
             <PageTableActionsRow
+              disabled={publishing.includes(Number(row.id))}
               page={row.original}
               table={table}
               setIsEditDialogOpen={setIsEditDialogOpen}
@@ -136,7 +153,7 @@ export function PageTable() {
         },
       },
     ],
-    [pageCRUDPending],
+    [pageCRUDPending, publishing],
   )
 
   const table = useReactTable({
@@ -147,6 +164,7 @@ export function PageTable() {
     getSortedRowModel: getSortedRowModel(),
     getFilteredRowModel: getFilteredRowModel(),
     enableSortingRemoval: false,
+    enableRowSelection: (row) => !publishing.includes(row.original.id),
     getRowId: (row) => String(row.id),
     initialState: {
       sorting: [{ id: 'createdAt', desc: true }],
@@ -194,24 +212,32 @@ export function PageTable() {
         </TableHeader>
         <TableBody>
           {table.getRowModel().rows?.length ? (
-            table.getRowModel().rows.map((row) => (
-              <TableRow className="cursor-pointer" key={row.id} data-state={row.getIsSelected() && 'selected'}>
-                {row.getVisibleCells().map((cell) => (
-                  <TableCell
-                    className={clsx([pageCRUDPending && 'cursor-not-allowed'])}
-                    onClick={() => {
-                      // @ts-ignore
-                      if (!cell.column.columnDef.meta?.noLink && !pageCRUDPending) {
-                        navigate({ to: `/pages/${row.original.id}` })
-                      }
-                    }}
-                    key={cell.id}
-                  >
-                    {flexRender(cell.column.columnDef.cell, cell.getContext())}
-                  </TableCell>
-                ))}
-              </TableRow>
-            ))
+            table.getRowModel().rows.map((row) => {
+              const isPublishing = publishing.includes(row.original.id)
+              return (
+                <TableRow
+                  className={clsx('cursor-pointer', isPublishing && 'opacity-50')}
+                  key={row.id}
+                  data-state={row.getIsSelected() && 'selected'}
+                >
+                  {row.getVisibleCells().map((cell) => (
+                    <TableCell
+                      className={clsx([pageCRUDPending && 'cursor-not-allowed'])}
+                      onClick={() => {
+                        console.log({ rowid: row.id, publishing })
+                        // @ts-ignore
+                        if (!cell.column.columnDef.meta?.noLink && !pageCRUDPending) {
+                          navigate({ to: `/pages/${row.original.id}` })
+                        }
+                      }}
+                      key={cell.id}
+                    >
+                      {flexRender(cell.column.columnDef.cell, cell.getContext())}
+                    </TableCell>
+                  ))}
+                </TableRow>
+              )
+            })
           ) : (
             <TableRow>
               <TableCell colSpan={columns.length} className="h-24 text-center">

@@ -18,12 +18,13 @@ import { Clipboard, CopyIcon, FileDown, MoreHorizontal, Pen, Trash } from 'lucid
 export function PageTableActionsRow(props: {
   table: Table<Page>
   page: Page
+  disabled?: boolean
   setIsEditDialogOpen: (open: boolean) => void
   setIsDeleteDialogOpen: (open: boolean) => void
 }) {
   const { pageExport } = usePageExport()
   const { pageCopy } = usePageCopy()
-  const pageCRUDPending = Boolean(useIsMutating({ mutationKey: ['page'] }))
+  const pageCRUDPending = Boolean(useIsMutating({ mutationKey: ['page'] })) || props.disabled
 
   return (
     <DropdownMenu>

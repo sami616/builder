@@ -4,7 +4,8 @@
   "scripts": {
     "editor": "pnpm --filter @repo/editor",
     "lib": "pnpm --filter @repo/lib",
-    "blocks": "pnpm --filter @repo/blocks"
+    "blocks": "pnpm --filter @repo/blocks",
+    "socket": "pnpm --filter @repo/socket"
   },
   "devDependencies": {
     "prettier": "^3.3.3"

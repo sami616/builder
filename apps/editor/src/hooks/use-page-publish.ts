@@ -14,7 +14,7 @@ export function usePagePublish() {
       const data: Resolved['Page'] = { ...resolvedPage, publishedAt: new Date(), status: 'Published' }
 
       // Send data as payload to CICD
-      console.log(data)
+      // console.log(data)
 
       // TODO: When data comes back from CICD we update our db
       return context.update({

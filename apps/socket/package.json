@@ -1,0 +1,19 @@
+{
+  "name": "@repo/socket",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "start": "node ./src/index.js"
+  },
+  "imports": {
+    "#*": "./src/*"
+  },
+  "dependencies": {
+    "socket.io": "^4.8.1"
+  },
+  "overrides": {},
+  "devDependencies": {
+    "@types/node": "^22.5.5"
+  }
+}
