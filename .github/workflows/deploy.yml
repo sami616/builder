@@ -8,7 +8,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        node-version: [23]
+        node-version: [22]
     steps:
       # Step 1: Check out the repository
       - name: Checkout Code
