@@ -38,11 +38,11 @@ export function PageTable() {
   const [publishing, setPublishing] = useState<Array<number>>([])
 
   useEffect(() => {
-    socket.emit('checkPublishStatus', setPublishing)
-    // socket.on('checkPublishStatus', setPublishing)
-    // return () => {
-    //   socket.off('checkPublishStatus', setPublishing)
-    // }
+    socket.emit('checkPublishStatus')
+    socket.on('checkPublishStatus', setPublishing)
+    return () => {
+      socket.off('checkPublishStatus', setPublishing)
+    }
   }, [])
 
   const columns: ColumnDef<Page>[] = useMemo(

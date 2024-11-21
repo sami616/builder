@@ -1,17 +1,22 @@
 import { Server } from 'socket.io'
 
-const io = new Server(3000, {
-  cors: {
-    origin: 'http://localhost:5173',
-  },
-})
+const io = new Server(3000, { cors: { origin: 'http://localhost:5173' } })
 
 io.on('connection', (socket) => {
   // Checks what pages are currently in flight
   socket.on('checkPublishStatus', () => {
-    socket.emit('checkPublishStatus', [6, 9])
+    socket.emit('checkPublishStatus', [6, 9, 10])
+
+    setTimeout(() => {
+      socket.emit('checkPublishStatus', [6, 9])
+    }, 2000)
+
     setTimeout(() => {
       socket.emit('checkPublishStatus', [6])
+    }, 3000)
+
+    setTimeout(() => {
+      socket.emit('checkPublishStatus', [])
     }, 4000)
   })
 
