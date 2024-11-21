@@ -3,6 +3,11 @@ name: Build and Deploy to GitHub Pages
 on:
   workflow_dispatch: # Allows triggering via API or GitHub UI
 
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
@@ -10,7 +15,6 @@ jobs:
       matrix:
         node-version: [22]
     steps:
-      # Step 1: Check out the repository
       - name: Checkout Code
         uses: actions/checkout@v4
 
@@ -28,13 +32,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
-      # Step 4: Build the project
       - name: Build Project
         run: pnpm editor build
 
-      # Step 5: Deploy to GitHub Pages
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          name: 'github-pages'
+          path: 'dist'
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          publish_dir: ./apps/editor/dist # Path to the build output directory
+          artifact_name: 'github-pages'
