@@ -1,4 +1,7 @@
-import { Resolved, resolveTree } from '#api.ts'
+// import {
+//    Resolved,
+//   resolveTree,
+// } from '#api.ts'
 import { type Page } from '#db.ts'
 import { context } from '#main.tsx'
 import { useMutation } from '@tanstack/react-query'
@@ -10,8 +13,8 @@ export function usePagePublish() {
   const mutation = useMutation({
     mutationKey: ['page', 'publish'],
     mutationFn: async (args: Args) => {
-      const resolvedPage = await resolveTree('pages', args.entry.id)
-      const data: Resolved['Page'] = { ...resolvedPage, publishedAt: new Date(), status: 'Published' }
+      // const resolvedPage = await resolveTree('pages', args.entry.id)
+      // const data: Resolved['Page'] = { ...resolvedPage, publishedAt: new Date(), status: 'Published' }
 
       // Send data as payload to CICD
       // console.log(data)

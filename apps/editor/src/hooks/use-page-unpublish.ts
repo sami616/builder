@@ -9,7 +9,7 @@ export function usePageUnpublish() {
   const mutation = useMutation({
     mutationKey: ['page', 'unpublish'],
     mutationFn: async (args: Args) => {
-      const data = { ...args.entry, slots: {}, status: 'Unpublished' }
+      // const data = { ...args.entry, slots: {}, status: 'Unpublished' }
 
       // Send data as payload to CICD
       // console.log(data)
