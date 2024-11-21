@@ -22,6 +22,18 @@ io.on('connection', (socket) => {
 
   socket.on('pagePublish', (data) => {
     console.log(data)
+
+    // POST https://api.github.com/repos/<owner>/<repo>/actions/workflows/deploy.yml/dispatches
+
+    // {
+    //   "Authorization": "Bearer <your_personal_access_token>",
+    //   "Accept": "application/vnd.github+json"
+    // }
+
+    // {
+    //   "ref": "main"
+    // }
+
     setTimeout(() => {
       socket.emit('pagePublish', data)
     }, 4000)
