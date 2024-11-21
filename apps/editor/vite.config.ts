@@ -3,7 +3,6 @@ import { TanStackRouterVite } from '@tanstack/router-plugin/vite'
 import react from '@vitejs/plugin-react'
 
 export default defineConfig(({ mode }) => ({
-  base: mode === 'development' ? '/' : '/builder/',
   build: {
     target: 'esnext',
   },
