@@ -10,6 +10,7 @@
     "#*": "./src/*"
   },
   "dependencies": {
+    "pnpm": "^9.14.2",
     "socket.io": "^4.8.1"
   },
   "overrides": {},

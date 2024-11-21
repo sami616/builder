@@ -23,7 +23,7 @@ io.on('connection', (socket) => {
   socket.on('pagePublish', (data) => {
     console.log(data)
 
-    // POST https://api.github.com/repos/<owner>/<repo>/actions/workflows/deploy.yml/dispatches
+    // POST https://api.github.com/repos/sami616/builder/actions/workflows/deploy.yml/dispatches
 
     // {
     //   "Authorization": "Bearer <your_personal_access_token>",

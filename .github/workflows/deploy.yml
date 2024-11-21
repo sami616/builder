@@ -6,25 +6,31 @@ on:
 jobs:
   build-and-deploy:
     runs-on: ubuntu-latest
-
+    strategy:
+      matrix:
+        node-version: [23]
     steps:
       # Step 1: Check out the repository
       - name: Checkout Code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
-      # Step 2: Set up Node.js environment
-      - name: Set up Node.js
-        uses: actions/setup-node@v3
+      - name: Install pnpm
+        uses: pnpm/action-setup@v4
         with:
-          node-version: 16 # Adjust to your project's Node.js version
+          version: 9
 
-      # Step 3: Install dependencies
-      - name: Install Dependencies
-        run: npm install
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
 
       # Step 4: Build the project
       - name: Build Project
-        run: npm run build
+        run: pnpm editor build
 
       # Step 5: Deploy to GitHub Pages
       - name: Deploy to GitHub Pages
