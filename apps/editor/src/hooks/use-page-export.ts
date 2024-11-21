@@ -1,9 +1,9 @@
-import { type Page } from '#db.ts'
+import { DBStores } from '@repo/lib'
 import { context } from '#main.tsx'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
-type Args = { page: Page }
+type Args = { page: DBStores['Page'] }
 
 export function usePageExport() {
   const mutation = useMutation({

@@ -1,9 +1,9 @@
-import { type Page } from '#db.ts'
+import { type DBStores } from '@repo/lib'
 import { context } from '#main.tsx'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
-type Args = { entry: Omit<Page, 'id'> }
+type Args = { entry: Omit<DBStores['Page'], 'id'> }
 
 export function usePageAdd() {
   const mutation = useMutation({

@@ -1,6 +1,5 @@
-import { isPage } from '#api.ts'
+import { DBStores, is } from '@repo/lib'
 import { BlockItem } from '#components/editor/block-item.tsx'
-import { type Page, type Block } from '#db.ts'
 import { useActive } from '#hooks/use-active.tsx'
 import { context } from '#main.tsx'
 import { useMutation } from '@tanstack/react-query'
@@ -8,7 +7,7 @@ import { useParams } from '@tanstack/react-router'
 import { type ComponentProps } from 'react'
 import { toast } from 'sonner'
 
-type Args = { entries: Array<{ id: Block['id']; index: number; parent: ComponentProps<typeof BlockItem>['parent'] }> }
+type Args = { entries: Array<{ id: DBStores['Block']['id']; index: number; parent: ComponentProps<typeof BlockItem>['parent'] }> }
 
 export function useBlockDeleteMany() {
   const params = useParams({ strict: false })
@@ -35,9 +34,9 @@ export function useBlockDeleteMany() {
         updateList.set(entry.parent.node.id, clonedParentNode)
       }
 
-      const hasPage = Array.from(updateList.values()).some((item) => isPage(item))
+      const hasPage = Array.from(updateList.values()).some((item) => is.page(item))
       if (!hasPage && params.id) {
-        const page = context.queryClient.getQueryData<Page>(['pages', Number(params.id)])
+        const page = context.queryClient.getQueryData<DBStores['Page']>(['pages', Number(params.id)])
         if (page) await context.update({ entry: { ...page, updatedAt: date } })
       }
 

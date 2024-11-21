@@ -8,12 +8,12 @@ import {
   AlertDialogTitle,
 } from '#components/ui/alert-dialog.tsx'
 import { Button } from '#components/ui/button.tsx'
-import { type Template } from '#db.ts'
+import { type DBStores } from '@repo/lib'
 import { useTemplateDeleteMany } from '#hooks/use-template-delete-many.ts'
 import { useTemplateDelete } from '#hooks/use-template-delete.ts'
 import { type Dispatch, type SetStateAction } from 'react'
 
-export function TemplateDialogDelete(props: { templates: Array<Template>; open: boolean; setOpen: Dispatch<SetStateAction<boolean>> }) {
+export function TemplateDialogDelete(props: { templates: Array<DBStores['Template']>; open: boolean; setOpen: Dispatch<SetStateAction<boolean>> }) {
   const { templateDeleteMany } = useTemplateDeleteMany()
   const { templateDelete } = useTemplateDelete()
   const isSelectionMany = props.templates.length > 1

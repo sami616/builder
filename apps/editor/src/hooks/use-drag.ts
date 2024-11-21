@@ -1,5 +1,4 @@
-import { isBlock, isPage, isTemplate } from '#api.ts'
-import { type Template, type Block, type Page } from '#db.ts'
+import { is, type DBStores } from '@repo/lib'
 import { config } from '#main.tsx'
 import { type Input } from '@atlaskit/pragmatic-drag-and-drop/dist/types/internal-types'
 import { draggable } from '@atlaskit/pragmatic-drag-and-drop/element/adapter'
@@ -46,17 +45,17 @@ export type DragData = {
   block: {
     id: 'block'
     index: number
-    node: Block
-    parent: { slot: string; node: Page | Block }
+    node: DBStores['Block']
+    parent: { slot: string; node: DBStores['Page'] | DBStores['Block'] }
   }
   template: {
     id: 'template'
     index: number
-    node: Template
+    node: DBStores['Template']
   }
   component: {
     id: 'component'
-    type: Block['type']
+    type: DBStores['Block']['type']
   }
 }
 
@@ -72,16 +71,16 @@ export const isDragData = {
   block(args: Record<string, any>): args is DragData['block'] {
     if (args.id !== 'block') return false
     if (typeof args.index !== 'number') return false
-    if (!isBlock(args.node)) return false
+    if (!is.block(args.node)) return false
     if (typeof args.parent?.slot !== 'string') return false
-    if (!isBlock(args.parent?.node) && !isPage(args.parent?.node)) return false
+    if (!is.block(args.parent?.node) && !is.page(args.parent?.node)) return false
     if (args.edge !== undefined) return false
     return true
   },
   template(args: Record<string, any>): args is DragData['template'] {
     if (args.id !== 'template') return false
     if (typeof args.index !== 'number') return false
-    if (!isTemplate(args.node)) return false
+    if (!is.template(args.node)) return false
     if (args.edge !== undefined) return false
     return true
   },

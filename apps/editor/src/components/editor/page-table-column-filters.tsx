@@ -10,11 +10,11 @@ import {
   DropdownMenuTrigger,
 } from '#components/ui/dropdown-menu.tsx'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '#components/ui/tooltip.tsx'
-import { type Page } from '#db.ts'
+import { type DBStores } from '@repo/lib'
 import { type Table } from '@tanstack/react-table'
 import { Settings } from 'lucide-react'
 
-export function PageTableColumnFilters(props: { table: Table<Page> }) {
+export function PageTableColumnFilters(props: { table: Table<DBStores['Page']> }) {
   return (
     <DropdownMenu>
       <TooltipProvider>

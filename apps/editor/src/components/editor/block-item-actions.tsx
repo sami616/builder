@@ -2,14 +2,18 @@ import { BlockDialogAddTemplate } from '#components/editor/block-dialog-add-temp
 import { BlockDialogAdd } from '#components/editor/block-dialog-add.tsx'
 import { validateSlotMax } from '#components/editor/block-layer-item-slot.tsx'
 import { ContextMenuContent, ContextMenuItem, ContextMenuLabel, ContextMenuSeparator, ContextMenuShortcut } from '#components/ui/context-menu.tsx'
-import { type Block, type Page } from '#db.ts'
+import { type DBStores } from '@repo/lib'
 import { useBlockCopy } from '#hooks/use-block-copy.ts'
 import { useBlockDelete } from '#hooks/use-block-delete.ts'
 import { context } from '#main.tsx'
 import { Copy, Layout, Plus, Trash } from 'lucide-react'
 import { useState } from 'react'
 
-export function BlockItemActions(props: { block: Block; index: number; parent: { slot: string; node: Block | Page } }) {
+export function BlockItemActions(props: {
+  block: DBStores['Block']
+  index: number
+  parent: { slot: string; node: DBStores['Block'] | DBStores['Page'] }
+}) {
   const { blockCopy } = useBlockCopy()
   const { blockDelete } = useBlockDelete()
   const [blockAddOpen, setBlockAddOpen] = useState(false)

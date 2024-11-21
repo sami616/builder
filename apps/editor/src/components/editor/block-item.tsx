@@ -1,5 +1,5 @@
 import { DropIndicator } from '#components/editor/drop-indicator.tsx'
-import { type Block, type Page } from '#db.ts'
+import { type DBStores } from '@repo/lib'
 import { useBlockHover } from '#hooks/use-block-hover.tsx'
 import { useDeferredValue, useRef, useState } from 'react'
 // import { useRouteContext } from '@tanstack/react-router'
@@ -20,7 +20,12 @@ import { useIsMutating } from '@tanstack/react-query'
 import clsx from 'clsx'
 import { toast } from 'sonner'
 
-export function BlockItem(props: { index: number; page: Page; parent: { slot: string; node: Block | Page }; id: Block['id'] }) {
+export function BlockItem(props: {
+  index: number
+  page: DBStores['Page']
+  parent: { slot: string; node: DBStores['Block'] | DBStores['Page'] }
+  id: DBStores['Block']['id']
+}) {
   const { blockGet } = useBlockGet({ id: props.id })
   const deferredBlock = useDeferredValue(blockGet.data)
   const { blockAdd } = useBlockAdd()

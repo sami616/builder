@@ -2,12 +2,12 @@
 //    Resolved,
 //   resolveTree,
 // } from '#api.ts'
-import { type Page } from '#db.ts'
+import { DBStores } from '@repo/lib'
 import { context } from '#main.tsx'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
-type Args = { entry: Page }
+type Args = { entry: DBStores['Page'] }
 
 export function usePagePublish() {
   const mutation = useMutation({

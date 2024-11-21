@@ -1,4 +1,4 @@
-import { type Block, type Page } from '#db.ts'
+import { DBStores } from '@repo/lib'
 import { useBlockReorder } from '#hooks/use-block-reorder.ts'
 import { useBlockReparent } from '#hooks/use-block-reparent.ts'
 import { DragData } from '#hooks/use-drag.ts'
@@ -8,7 +8,7 @@ import { toast } from 'sonner'
 
 type Args = {
   source: DragData['block']
-  target: { parent: { slot: string; node: Page | Block }; edge: Edge; index?: number }
+  target: { parent: { slot: string; node: DBStores['Page'] | DBStores['Block'] }; edge: Edge; index?: number }
 }
 
 export function useBlockMove() {

@@ -1,5 +1,5 @@
 import { Button } from '#components/ui/button.tsx'
-import { type Page } from '#db.ts'
+import { type DBStores } from '@repo/lib'
 import { usePageCopyMany } from '#hooks/use-page-copy-many.ts'
 import { usePageCopy } from '#hooks/use-page-copy.ts'
 import { usePageExportMany } from '#hooks/use-page-export-many.ts'
@@ -8,7 +8,11 @@ import { useIsMutating } from '@tanstack/react-query'
 import { type Table } from '@tanstack/react-table'
 import { Copy, FileDown, Loader2, Trash } from 'lucide-react'
 
-export function PageTableActions(props: { table: Table<Page>; selectedPages: Page[]; setIsDeleteDialogOpen: (open: boolean) => void }) {
+export function PageTableActions(props: {
+  table: Table<DBStores['Page']>
+  selectedPages: DBStores['Page'][]
+  setIsDeleteDialogOpen: (open: boolean) => void
+}) {
   if (props.selectedPages.length === 0) return null
 
   const { pageExport } = usePageExport()

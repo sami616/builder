@@ -7,7 +7,7 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from '#components/ui/dropdown-menu.tsx'
-import { type Page } from '#db.ts'
+import { type DBStores } from '@repo/lib'
 import { usePageCopy } from '#hooks/use-page-copy.ts'
 import { usePageExport } from '#hooks/use-page-export.ts'
 import { useIsMutating } from '@tanstack/react-query'
@@ -16,8 +16,8 @@ import { type Table } from '@tanstack/react-table'
 import { Clipboard, CopyIcon, FileDown, MoreHorizontal, Pen, Trash } from 'lucide-react'
 
 export function PageTableActionsRow(props: {
-  table: Table<Page>
-  page: Page
+  table: Table<DBStores['Page']>
+  page: DBStores['Page']
   disabled?: boolean
   setIsEditDialogOpen: (open: boolean) => void
   setIsDeleteDialogOpen: (open: boolean) => void

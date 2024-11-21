@@ -1,10 +1,10 @@
 import { Missing } from '#components/editor/missing.tsx'
-import { type Block } from '#db.ts'
+import { type DBStores } from '@repo/lib'
 import { useBlockGet } from '#hooks/use-block-get.ts'
 import { context } from '#main.tsx'
 import { useDeferredValue } from 'react'
 
-export function PreviewBlockItem(props: { id: Block['id'] }) {
+export function PreviewBlockItem(props: { id: DBStores['Block']['id'] }) {
   const { blockGet } = useBlockGet({ id: props.id })
   const deferredBlock = useDeferredValue(blockGet.data)
 

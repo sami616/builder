@@ -1,7 +1,6 @@
-import { isBlock, isPage } from '#api.ts'
 import { BlockLayerItem } from '#components/editor/block-layer-item.tsx'
 import { TreeItem, TreeItemContent, TreeItemHead, TreeItemIcon, TreeItemLabel, TreeItemTrigger } from '#components/ui/tree.tsx'
-import { type Block } from '#db.ts'
+import { type DBStores, is } from '@repo/lib'
 import { useBlockAdd } from '#hooks/use-block-add.ts'
 import { useBlockMove } from '#hooks/use-block-move.ts'
 import { isDragData } from '#hooks/use-drag.ts'
@@ -14,7 +13,7 @@ import { AlertCircle, CircleDashed } from 'lucide-react'
 import { type ComponentProps, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
-export function BlockLayerItemSlot(props: { block: Block; slot: string; parent: ComponentProps<typeof BlockLayerItem>['parent'] }) {
+export function BlockLayerItemSlot(props: { block: DBStores['Block']; slot: string; parent: ComponentProps<typeof BlockLayerItem>['parent'] }) {
   const dropRef = useRef<HTMLDivElement>(null)
   const { blockMove } = useBlockMove()
   const { blockAdd } = useBlockAdd()
@@ -101,7 +100,7 @@ export function validateSlotMax<S extends { data: any }>(args: {
   }
 }) {
   let error = undefined
-  if (isPage(args.target.parent.node)) return error
+  if (is.page(args.target.parent.node)) return error
 
   const maxItems = config[args.target.parent.node.type].slots?.[args.target.parent.slot].validation?.maxItems
   const itemsLength = args.target.parent.node.slots[args.target.parent.slot].length
@@ -127,7 +126,7 @@ export function validateSlotBlock<S extends { data: any }>(args: {
   }
 }) {
   let error = undefined
-  if (isPage(args.target.parent.node)) return error
+  if (is.page(args.target.parent.node)) return error
 
   const disabledComponents = config[args.target.parent.node.type].slots?.[args.target.parent.slot].validation?.disabledComponents
 
@@ -142,7 +141,7 @@ export function validateSlotBlock<S extends { data: any }>(args: {
         throw new Error(`${args.source.data.node.type} cannot be dropped here`)
       }
     }
-    if (isBlock(args.source.data)) {
+    if (is.block(args.source.data)) {
       if (disabledComponents.includes(args.source.data.type)) {
         throw new Error(`${args.source.data.type} cannot be dropped here`)
       }

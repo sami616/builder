@@ -1,4 +1,3 @@
-import { isBlock } from '#api.ts'
 import { validateDropSelf, validateSlotBlock } from '#components/editor/block-layer-item-slot.tsx'
 import { Button } from '#components/ui/button.tsx'
 import { Command, CommandEmpty, CommandGroup, CommandInput, CommandItem, CommandList } from '#components/ui/command.tsx'
@@ -7,7 +6,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigge
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '#components/ui/form.tsx'
 import { Input } from '#components/ui/input.tsx'
 import { Popover, PopoverContent, PopoverTrigger } from '#components/ui/popover.tsx'
-import { type Block, type Page } from '#db.ts'
+import { is, type DBStores } from '@repo/lib'
 import { useBlockMove } from '#hooks/use-block-move.ts'
 import { context } from '#main.tsx'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -27,8 +26,8 @@ export function BlockDialogMove(props: {
   open: boolean
   setOpen: Dispatch<SetStateAction<boolean>>
   index: number
-  block: Block
-  parent: { slot: string; node: Block | Page }
+  block: DBStores['Block']
+  parent: { slot: string; node: DBStores['Block'] | DBStores['Page'] }
 }) {
   const [parentPickerOpen, setParentPickerOpen] = useState(false)
   const [slotPickerOpen, setSlotPickerOpen] = useState(false)
@@ -39,7 +38,7 @@ export function BlockDialogMove(props: {
   })
 
   const page = context.queryClient
-    .getQueriesData<Page>({
+    .getQueriesData<DBStores['Page']>({
       queryKey: ['pages'],
       type: 'active',
     })
@@ -47,7 +46,7 @@ export function BlockDialogMove(props: {
     .at(0)
 
   const allBlocks = context.queryClient
-    .getQueriesData<Block>({
+    .getQueriesData<DBStores['Block']>({
       queryKey: ['blocks'],
       type: 'active',
     })
@@ -68,7 +67,7 @@ export function BlockDialogMove(props: {
     return Object.keys(selectedNode.slots).reduce(
       (acc, curr) => {
         try {
-          if (isBlock(props.block) && isBlock(selectedNode)) {
+          if (is.block(props.block) && is.block(selectedNode)) {
             validateSlotBlock({
               source: { data: props.block },
               target: { parent: { node: selectedNode, slot: curr } },
@@ -137,7 +136,7 @@ export function BlockDialogMove(props: {
                     <Popover open={parentPickerOpen} onOpenChange={setParentPickerOpen}>
                       <PopoverTrigger asChild>
                         <Button variant="outline" role="combobox" aria-expanded={parentPickerOpen} className="w-full justify-between">
-                          {selectedNode ? (isBlock(selectedNode) ? selectedNode.name : selectedNode.title) : 'Please select'}
+                          {selectedNode ? (is.block(selectedNode) ? selectedNode.name : selectedNode.title) : 'Please select'}
                           <ChevronsUpDown className="ml-2 size-4 shrink-0 opacity-50" />
                         </Button>
                       </PopoverTrigger>
@@ -150,7 +149,7 @@ export function BlockDialogMove(props: {
                               {allNodes.map((node) => {
                                 if (!node) return null
                                 try {
-                                  if (isBlock(node)) {
+                                  if (is.block(node)) {
                                     const sourceEl = document.querySelector(`#canvas [data-drop-id="block-${props.block.id}"]`)
                                     const targetEl = document.querySelector(`#canvas [data-drop-id="block-${node.id}"]`)
                                     if (sourceEl && targetEl) {
@@ -179,7 +178,7 @@ export function BlockDialogMove(props: {
                                       }}
                                     >
                                       <Check className={clsx('mr-2 size-4', Number(field.value) === node.id ? 'opacity-100' : 'opacity-0')} />
-                                      {isBlock(node) ? node.name : node.title}
+                                      {is.block(node) ? node.name : node.title}
                                     </CommandItem>
                                   )
                                 } catch (e) {
@@ -213,7 +212,7 @@ export function BlockDialogMove(props: {
                       <DropdownMenuTrigger asChild className="shrink-0 stroke-gray-400 hover:enabled:stroke-gray-900">
                         <Button className="justify-between" variant="outline">
                           {field.value
-                            ? isBlock(selectedNode)
+                            ? is.block(selectedNode)
                               ? context.config[selectedNode.type].slots?.[field.value]?.name
                               : field.value
                             : 'Select a slot'}
@@ -234,7 +233,7 @@ export function BlockDialogMove(props: {
                               }}
                             >
                               <Check className={clsx('mr-2 size-4', field.value === slot ? 'opacity-100' : 'opacity-0')} />
-                              {isBlock(selectedNode) ? context.config[selectedNode.type].slots?.[slot].name : slot}
+                              {is.block(selectedNode) ? context.config[selectedNode.type].slots?.[slot].name : slot}
                             </DropdownMenuItem>
                           )
                         })}

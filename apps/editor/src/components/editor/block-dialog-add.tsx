@@ -6,7 +6,7 @@ import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '
 import { Input } from '#components/ui/input.tsx'
 import { Popover, PopoverContent, PopoverTrigger } from '#components/ui/popover.tsx'
 import { ToggleGroup, ToggleGroupItem } from '#components/ui/toggle-group.tsx'
-import { type Block, type Page } from '#db.ts'
+import { type DBStores } from '@repo/lib'
 import { useBlockAdd } from '#hooks/use-block-add.ts'
 import { context } from '#main.tsx'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -26,7 +26,7 @@ export function BlockDialogAdd(props: {
   open: boolean
   setOpen: Dispatch<SetStateAction<boolean>>
   index: number
-  parent: { slot: string; node: Block | Page }
+  parent: { slot: string; node: DBStores['Page'] | DBStores['Block'] }
 }) {
   const [blockPickerOpen, setBlockPickerOpen] = useState(false)
   const { blockAdd } = useBlockAdd()

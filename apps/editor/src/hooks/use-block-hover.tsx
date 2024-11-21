@@ -1,7 +1,7 @@
-import { type Block } from '#db.ts'
+import { DBStores } from '@repo/lib'
 import { type RefObject, useEffect } from 'react'
 
-export function useBlockHover(id: Block['id'], element: RefObject<HTMLElement | null>) {
+export function useBlockHover(id: DBStores['Block']['id'], element: RefObject<HTMLElement | null>) {
   useEffect(() => {
     function handleHover(e: CustomEvent) {
       if (element.current) {

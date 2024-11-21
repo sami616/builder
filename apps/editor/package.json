@@ -53,6 +53,7 @@
     "@radix-ui/react-tooltip": "^1.1.3",
     "@repo/blocks": "workspace:*",
     "@repo/lib": "workspace:*",
+    "@repo/socket": "workspace:*",
     "@tanstack/react-query": "^5.60.2",
     "@tanstack/react-query-devtools": "^5.51.15",
     "@tanstack/react-router": "^1.81.5",

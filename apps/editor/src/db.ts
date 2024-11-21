@@ -1,4 +1,5 @@
 import { openDB, type DBSchema } from 'idb'
+import { type DBStores } from '@repo/lib'
 
 export const db = await openDB<MyDB>('pageManager', 1, {
   upgrade(db) {
@@ -27,64 +28,31 @@ export const db = await openDB<MyDB>('pageManager', 1, {
 
 export type DB = {
   templates: {
-    key: Template['id']
-    value: Template
+    key: DBStores['Template']['id']
+    value: DBStores['Template']
     indexes: {
-      createdAt: Template['createdAt']
-      updatedAt: Template['updatedAt']
-      order: Template['order']
+      createdAt: DBStores['Template']['createdAt']
+      updatedAt: DBStores['Template']['updatedAt']
+      order: DBStores['Template']['order']
     }
   }
   pages: {
-    key: Page['id']
-    value: Page
+    key: DBStores['Page']['id']
+    value: DBStores['Page']
     indexes: {
-      createdAt: Page['createdAt']
-      updatedAt: Page['updatedAt']
-      slug: Page['slug']
+      createdAt: DBStores['Page']['createdAt']
+      updatedAt: DBStores['Page']['updatedAt']
+      slug: DBStores['Page']['slug']
     }
   }
   blocks: {
-    key: Block['id']
-    value: Block
+    key: DBStores['Block']['id']
+    value: DBStores['Block']
     indexes: {
-      createdAt: Block['createdAt']
-      updatedAt: Block['updatedAt']
+      createdAt: DBStores['Block']['createdAt']
+      updatedAt: DBStores['Block']['updatedAt']
     }
   }
 }
 
 export interface MyDB extends DB, DBSchema {}
-
-export type Sys = {
-  id: number
-  createdAt: Date
-  updatedAt: Date
-}
-
-export type Page = {
-  store: 'pages'
-  title: string
-  slug: string
-  url: string
-  description: string
-  status: 'Published' | 'Unpublished'
-  publishedAt?: Date
-  slots: { [index: string]: Array<Block['id']> }
-} & Sys
-
-export type Block = {
-  store: 'blocks'
-  type: string
-  name: string
-  slots: { [index: string]: Array<Block['id']> }
-  props: { [index: string]: any }
-} & Sys
-
-export type Template = {
-  store: 'templates'
-  order: number
-  name: string
-  rootNode: Block
-  slots: { [index: string]: Array<Block['id']> }
-} & Sys

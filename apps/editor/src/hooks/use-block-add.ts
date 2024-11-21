@@ -1,8 +1,7 @@
-import { isPage } from '#api.ts'
-import { type Block, type Page } from '#db.ts'
+import { is, type DBStores, type Config } from '@repo/lib'
 import { type DragData } from '#hooks/use-drag.ts'
 import { type Edge } from '#hooks/use-drop.ts'
-import { type Props, context } from '#main.tsx'
+import { context } from '#main.tsx'
 import { useMutation } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { toast } from 'sonner'
@@ -11,7 +10,7 @@ type Args = {
   name?: string
   source: DragData['component']
   target: {
-    parent: { slot: string; node: Page | Block }
+    parent: { slot: string; node: DBStores['Page'] | DBStores['Block'] }
     index?: number
     edge: Edge
   }
@@ -27,7 +26,7 @@ export function useBlockAdd() {
       const configItem = context.config[args.source.type]
       const slot = args.target.parent.slot
 
-      function getDefaultProps(props?: Props, defaultProps: { [key: string]: any } = {}) {
+      function getDefaultProps(props?: Config[keyof Config]['props'], defaultProps: { [key: string]: any } = {}) {
         if (!props) return defaultProps
         props.forEach((prop) => {
           if (prop.type === 'collapsible' || prop.type === 'grid') {
@@ -41,7 +40,7 @@ export function useBlockAdd() {
 
       const defaultProps = getDefaultProps(configItem.props)
 
-      let defaultSlots: Record<string, Array<Block['id']>> = {}
+      let defaultSlots: Record<string, Array<DBStores['Block']['id']>> = {}
 
       if (configItem.slots) {
         const slotKeys = Object.keys(configItem.slots)
@@ -74,8 +73,8 @@ export function useBlockAdd() {
 
       clonedParentNode.updatedAt = date
 
-      if (!isPage(clonedParentNode) && params.id) {
-        const page = context.queryClient.getQueryData<Page>(['pages', Number(params.id)])
+      if (!is.page(clonedParentNode) && params.id) {
+        const page = context.queryClient.getQueryData<DBStores['Page']>(['pages', Number(params.id)])
         if (page) await context.update({ entry: { ...page, updatedAt: date } })
       }
 
@@ -83,7 +82,7 @@ export function useBlockAdd() {
     },
     onSuccess: (data, vars) => {
       context.queryClient.invalidateQueries({ queryKey: [vars.target.parent.node.store, data] })
-      if (!isPage(vars.target.parent.node)) {
+      if (!is.page(vars.target.parent.node)) {
         context.queryClient.invalidateQueries({ queryKey: ['pages'] })
       }
     },

@@ -1,17 +1,17 @@
 import { PropInputLabel } from '#components/editor/prop-input-label.tsx'
-import { type CommonFieldProps } from '#components/editor/prop-input.tsx'
+import { evaluateCondition, type ConfigProps, type DBStores } from '@repo/lib'
 import { Switch } from '#components/ui/switch.tsx'
-import { type Block } from '#db.ts'
 import { useBlockUpdateProps } from '#hooks/use-block-update-props.ts'
 import { useIsMutating } from '@tanstack/react-query'
 import { useId } from 'react'
 
-export type BooleanFieldProps = CommonFieldProps & { type: 'boolean'; default?: boolean }
-
-export function PropInputBoolean(props: { block: Block; field: BooleanFieldProps }) {
+export function PropInputBoolean(props: { block: DBStores['Block']; field: ConfigProps['Boolean'] }) {
   const { blockUpdateProps } = useBlockUpdateProps()
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
   const id = useId()
+
+  const hidden = evaluateCondition(props.block.props, props.field.hidden)
+  if (hidden) return null
 
   return (
     <div className="gap-2 grid">

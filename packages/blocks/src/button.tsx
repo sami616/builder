@@ -1,4 +1,4 @@
-import { type Config } from '@repo/editor'
+import { type Config } from '@repo/lib'
 import { ReactNode } from 'react'
 import './button.css'
 

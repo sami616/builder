@@ -1,5 +1,5 @@
 import { type ReactNode } from 'react'
-import { type Config } from '@repo/editor'
+import { type Config } from '@repo/lib'
 
 export function Container(props: { padding?: string; left?: ReactNode; right?: ReactNode; background: string; title?: string }) {
   return (

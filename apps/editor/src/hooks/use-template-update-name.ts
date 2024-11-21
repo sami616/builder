@@ -1,9 +1,9 @@
-import { type Template } from '#db.ts'
+import { DBStores } from '@repo/lib'
 import { context } from '#main.tsx'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
-type Args = { template: Template; name: string }
+type Args = { template: DBStores['Template']; name: string }
 
 export function useTemplateUpdateName() {
   const mutation = useMutation({

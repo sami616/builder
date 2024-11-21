@@ -1,10 +1,10 @@
-import { type Block, type Page } from '#db.ts'
+import { DBStores } from '@repo/lib'
 import { context } from '#main.tsx'
 import { useMutation } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { toast } from 'sonner'
 
-type Args = { block: Block; props: Block['props'] }
+type Args = { block: DBStores['Block']; props: DBStores['Block']['props'] }
 
 export function useBlockUpdateProps() {
   const params = useParams({ strict: false })
@@ -17,7 +17,7 @@ export function useBlockUpdateProps() {
       clonedEntry.updatedAt = date
 
       if (params.id) {
-        const page = context.queryClient.getQueryData<Page>(['pages', Number(params.id)])
+        const page = context.queryClient.getQueryData<DBStores['Page']>(['pages', Number(params.id)])
         if (page) await context.update({ entry: { ...page, updatedAt: date } })
       }
 

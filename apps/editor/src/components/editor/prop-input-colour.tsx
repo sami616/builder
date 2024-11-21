@@ -1,11 +1,10 @@
 import { PropInputLabel } from '#components/editor/prop-input-label.tsx'
-import { CommonFieldProps } from '#components/editor/prop-input.tsx'
+import { type DBStores, type ConfigProps, evaluateCondition } from '@repo/lib'
 import { Button } from '#components/ui/button.tsx'
 import { Input } from '#components/ui/input.tsx'
 import { Popover, PopoverContent, PopoverTrigger } from '#components/ui/popover.tsx'
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '#components/ui/tabs.tsx'
 import { Tooltip, TooltipContent } from '#components/ui/tooltip.tsx'
-import { type Block } from '#db.ts'
 import { useBlockUpdateProps } from '#hooks/use-block-update-props.ts'
 import { cn } from '#lib/utils.ts'
 import { TooltipProvider, TooltipTrigger } from '@radix-ui/react-tooltip'
@@ -14,17 +13,7 @@ import { Copy, Paintbrush } from 'lucide-react'
 import { useId, useState } from 'react'
 import { toast } from 'sonner'
 
-export type ColourFieldProps = CommonFieldProps & {
-  type: 'colour'
-  config?: { readOnly?: boolean }
-  options: {
-    solid?: Array<{ name?: string; value: string }>
-    gradient?: Array<{ name?: string; value: string }>
-  }
-  default?: string
-}
-
-export function PropInputColour(props: { block: Block; field: ColourFieldProps }) {
+export function PropInputColour(props: { block: DBStores['Block']; field: ConfigProps['Color'] }) {
   const value = props.block.props[props.field.id]
   const defaultTab = value?.includes?.('gradient') ? 'gradient' : 'solid'
   const { blockUpdateProps } = useBlockUpdateProps()
@@ -37,6 +26,9 @@ export function PropInputColour(props: { block: Block; field: ColourFieldProps }
     defaultTab === 'gradient'
       ? options.gradient?.find((item) => item.value === value)?.name
       : options.solid?.find((item) => item.value === value)?.name
+
+  const hidden = evaluateCondition(props.block.props, props.field.hidden)
+  if (hidden) return null
 
   return (
     <div className="gap-2 grid">

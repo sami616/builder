@@ -1,9 +1,9 @@
-import { type Page } from '#db.ts'
+import { type DBStores } from '@repo/lib'
 import { context } from '#main.tsx'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
-type Args = { entry: Page }
+type Args = { entry: DBStores['Page'] }
 
 export function usePageDelete() {
   const mutation = useMutation({

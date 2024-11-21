@@ -11,11 +11,11 @@ import {
   DropdownMenuTrigger,
 } from '#components/ui/dropdown-menu.tsx'
 import { Input } from '#components/ui/input.tsx'
-import { type Page } from '#db.ts'
+import { type DBStores } from '@repo/lib'
 import { Table } from '@tanstack/react-table'
 import { Filter } from 'lucide-react'
 
-export function PageTableFilters(props: { table: Table<Page> }) {
+export function PageTableFilters(props: { table: Table<DBStores['Page']> }) {
   const columnFilters = props.table.getState().columnFilters
   return (
     <div className="gap-2 flex items-center">

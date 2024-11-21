@@ -10,7 +10,7 @@ import { Badge } from '#components/ui/badge.tsx'
 import { Button } from '#components/ui/button.tsx'
 import { Checkbox } from '#components/ui/checkbox.tsx'
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '#components/ui/table.tsx'
-import { type Page } from '#db.ts'
+import { type DBStores } from '@repo/lib'
 import { usePageGetMany } from '#hooks/use-page-get-many.ts'
 import { usePageImport } from '#hooks/use-page-import.ts'
 import { useIsMutating } from '@tanstack/react-query'
@@ -45,7 +45,7 @@ export function PageTable() {
     }
   }, [])
 
-  const columns: ColumnDef<Page>[] = useMemo(
+  const columns: ColumnDef<DBStores['Page']>[] = useMemo(
     () => [
       {
         id: 'select',
@@ -91,7 +91,7 @@ export function PageTable() {
         header: 'Status',
         filterFn: 'equals',
         cell: ({ row }) => {
-          const status = row.getValue<Page['status']>('status')
+          const status = row.getValue<DBStores['Page']['status']>('status')
           return (
             <Badge className="capitalize" variant="secondary">
               {publishing.includes(Number(row.id)) ? (
@@ -110,7 +110,7 @@ export function PageTable() {
         header: 'Created at',
         enableColumnFilter: false,
         cell: ({ row }) => {
-          const createdAt = row.getValue<Page['createdAt']>('createdAt')
+          const createdAt = row.getValue<DBStores['Page']['createdAt']>('createdAt')
           return createdAt.toLocaleString()
         },
       },
@@ -119,7 +119,7 @@ export function PageTable() {
         header: 'Updated at',
         enableColumnFilter: false,
         cell: ({ row }) => {
-          const updatedAt = row.getValue<Page['updatedAt']>('updatedAt')
+          const updatedAt = row.getValue<DBStores['Page']['updatedAt']>('updatedAt')
           return updatedAt.toLocaleString()
         },
       },
@@ -128,7 +128,7 @@ export function PageTable() {
         header: 'Published at',
         enableColumnFilter: false,
         cell: ({ row }) => {
-          const publishedAt = row.getValue<Page['publishedAt']>('publishedAt')
+          const publishedAt = row.getValue<DBStores['Page']['publishedAt']>('publishedAt')
           return publishedAt?.toLocaleString() ?? '-'
         },
       },

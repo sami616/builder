@@ -4,7 +4,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from '#components/ui/input.tsx'
 import { Separator } from '#components/ui/separator.tsx'
 import { Switch } from '#components/ui/switch.tsx'
-import { type Page } from '#db.ts'
+import { type DBStores } from '@repo/lib'
 import { usePageUpdateMeta } from '#hooks/use-page-update-meta.ts'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { type Dispatch, type SetStateAction } from 'react'
@@ -25,7 +25,7 @@ const formSchema = z.object({
   url: z.string().optional(),
 })
 
-export function PageDialogEdit(props: { selectedPage: Page; open: boolean; setOpen: Dispatch<SetStateAction<boolean>> }) {
+export function PageDialogEdit(props: { selectedPage: DBStores['Page']; open: boolean; setOpen: Dispatch<SetStateAction<boolean>> }) {
   const { pageUpdateMeta } = usePageUpdateMeta()
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),

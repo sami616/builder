@@ -1,6 +1,5 @@
-import { add, addMany, duplicateTree, get, getMany, getTree, isBlock, isPage, remove, removeMany, update, updateMany } from '#api.ts'
-import { Field } from '#components/editor/prop-input.tsx'
-import { Block } from '#db.ts'
+import { add, addMany, duplicateTree, get, getMany, getTree, remove, removeMany, update, updateMany } from '#api.ts'
+import { type Config, is } from '@repo/lib'
 import '#index.css'
 import { routeTree } from '#routeTree.gen.ts'
 import { buttonConfig, containerConfig, headingConfig } from '@repo/blocks'
@@ -13,28 +12,6 @@ import ReactDOM from 'react-dom/client'
 import { Toaster } from 'sonner'
 
 export const queryClient = new QueryClient()
-
-export type Props = Array<Field>
-
-export type Config = {
-  [key: string]: {
-    component: (props: any) => JSX.Element
-    name: string
-    folder?: Array<string>
-    deprecated?: boolean
-    slots?: {
-      [key: string]: {
-        default?: Array<Block['id']>
-        name: string
-        validation?: {
-          disabledComponents?: Array<string>
-          maxItems?: number
-        }
-      }
-    }
-    props?: Props
-  }
-}
 
 export const config: Config = {
   ...buttonConfig,
@@ -49,8 +26,7 @@ export const context = {
   getMany,
   getTree,
   duplicateTree,
-  isBlock,
-  isPage,
+  is,
   add,
   addMany,
   update,

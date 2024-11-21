@@ -1,12 +1,12 @@
 import { DropZone } from '#components/editor/drop-zone.tsx'
 import { TemplateItem } from '#components/editor/template-item.tsx'
 import { Tree } from '#components/ui/tree.tsx'
-import { type Template } from '#db.ts'
+import { type DBStores } from '@repo/lib'
 import { isDragData } from '#hooks/use-drag.ts'
 import { useTemplateAdd } from '#hooks/use-template-add.ts'
 import { Layout } from 'lucide-react'
 
-export function TemplatePanel(props: { templates: Template[] }) {
+export function TemplatePanel(props: { templates: DBStores['Template'][] }) {
   const { templateAdd } = useTemplateAdd()
   if (props.templates.length === 0)
     return (

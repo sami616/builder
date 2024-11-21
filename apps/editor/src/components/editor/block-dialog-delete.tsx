@@ -8,7 +8,7 @@ import {
   AlertDialogTitle,
 } from '#components/ui/alert-dialog.tsx'
 import { Button } from '#components/ui/button.tsx'
-import { type Block, type Page } from '#db.ts'
+import { type DBStores } from '@repo/lib'
 import { useBlockDeleteMany } from '#hooks/use-block-delete-many.ts'
 import { useBlockDelete } from '#hooks/use-block-delete.ts'
 import { type Dispatch, type SetStateAction } from 'react'
@@ -17,7 +17,7 @@ export function BlockDialogDelete(props: {
   blocks: Array<{
     id: number
     index: number
-    parent: { slot: string; node: Block | Page }
+    parent: { slot: string; node: DBStores['Page'] | DBStores['Block'] }
   }>
   open: boolean
   setOpen: Dispatch<SetStateAction<boolean>>

@@ -1,10 +1,10 @@
-import { Field } from '#components/editor/prop-input.tsx'
+import { ConfigProps } from '@repo/lib'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '#components/ui/hover-card.tsx'
 import { Label } from '#components/ui/label.tsx'
 import clsx from 'clsx'
 import { Info } from 'lucide-react'
 
-export function PropInputLabel(props: { field: Field; for?: string; variant?: 'head' | 'subhead' }) {
+export function PropInputLabel(props: { field: ConfigProps[keyof ConfigProps]; for?: string; variant?: 'head' | 'subhead' }) {
   if (!props.field.name) return null
   return (
     <Label htmlFor={props.for} className={clsx(`flex gap-2 items-center`, props.variant === 'head' ? 'text-sm' : 'text-xs')}>

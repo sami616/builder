@@ -1,9 +1,9 @@
-import { type Page } from '#db.ts'
+import { DBStores } from '@repo/lib'
 import { context } from '#main.tsx'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
-type Args = { page: Page } & Partial<Pick<Page, 'title' | 'description' | 'url' | 'slug' | 'status' | 'publishedAt'>>
+type Args = { page: DBStores['Page'] } & Partial<Pick<DBStores['Page'], 'title' | 'description' | 'url' | 'slug' | 'status' | 'publishedAt'>>
 
 export function usePageUpdateMeta() {
   const mutation = useMutation({

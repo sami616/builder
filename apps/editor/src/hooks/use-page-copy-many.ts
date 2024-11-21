@@ -1,9 +1,9 @@
-import { type Page } from '#db.ts'
+import { type DBStores } from '@repo/lib'
 import { context } from '#main.tsx'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
-type Args = { ids: Array<Page['id']> }
+type Args = { ids: Array<DBStores['Page']['id']> }
 
 export function usePageCopyMany() {
   const mutation = useMutation({

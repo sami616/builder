@@ -1,5 +1,5 @@
-import { duplicateTree, getTree, isPage } from '#api.ts'
-import { type Block, type Page } from '#db.ts'
+import { duplicateTree, getTree } from '#api.ts'
+import { type DBStores, is } from '@repo/lib'
 import { type DragData } from '#hooks/use-drag.ts'
 import { type Edge } from '#hooks/use-drop.ts'
 import { context } from '#main.tsx'
@@ -10,7 +10,7 @@ import { toast } from 'sonner'
 type Args = {
   source: DragData['template']
   target: {
-    parent: { slot: string; node: Page | Block }
+    parent: { slot: string; node: DBStores['Page'] | DBStores['Block'] }
     index?: number
     edge: Edge
   }
@@ -37,8 +37,8 @@ export function useTemplateApply() {
 
       clonedParentNode.updatedAt = date
 
-      if (!isPage(clonedParentNode) && params.id) {
-        const page = context.queryClient.getQueryData<Page>(['pages', Number(params.id)])
+      if (!is.page(clonedParentNode) && params.id) {
+        const page = context.queryClient.getQueryData<DBStores['Page']>(['pages', Number(params.id)])
         if (page) await context.update({ entry: { ...page, updatedAt: date } })
       }
 
@@ -46,7 +46,7 @@ export function useTemplateApply() {
     },
     onSuccess: (data, vars) => {
       context.queryClient.invalidateQueries({ queryKey: [vars.target.parent.node.store, data] })
-      if (!isPage(vars.target.parent.node)) {
+      if (!is.page(vars.target.parent.node)) {
         context.queryClient.invalidateQueries({ queryKey: ['pages'] })
       }
     },

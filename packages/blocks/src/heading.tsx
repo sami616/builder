@@ -1,4 +1,4 @@
-import { type Config } from '@repo/editor'
+import { type Config } from '@repo/lib'
 
 export function Heading(props: { children: string }) {
   return <h1 style={{ margin: 0, padding: 0 }}>{props.children}</h1>

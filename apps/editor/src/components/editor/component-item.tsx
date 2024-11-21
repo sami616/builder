@@ -2,14 +2,13 @@ import { type NestedStructure, isComponentLeaf } from '#components/editor/compon
 import { DragPreview } from '#components/editor/drag-preview.tsx'
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '#components/ui/hover-card.tsx'
 import { TreeItem, TreeItemContent, TreeItemHead, TreeItemLabel, TreeItemTrigger } from '#components/ui/tree.tsx'
-import { type Block, type Page } from '#db.ts'
+import { type Config, type DBStores } from '@repo/lib'
 import { useDrag } from '#hooks/use-drag.ts'
-import { type Config } from '#main.tsx'
 import clsx from 'clsx'
 import { CircleAlert } from 'lucide-react'
 import { useRef, useState } from 'react'
 
-export function ComponentItem(props: { page: Page; type: Block['type']; value: NestedStructure | Config[keyof Config] }) {
+export function ComponentItem(props: { page: DBStores['Page']; type: DBStores['Block']['type']; value: NestedStructure | Config[keyof Config] }) {
   const dragRef = useRef<HTMLDivElement>(null)
   const { isDraggingSource, dragPreviewContainer } = useDrag({
     dragRef,
@@ -48,7 +47,7 @@ export function ComponentItem(props: { page: Page; type: Block['type']; value: N
       </TreeItemHead>
       <TreeItemContent>
         {Object.entries(props.value).map(([key, value]) => (
-          <ComponentItem key={key} page={props.page} type={key as Block['type']} value={value} />
+          <ComponentItem key={key} page={props.page} type={key as DBStores['Block']['type']} value={value} />
         ))}
       </TreeItemContent>
       <DragPreview dragPreviewContainer={dragPreviewContainer}>{props.type}</DragPreview>

@@ -2,7 +2,7 @@ import { Button } from '#components/ui/button.tsx'
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '#components/ui/dialog.tsx'
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '#components/ui/form.tsx'
 import { Input } from '#components/ui/input.tsx'
-import { type Block, type Page } from '#db.ts'
+import { type DBStores } from '@repo/lib'
 import { useTemplateAdd } from '#hooks/use-template-add.ts'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { type Dispatch, type SetStateAction } from 'react'
@@ -16,9 +16,9 @@ const templateAddSchema = z.object({
 export function BlockDialogAddTemplate(props: {
   open: boolean
   setOpen: Dispatch<SetStateAction<boolean>>
-  block: Block
+  block: DBStores['Block']
   index: number
-  parent: { slot: string; node: Block | Page }
+  parent: { slot: string; node: DBStores['Page'] | DBStores['Block'] }
 }) {
   const { templateAdd } = useTemplateAdd()
   const templateAddForm = useForm<z.infer<typeof templateAddSchema>>({

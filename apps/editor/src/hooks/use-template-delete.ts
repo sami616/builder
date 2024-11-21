@@ -1,10 +1,11 @@
-import { db, type Template } from '#db.ts'
+import { db } from '#db.ts'
 import { useActive } from '#hooks/use-active.tsx'
 import { context } from '#main.tsx'
+import { DBStores } from '@repo/lib'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
-type Args = { template: Template }
+type Args = { template: DBStores['Template'] }
 
 export function useTemplateDelete() {
   const { setActive } = useActive()

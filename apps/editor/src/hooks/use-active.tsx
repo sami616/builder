@@ -1,14 +1,13 @@
-import { isBlock } from '#api.ts'
-import { type Block, type Page, type Template } from '#db.ts'
+import { is, type DBStores } from '@repo/lib'
 import { createContext, Dispatch, ReactNode, SetStateAction, useContext, useState } from 'react'
 
-type ActiveBlock = Block & { index: number; parent: { slot: string; node: Block | Page } }
-type ActiveTemplate = Template
+type ActiveBlock = DBStores['Block'] & { index: number; parent: { slot: string; node: DBStores['Block'] | DBStores['Page'] } }
+type ActiveTemplate = DBStores['Template']
 
 type Active = {
   State: { store: 'blocks'; items: Array<ActiveBlock> } | { store: 'templates'; items: Array<ActiveTemplate> } | { store: 'none'; items: [] }
   IsActive: { store: 'blocks'; item: ActiveBlock } | { store: 'templates'; item: ActiveTemplate }
-  HandleActiveClick: { metaKey: boolean } & ({ store: 'blocks'; item: ActiveBlock } | { store: 'templates'; item: Template })
+  HandleActiveClick: { metaKey: boolean } & ({ store: 'blocks'; item: ActiveBlock } | { store: 'templates'; item: DBStores['Template'] })
   Set: Dispatch<SetStateAction<Active['State']>>
 }
 
@@ -58,7 +57,7 @@ export function ActiveProvider(props: { children: ReactNode }) {
             }
             return active
           case 'none':
-            if (isBlock(args.item)) {
+            if (is.block(args.item)) {
               return { store: 'blocks', items: [args.item] }
             }
             return { store: 'templates', items: [args.item] }
@@ -68,7 +67,7 @@ export function ActiveProvider(props: { children: ReactNode }) {
       setActive((active) => {
         if (isActiveNode) {
           if (active.items.length > 1) {
-            if (isBlock(args.item)) {
+            if (is.block(args.item)) {
               return { store: 'blocks', items: [args.item] }
             } else {
               return { store: 'templates', items: [args.item] }
@@ -76,7 +75,7 @@ export function ActiveProvider(props: { children: ReactNode }) {
           }
           return { store: 'none', items: [] }
         } else {
-          if (isBlock(args.item)) {
+          if (is.block(args.item)) {
             return { store: 'blocks', items: [args.item] }
           } else {
             return { store: 'templates', items: [args.item] }

@@ -1,23 +1,19 @@
 import { PropInputLabel } from '#components/editor/prop-input-label.tsx'
-import { type CommonFieldProps } from '#components/editor/prop-input.tsx'
+import { evaluateCondition, type DBStores, type ConfigProps } from '@repo/lib'
 import { Button } from '#components/ui/button.tsx'
 import { Input } from '#components/ui/input.tsx'
-import { type Block } from '#db.ts'
 import { useBlockUpdateProps } from '#hooks/use-block-update-props.ts'
 import { useIsMutating } from '@tanstack/react-query'
 import { Check } from 'lucide-react'
-import { type HTMLInputAutoCompleteAttribute, useId } from 'react'
+import { useId } from 'react'
 
-export type NumberFieldProps = CommonFieldProps & {
-  type: 'number'
-  config?: { autoComplete?: HTMLInputAutoCompleteAttribute; required?: boolean; min?: number; max?: number; step?: number }
-  default?: number
-}
-
-export function PropInputNumber(props: { block: Block; field: NumberFieldProps }) {
+export function PropInputNumber(props: { block: DBStores['Block']; field: ConfigProps['Number'] }) {
   const { blockUpdateProps } = useBlockUpdateProps()
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
   const id = useId()
+
+  const hidden = evaluateCondition(props.block.props, props.field.hidden)
+  if (hidden) return null
 
   return (
     <form

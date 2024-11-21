@@ -11,7 +11,7 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '#components/ui/dropdown-menu.tsx'
-import { type Block } from '#db.ts'
+import { type DBStores } from '@repo/lib'
 import { useActive } from '#hooks/use-active.tsx'
 import { useBlockCopy } from '#hooks/use-block-copy.ts'
 import { useBlockDelete } from '#hooks/use-block-delete.ts'
@@ -24,7 +24,7 @@ type BlockLayerItemProps = ComponentProps<typeof BlockLayerItem>
 export function BlockLayerItemActions(props: {
   actionsOpen: boolean
   setActionsOpen: Dispatch<SetStateAction<boolean>>
-  block: Block
+  block: DBStores['Block']
   trigger?: ReactNode
   index: BlockLayerItemProps['index']
   parent: BlockLayerItemProps['parent']

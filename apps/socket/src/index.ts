@@ -1,6 +1,17 @@
 import { Server } from 'socket.io'
+import { type DBStores } from '@repo/lib'
 
-const io = new Server(3000, { cors: { origin: 'http://localhost:5173' } })
+export interface ServerToClientEvents {
+  checkPublishStatus: (data: Array<number>) => void
+  pagePublish: (data: DBStores['Page']) => void
+}
+
+export interface ClientToServerEvents {
+  checkPublishStatus: () => void
+  pagePublish: (data: DBStores['Page']) => void
+}
+
+const io = new Server<ClientToServerEvents, ServerToClientEvents>(3000, { cors: { origin: 'http://localhost:5173' } })
 
 io.on('connection', (socket) => {
   // Checks what pages are currently in flight

@@ -1,11 +1,11 @@
 import { ComponentItem } from '#components/editor/component-item.tsx'
 import { Tree } from '#components/ui/tree.tsx'
-import { type Block, type Page } from '#db.ts'
-import { type Config, context } from '#main.tsx'
+import { type Config, type DBStores } from '@repo/lib'
+import { context } from '#main.tsx'
 import { Component } from 'lucide-react'
 import { useMemo } from 'react'
 
-export function ComponentPanel(props: { page: Page }) {
+export function ComponentPanel(props: { page: DBStores['Page'] }) {
   const structure = useMemo(() => {
     return nestFolders(context.config)
   }, [])
@@ -22,7 +22,7 @@ export function ComponentPanel(props: { page: Page }) {
   return (
     <Tree>
       {Object.entries(structure).map(([key, value]) => {
-        return <ComponentItem value={value} key={key} type={key as Block['type']} page={props.page} />
+        return <ComponentItem value={value} key={key} type={key as DBStores['Block']['type']} page={props.page} />
       })}
     </Tree>
   )

@@ -1,8 +1,8 @@
-import { type Block } from '#db.ts'
+import { type DBStores } from '@repo/lib'
 import { context } from '#main.tsx'
 import { useSuspenseQuery } from '@tanstack/react-query'
 
-export function useBlockGet(args: { id: Block['id'] }) {
+export function useBlockGet(args: { id: DBStores['Block']['id'] }) {
   return {
     blockGet: useSuspenseQuery({
       queryKey: ['blocks', args.id],

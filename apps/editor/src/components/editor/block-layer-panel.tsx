@@ -1,7 +1,7 @@
 import { BlockLayerItem } from '#components/editor/block-layer-item.tsx'
 import { DropZone } from '#components/editor/drop-zone.tsx'
 import { Tree } from '#components/ui/tree.tsx'
-import { type Page } from '#db.ts'
+import { type DBStores } from '@repo/lib'
 import { useBlockAdd } from '#hooks/use-block-add.ts'
 import { isDragData } from '#hooks/use-drag.ts'
 import { useTemplateApply } from '#hooks/use-template-apply.ts'
@@ -10,7 +10,7 @@ import clsx from 'clsx'
 import { Layers2 } from 'lucide-react'
 import { useDeferredValue } from 'react'
 
-export function BlockLayerPanel(props: { page: Page }) {
+export function BlockLayerPanel(props: { page: DBStores['Page'] }) {
   const { blockAdd } = useBlockAdd()
   const { templateApply } = useTemplateApply()
   const deferredBlocks = useDeferredValue(Object.values(props.page.slots)[0])

@@ -1,13 +1,12 @@
-import { isPage } from '#api.ts'
+import { is, type DBStores } from '@repo/lib'
 import { BlockItem } from '#components/editor/block-item.tsx'
-import { type Block, type Page } from '#db.ts'
 import { context } from '#main.tsx'
 import { useMutation } from '@tanstack/react-query'
 import { useParams } from '@tanstack/react-router'
 import { type ComponentProps } from 'react'
 import { toast } from 'sonner'
 
-type Args = { entries: Array<{ index: number; id: Block['id']; parent: ComponentProps<typeof BlockItem>['parent'] }> }
+type Args = { entries: Array<{ index: number; id: DBStores['Block']['id']; parent: ComponentProps<typeof BlockItem>['parent'] }> }
 
 export function useBlockCopyMany() {
   const params = useParams({ strict: false })
@@ -36,9 +35,9 @@ export function useBlockCopyMany() {
         updateList.set(entry.parent.node.id, clonedParentNode)
       }
 
-      const hasPage = Array.from(updateList.values()).some((item) => isPage(item))
+      const hasPage = Array.from(updateList.values()).some((item) => is.page(item))
       if (!hasPage && params.id) {
-        const page = context.queryClient.getQueryData<Page>(['pages', Number(params.id)])
+        const page = context.queryClient.getQueryData<DBStores['Page']>(['pages', Number(params.id)])
         if (page) await context.update({ entry: { ...page, updatedAt: date } })
       }
 

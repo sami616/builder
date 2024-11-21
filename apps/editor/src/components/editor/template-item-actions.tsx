@@ -7,14 +7,18 @@ import {
   DropdownMenuShortcut,
   DropdownMenuTrigger,
 } from '#components/ui/dropdown-menu.tsx'
-import { type Template } from '#db.ts'
+import { type DBStores } from '@repo/lib'
 import { useActive } from '#hooks/use-active.tsx'
 import { useTemplateDelete } from '#hooks/use-template-delete.ts'
 import { useIsMutating } from '@tanstack/react-query'
 import { MoreHorizontal, Trash } from 'lucide-react'
 import { type Dispatch, type SetStateAction } from 'react'
 
-export function TemplateItemActions(props: { template: Template; actionsOpen: boolean; setActionsOpen: Dispatch<SetStateAction<boolean>> }) {
+export function TemplateItemActions(props: {
+  template: DBStores['Template']
+  actionsOpen: boolean
+  setActionsOpen: Dispatch<SetStateAction<boolean>>
+}) {
   const { templateDelete } = useTemplateDelete()
   const isCanvasMutating = Boolean(useIsMutating({ mutationKey: ['canvas'] }))
   const { setActive } = useActive()

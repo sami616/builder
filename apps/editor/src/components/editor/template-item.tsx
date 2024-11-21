@@ -2,7 +2,7 @@ import { DragPreview } from '#components/editor/drag-preview.tsx'
 import { DropIndicator } from '#components/editor/drop-indicator.tsx'
 import { TemplateItemActions } from '#components/editor/template-item-actions.tsx'
 import { TreeItem, TreeItemHead, TreeItemLabel } from '#components/ui/tree.tsx'
-import { type Template } from '#db.ts'
+import { type DBStores } from '@repo/lib'
 import { useActive } from '#hooks/use-active.tsx'
 import { isDragData, useDrag } from '#hooks/use-drag.ts'
 import { useDrop } from '#hooks/use-drop.ts'
@@ -12,7 +12,7 @@ import { useTemplateUpdateName } from '#hooks/use-template-update-name.ts'
 import clsx from 'clsx'
 import { useRef, useState } from 'react'
 
-export function TemplateItem(props: { template: Template; index: number }) {
+export function TemplateItem(props: { template: DBStores['Template']; index: number }) {
   const dragRef = useRef<HTMLDivElement>(null)
   const dropRef = useRef<HTMLLIElement>(null)
   const { templateUpdateName } = useTemplateUpdateName()

@@ -1,13 +1,14 @@
-import { db, type Template } from '#db.ts'
+import { db } from '#db.ts'
 import { type DragData } from '#hooks/use-drag.ts'
 import { type Edge } from '#hooks/use-drop.ts'
 import { context } from '#main.tsx'
+import { type DBStores } from '@repo/lib'
 import { useMutation } from '@tanstack/react-query'
 import { toast } from 'sonner'
 
 type Args = {
   source: DragData['template']
-  target: { index: number; node: Template; edge: Edge }
+  target: { index: number; node: DBStores['Template']; edge: Edge }
 }
 
 export function useTemplateReorder() {

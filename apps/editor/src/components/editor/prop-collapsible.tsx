@@ -3,20 +3,12 @@ import { PropInputBoolean } from '#components/editor/prop-input-boolean.tsx'
 import { PropInputLabel } from '#components/editor/prop-input-label.tsx'
 import { PropInputNumber } from '#components/editor/prop-input-number.tsx'
 import { PropInputString } from '#components/editor/prop-input-string.tsx'
-import { CommonFieldProps, evaluateCondition, Field } from '#components/editor/prop-input.tsx'
-import { type Block } from '#db.ts'
+import { type ConfigProps, evaluateCondition, type DBStores } from '@repo/lib'
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@radix-ui/react-collapsible'
 import { ChevronDown } from 'lucide-react'
+import { PropInputColour } from './prop-input-colour'
 
-export type CollapsibleFieldProps = CommonFieldProps & {
-  type: 'collapsible'
-  props: Array<Field | CollapsibleFieldProps>
-  config: {
-    defaultOpen?: boolean
-  }
-}
-
-export function PropCollapsible(props: { block: Block; field: CollapsibleFieldProps }) {
+export function PropCollapsible(props: { block: DBStores['Block']; field: ConfigProps['Collapsible'] }) {
   const hidden = evaluateCondition(props.block.props, props.field.hidden)
   if (hidden) return null
 
@@ -29,7 +21,7 @@ export function PropCollapsible(props: { block: Block; field: CollapsibleFieldPr
         </CollapsibleTrigger>
         <CollapsibleContent data-collapsible>
           <div className="grid gap-4 p-4">
-            {props.field.props.map((field) => {
+            {props.field.props?.map((field) => {
               switch (field.type) {
                 case 'string': {
                   return <PropInputString key={props.block.id + field.id} block={props.block} field={field} />
@@ -39,6 +31,9 @@ export function PropCollapsible(props: { block: Block; field: CollapsibleFieldPr
                 }
                 case 'boolean': {
                   return <PropInputBoolean key={props.block.id + field.id} block={props.block} field={field} />
+                }
+                case 'colour': {
+                  return <PropInputColour key={props.block.id + field.id} block={props.block} field={field} />
                 }
                 case 'collapsible': {
                   return <PropCollapsible key={props.block.id + field.id} block={props.block} field={field} />

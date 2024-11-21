@@ -8,7 +8,7 @@ import {
   AlertDialogTitle,
 } from '#components/ui/alert-dialog.tsx'
 import { Button } from '#components/ui/button.tsx'
-import { type Page } from '#db.ts'
+import { type DBStores } from '@repo/lib'
 import { usePageDeleteMany } from '#hooks/use-page-delete-many.ts'
 import { usePageDelete } from '#hooks/use-page-delete.ts'
 import { useIsMutating } from '@tanstack/react-query'
@@ -16,8 +16,8 @@ import { type Table } from '@tanstack/react-table'
 import { Loader2, Trash } from 'lucide-react'
 
 export function PageDialogDelete(props: {
-  table: Table<Page>
-  selectedPages: Page[]
+  table: Table<DBStores['Page']>
+  selectedPages: DBStores['Page'][]
   deleteDialogOpen: boolean
   setIsDeleteDialogOpen: (open: boolean) => void
 }) {

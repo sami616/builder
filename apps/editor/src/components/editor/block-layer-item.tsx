@@ -4,7 +4,7 @@ import { DragPreview } from '#components/editor/drag-preview.tsx'
 import { DropIndicator } from '#components/editor/drop-indicator.tsx'
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '#components/ui/tooltip.tsx'
 import { TreeItem, TreeItemContent, TreeItemHead, TreeItemLabel, TreeItemTrigger } from '#components/ui/tree.tsx'
-import { type Block, type Page } from '#db.ts'
+import { type DBStores } from '@repo/lib'
 import { useActive } from '#hooks/use-active.tsx'
 import { useBlockAdd } from '#hooks/use-block-add.ts'
 import { useBlockGet } from '#hooks/use-block-get.ts'
@@ -21,7 +21,11 @@ import { AlertCircle } from 'lucide-react'
 import { useDeferredValue, useRef, useState } from 'react'
 import { toast } from 'sonner'
 
-export function BlockLayerItem(props: { id: Block['id']; index: number; parent: { slot: string; node: Block | Page } }) {
+export function BlockLayerItem(props: {
+  id: DBStores['Block']['id']
+  index: number
+  parent: { slot: string; node: DBStores['Page'] | DBStores['Block'] }
+}) {
   const { isActive, handleActiveClick } = useActive()
   const dragRef = useRef<HTMLDivElement>(null)
   const dropRef = useRef<HTMLLIElement>(null)

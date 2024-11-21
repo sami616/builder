@@ -1,5 +1,4 @@
-import { isPage } from '#api.ts'
-import { type Block, type Page } from '#db.ts'
+import { type DBStores, is } from '@repo/lib'
 import { type DragData } from '#hooks/use-drag.ts'
 import { type Edge } from '#hooks/use-drop.ts'
 import { context } from '#main.tsx'
@@ -14,7 +13,7 @@ export function useBlockReparent() {
       mutationKey: ['canvas', 'block', 'reparent'],
       mutationFn: async (args: {
         source: DragData['block']
-        target: { parent: { slot: string; node: Block | Page }; edge: Edge; index?: number }
+        target: { parent: { slot: string; node: DBStores['Page'] | DBStores['Block'] }; edge: Edge; index?: number }
       }) => {
         const date = new Date()
         const clonedSourceParentNode = structuredClone(args.source.parent.node)
@@ -36,8 +35,8 @@ export function useBlockReparent() {
         clonedSourceParentNode.updatedAt = date
         clonedTargetParentNode.updatedAt = date
 
-        if (!isPage(clonedSourceParentNode) && !isPage(clonedTargetParentNode) && params.id) {
-          const page = context.queryClient.getQueryData<Page>(['pages', Number(params.id)])
+        if (!is.page(clonedSourceParentNode) && !is.page(clonedTargetParentNode) && params.id) {
+          const page = context.queryClient.getQueryData<DBStores['Page']>(['pages', Number(params.id)])
           if (page) await context.update({ entry: { ...page, updatedAt: date } })
         }
 
@@ -46,7 +45,7 @@ export function useBlockReparent() {
       onSuccess: ([sourceData, targetData], vars) => {
         context.queryClient.invalidateQueries({ queryKey: [vars.source.parent.node.store, sourceData] })
         context.queryClient.invalidateQueries({ queryKey: [vars.target.parent.node.store, targetData] })
-        if (!isPage(vars.source.parent.node) && !isPage(vars.target.parent.node)) {
+        if (!is.page(vars.source.parent.node) && !is.page(vars.target.parent.node)) {
           context.queryClient.invalidateQueries({ queryKey: ['pages'] })
         }
       },
