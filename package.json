@@ -1,6 +1,5 @@
 {
   "name": "pager",
-  "homepage": "https://sami616.github.io/builder/",
   "private": true,
   "scripts": {
     "editor": "pnpm --filter @repo/editor",

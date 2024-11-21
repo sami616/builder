@@ -1,6 +1,5 @@
 {
   "name": "@repo/editor",
-  "homepage": "https://sami616.github.io/builder/",
   "private": true,
   "version": "0.0.0",
   "type": "module",
